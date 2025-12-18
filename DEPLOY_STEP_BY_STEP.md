@@ -1,6 +1,34 @@
 # 🚀 地图相册部署上线详细步骤
 
-> � **分天完（成建议**: 这个部署过程可以分 3-4 天完成，每天 30-60 分钟，轻松无压力！
+> 💡 **分天完成建议**: 这个部署过程可以分 3-4 天完成，每天 30-60 分钟，轻松无压力！
+
+## � 分天完成计必划
+
+### 📅 第一天：项目准备 (30-45分钟)
+- ✅ 检查项目运行状态
+- ✅ 更新项目信息和文档  
+- ✅ 配置环境变量
+- 🎯 **完成标志**: 项目信息更新完毕，本地测试正常
+
+### 📅 第二天：GitHub 上传 (45-60分钟)
+- ✅ 创建 GitHub 仓库
+- ✅ 上传项目代码
+- ✅ 配置仓库设置
+- 🎯 **完成标志**: 代码成功上传到 GitHub
+
+### � 第三天准：Web 部署 (60-90分钟)
+- ✅ 选择部署平台 (Netlify 推荐)
+- ✅ 配置构建设置和环境变量
+- ✅ 完成 Web 版本上线
+- 🎯 **完成标志**: 获得在线访问地址，网站正常运行
+
+### 📅 第四天：桌面版发布 (90-120分钟)
+- ✅ 配置自动构建
+- ✅ 创建 Release 发布
+- ✅ 完善项目文档和截图
+- 🎯 **完成标志**: 桌面版可下载，项目完全上线
+
+---
 
 ## 📋 准备工作（必须完成）
 
@@ -12,6 +40,10 @@
 
 ---
 
+# 📅 第一天：项目准备和文件配置
+> ⏱️ **预计时间**: 30-45 分钟  
+> 🎯 **目标**: 完成项目文件的基础配置
+
 ## 🔧 第一步：准备项目文件
 
 ### 1.1 更新项目信息
@@ -21,8 +53,7 @@
 {
   "name": "photo-map",
   "description": "你的项目描述",
-  "author": "你的姓名 <your-email@example.com>",
-  "homepage": "https://你的GitHub用户名.github.io/photo-map"
+  "author": "你的姓名 <your-email@example.com>"
 }
 ```
 
@@ -30,7 +61,6 @@
 
 打开 `README.md`，替换所有占位符：
 - `你的用户名` → 你的实际 GitHub 用户名
-- `你的域名.com` → 部署后会自动获得免费域名
 - `your-email@example.com` → 你的邮箱
 
 **注意：** 域名会在部署完成后自动分配，比如：`https://你的项目名.netlify.app`
@@ -42,7 +72,22 @@
 VITE_MAPBOX_TOKEN=pk.eyJ1IjoiZm43cXAiLCJhIjoiY21peTUyd3B5MGJqMTNjcTU4aDVtdnNqNiJ9.TadVpAbhvEATQxuflxmqdA
 ```
 
+### 1.4 本地测试
+
+```bash
+# 测试 Web 版本
+npm run web:dev
+
+# 访问 http://localhost:3001 确认正常运行
+```
+
+✅ **第一天完成！** 明天继续上传到 GitHub。
+
 ---
+
+# 📅 第二天：GitHub 仓库创建和代码上传
+> ⏱️ **预计时间**: 45-60 分钟  
+> 🎯 **目标**: 将项目上传到 GitHub，为部署做准备
 
 ## 📤 第二步：上传到 GitHub
 
@@ -106,7 +151,19 @@ git push -u origin main
 
 **⚠️ 重要：** 把 `YOUR_USERNAME` 替换成你的实际 GitHub 用户名！
 
+### 2.3 验证上传
+
+- 刷新 GitHub 仓库页面
+- 确认所有文件都已上传
+- 检查 README.md 显示正常
+
+✅ **第二天完成！** 明天开始部署 Web 版本。
+
 ---
+
+# 📅 第三天：Web 版本部署上线
+> ⏱️ **预计时间**: 60-90 分钟  
+> 🎯 **目标**: 完成 Web 版本部署，获得在线访问地址
 
 ## 🌐 第三步：部署 Web 版本
 
@@ -132,6 +189,7 @@ git push -u origin main
 3. **配置构建设置**
    ```
    Branch to deploy: main
+   Base directory: (留空)
    Build command: npm run web:build
    Publish directory: dist-web
    ```
@@ -160,57 +218,22 @@ git push -u origin main
 3. 修改为你喜欢的名字，比如：`photo-map-张三`
 4. 新域名：`https://photo-map-张三.netlify.app`
 
-**免费域名选项：**
-- Netlify: `https://你的项目名.netlify.app`
-- Vercel: `https://photo-map-用户名.vercel.app`
-- GitHub Pages: `https://用户名.github.io/photo-map`
+#### 3.4 测试网站
 
-### 方案 B：Vercel 部署
+访问你的网站地址，测试：
+- [ ] 地图正常显示
+- [ ] 可以创建标记
+- [ ] 可以上传照片
+- [ ] 照片编辑功能正常
+- [ ] 搜索功能正常
 
-#### 3.1 安装 Vercel CLI
-
-```bash
-npm install -g vercel
-```
-
-#### 3.2 部署
-
-```bash
-# 登录 Vercel
-vercel login
-
-# 部署项目
-vercel --prod
-
-# 按提示配置：
-# ? Set up and deploy "photo-map"? [Y/n] y
-# ? Which scope do you want to deploy to? [你的用户名]
-# ? Link to existing project? [y/N] n
-# ? What's your project's name? photo-map
-# ? In which directory is your code located? ./
-# ? Want to override the settings? [y/N] y
-# ? Which settings would you like to overwrite? 
-#   ✅ Build Command
-#   ✅ Output Directory
-#   ✅ Development Command
-# ? What's your Build Command? npm run web:build
-# ? What's your Output Directory? dist-web
-# ? What's your Development Command? npm run web:dev
-```
-
-#### 3.3 添加环境变量
-
-```bash
-# 添加 Mapbox Token
-vercel env add VITE_MAPBOX_TOKEN
-# 输入: pk.eyJ1IjoiZm43cXAiLCJhIjoiY21peTUyd3B5MGJqMTNjcTU4aDVtdnNqNiJ9.TadVpAbhvEATQxuflxmqdA
-# 选择: Production
-
-# 重新部署
-vercel --prod
-```
+✅ **第三天完成！** 你的 Web 版本已经上线了！明天发布桌面版。
 
 ---
+
+# 📅 第四天：桌面版发布和项目完善
+> ⏱️ **预计时间**: 90-120 分钟  
+> 🎯 **目标**: 发布桌面版，完善项目信息和文档
 
 ## 💻 第四步：发布桌面版
 
@@ -248,20 +271,6 @@ GitHub Actions 已经配置好了，会自动构建桌面版：
    - 构建完成后，在 "Actions" 页面下载 artifacts
    - 或等待自动创建 Release
 
-### 4.2 手动构建（如果需要）
-
-如果你想在本地构建：
-
-```bash
-# Windows 版本（需要在 Windows 系统上）
-npm run build
-npm run electron-build
-
-# 构建文件在 dist/ 目录
-```
-
----
-
 ## 🎯 第五步：创建 Release
 
 ### 5.1 创建 GitHub Release
@@ -294,7 +303,7 @@ npm run electron-build
    - **macOS**: photo-map-1.0.0.dmg
    - **Linux**: photo-map-1.0.0.AppImage
    
-   ### 🔧 系统要求
+   ### � 系统要求
    - Windows 10 或更高版本
    - macOS 10.15 或更高版本
    - Ubuntu 18.04+ 或同等 Linux 发行版
@@ -306,8 +315,6 @@ npm run electron-build
 
 4. **发布 Release**
    - 点击 "Publish release"
-
----
 
 ## 📊 第六步：验证部署
 
@@ -328,8 +335,6 @@ npm run electron-build
 - [ ] 所有功能正常运行
 - [ ] 数据持久化正常
 - [ ] 性能表现良好
-
----
 
 ## 🎨 第七步：完善项目
 
@@ -366,7 +371,13 @@ npm run electron-build
 ![GitHub license](https://img.shields.io/github/license/YOUR_USERNAME/photo-map)
 ```
 
+✅ **第四天完成！** 你的项目已经完全上线了！🎉
+
 ---
+
+# 📅 后续维护：持续更新和优化
+> ⏱️ **预计时间**: 根据需要  
+> 🎯 **目标**: 保持项目活跃，持续改进
 
 ## 🔄 第八步：后续更新
 
@@ -430,7 +441,7 @@ git push origin v1.1.0
 
 ### 获取帮助
 - 查看 [TECHNICAL_GUIDE.md](./TECHNICAL_GUIDE.md)
+- 查看 [NETLIFY_CONFIG.md](./NETLIFY_CONFIG.md)
 - 在 GitHub 创建 Issue
-- 邮箱：your-email@example.com
 
 记得把文档中的占位符替换成你的实际信息！🚀
