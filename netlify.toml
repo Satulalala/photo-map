@@ -10,7 +10,7 @@
 # 重定向规则 - SPA 路由支持
 [[redirects]]
   from = "/*"
-  to = "/index.html"
+  to = "/index-web.html"
   status = 200
 
 # 头部设置 - 安全和性能优化
