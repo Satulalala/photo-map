@@ -69,9 +69,15 @@ git push -u origin main
 
 3. **配置构建**
    ```
+   Base directory: photo-map
    Build command: npm run web:build
    Publish directory: dist-web
    ```
+   
+   > 💡 **说明**: 
+   > - Base directory: 项目根目录（如果你的仓库直接是项目，留空即可）
+   > - Build command: 构建Web版本的命令
+   > - Publish directory: 构建输出目录
 
 4. **添加环境变量**
    - 点击 "Advanced build settings"

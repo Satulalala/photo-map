@@ -34,6 +34,7 @@ git push -u origin main
 2. 用 GitHub 账号登录
 3. "New site from Git" → 选择你的仓库
 4. 构建设置：
+   - Base directory: `photo-map` (如果仓库根目录就是项目，留空)
    - Build command: `npm run web:build`
    - Publish directory: `dist-web`
 5. 环境变量：`VITE_MAPBOX_TOKEN`
@@ -87,14 +88,12 @@ git push
 ### package.json
 ```json
 {
-  "author": "你的姓名 <your-email@example.com>",
-  "homepage": "https://你的用户名.github.io/photo-map"
+  "author": "你的姓名 <your-email@example.com>"
 }
 ```
 
 ### README.md
 - `你的用户名` → 实际 GitHub 用户名
-- `你的域名.com` → 实际网站域名
 - `your-email@example.com` → 你的邮箱
 
 ### Git 命令

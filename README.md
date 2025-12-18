@@ -28,9 +28,9 @@
 
 - **Windows**: [下载 .exe 安装包](https://github.com/你的用户名/photo-map/releases/latest)
 - **macOS**: [下载 .dmg 安装包](https://github.com/你的用户名/photo-map/releases/latest)
+- **Linux**: [下载 .AppImage 文件](https://github.com/你的用户名/photo-map/releases/latest)
 
-> 💡 **提示**: 将上面链接中的"你的用户名"替换为你的 GitHub 用户名  
-- **Linux**: [下载 .AppImage 文件](https://github.com/Satula/photo-map/releases/latest)
+> 💡 **提示**: 将上面链接中的"你的用户名"替换为你的 GitHub 用户名
 
 ### 🛠️ 本地开发
 

@@ -6,10 +6,10 @@ import { visualizer } from 'rollup-plugin-visualizer';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
-export default defineConfig(({ mode, command }) => {
+export default defineConfig(({ mode }) => {
   const isWeb = process.env.BUILD_TARGET === 'web';
   
-  return {
+  const config = {
     plugins: [
       react(),
       // 构建分析：生成 stats.html 可视化报告
@@ -105,14 +105,12 @@ export default defineConfig(({ mode, command }) => {
     devSourcemap: true,
   },
   
-  // HTML 入口文件
-  ...(isWeb && {
-    build: {
-      ...this.build,
-      rollupOptions: {
-        ...this.build?.rollupOptions,
-        input: path.resolve(__dirname, 'index-web.html'),
-      },
-    },
-  }),
-}});
+  };
+
+  // Web 版本特殊配置
+  if (isWeb) {
+    config.build.rollupOptions.input = path.resolve(__dirname, 'index-web.html');
+  }
+
+  return config;
+});
