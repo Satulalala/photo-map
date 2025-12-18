@@ -1,0 +1,106 @@
+{
+  "name": "photo-map",
+  "version": "1.0.0",
+  "description": "地图照片相册应用",
+  "author": "Satula <1920393579@qq.com>",
+  "main": "main.cjs",
+  "scripts": {
+    "start": "electron .",
+    "postinstall": "electron-rebuild",
+    "dev": "concurrently \"npm run vite-dev\" \"wait-on http://localhost:3000 && electron .\"",
+    "vite-dev": "vite",
+    "build": "vite build",
+    "build:analyze": "vite build --mode analyze",
+    "preview": "vite preview",
+    "rebuild": "electron-rebuild",
+    "electron-build": "npm run build && electron-builder",
+    "pack": "npm run build && electron-builder --dir",
+    "dist": "npm run build && electron-builder",
+    "web:dev": "cross-env BUILD_TARGET=web vite",
+    "web:build": "cross-env BUILD_TARGET=web vite build",
+    "web:preview": "cross-env BUILD_TARGET=web vite preview",
+    "build:all": "npm run build && npm run web:build",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "test:coverage": "vitest run --coverage",
+    "test:e2e": "playwright test",
+    "test:e2e:ui": "playwright test --ui",
+    "audit": "npm audit",
+    "audit:fix": "npm audit fix",
+    "audit:report": "npm audit --json > audit-report.json",
+    "setup": "node scripts/setup.js",
+    "menu": "node -e \"console.log('\\n🚀 快速启动:\\n'); console.log('Windows: 双击 run.bat'); console.log('PowerShell: .\\\\run.ps1'); console.log('Linux/macOS: ./run.sh'); console.log('\\n📖 或使用 npm 命令:\\n'); console.log('npm run dev      # Electron 版本'); console.log('npm run web:dev  # Web 版本'); console.log('npm run setup    # 项目设置');\""
+  },
+  "build": {
+    "appId": "com.photomap.app",
+    "productName": "地图相册",
+    "directories": {
+      "output": "dist"
+    },
+    "files": [
+      "build/**/*",
+      "main.cjs",
+      "preload.cjs",
+      "database.cjs",
+      "node_modules/**/*"
+    ],
+    "asar": false,
+    "win": {
+      "target": [
+        {
+          "target": "nsis",
+          "arch": [
+            "x64"
+          ]
+        }
+      ],
+      "icon": "build/icon.ico"
+    },
+    "nsis": {
+      "oneClick": false,
+      "allowToChangeInstallationDirectory": true,
+      "installerLanguages": [
+        "zh_CN"
+      ],
+      "language": "2052",
+      "createDesktopShortcut": true,
+      "createStartMenuShortcut": true,
+      "shortcutName": "地图相册"
+    }
+  },
+  "dependencies": {
+    "better-sqlite3": "^12.5.0",
+    "electron-log": "^5.4.3",
+    "electron-rebuild": "^3.2.9",
+    "electron-store": "^8.1.0",
+    "exif-parser": "^0.1.12",
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0",
+    "react-window": "^1.8.11",
+    "sharp": "^0.34.5",
+    "supercluster": "^8.0.1",
+    "uuid": "^9.0.0",
+    "v8-compile-cache": "^2.4.0",
+    "zustand": "^5.0.9"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.57.0",
+    "@testing-library/jest-dom": "^6.9.1",
+    "@testing-library/react": "^16.3.0",
+    "@types/node": "^25.0.2",
+    "@types/react": "^19.2.7",
+    "@types/react-dom": "^19.2.3",
+    "@vitejs/plugin-react": "^4.7.0",
+    "concurrently": "^8.2.0",
+    "cross-env": "^7.0.3",
+    "electron": "^27.0.0",
+    "electron-builder": "^24.6.0",
+    "electron-reload": "^2.0.0-alpha.1",
+    "fs-extra": "^11.1.1",
+    "rollup-plugin-visualizer": "^6.0.5",
+    "typescript": "^5.9.3",
+    "vite": "^6.4.1",
+    "vitest": "^2.1.9",
+    "wait-on": "^7.0.1"
+  }
+}

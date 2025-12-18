@@ -1,0 +1,73 @@
+# 依赖
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# 构建输出
+build/
+dist/
+*.tgz
+*.tar.gz
+
+# 运行时文件
+*.pid
+*.seed
+*.pid.lock
+
+# 环境变量和敏感信息
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+.env.example
+
+# API Keys 和配置
+config/keys.js
+src/config/api-keys.js
+
+# IDE 文件
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# 操作系统文件
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# Electron 相关
+out/
+app/
+packages/
+
+# 日志文件
+logs/
+*.log
+
+# 用户数据（不要上传用户的照片和数据库）
+photos/
+thumbnails/
+placeholders/
+tile-cache/
+*.db
+*.db-shm
+*.db-wal
+
+# 临时文件
+*.tmp
+*.temp
+
+# 测试覆盖率
+coverage/
+.nyc_output/
+
+# 其他
+.cache/

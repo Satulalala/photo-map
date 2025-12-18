@@ -1,0 +1,33 @@
+# Netlify 部署配置
+[build]
+  publish = "dist-web"
+  command = "npm run web:build"
+
+# 重定向规则 - SPA 路由支持
+[[redirects]]
+  from = "/*"
+  to = "/index.html"
+  status = 200
+
+# 头部设置 - 安全和性能优化
+[[headers]]
+  for = "/*"
+  [headers.values]
+    X-Frame-Options = "DENY"
+    X-Content-Type-Options = "nosniff"
+    X-XSS-Protection = "1; mode=block"
+    Referrer-Policy = "strict-origin-when-cross-origin"
+    Content-Security-Policy = "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://api.mapbox.com; style-src 'self' 'unsafe-inline' https://api.mapbox.com https://fonts.googleapis.com; img-src 'self' data: blob: https://*.mapbox.com https://*.tiles.mapbox.com; font-src 'self' https://fonts.gstatic.com; connect-src 'self' https://api.mapbox.com https://*.mapbox.com https://*.tiles.mapbox.com; worker-src 'self' blob:;"
+
+# 静态资源缓存
+[[headers]]
+  for = "/assets/*"
+  [headers.values]
+    Cache-Control = "public, max-age=31536000, immutable"
+
+# 下载文件夹
+[[headers]]
+  for = "/downloads/*"
+  [headers.values]
+    Content-Disposition = "attachment"
+    Cache-Control = "public, max-age=86400"
