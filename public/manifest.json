@@ -1,0 +1,16 @@
+{
+  "name": "地图相册",
+  "short_name": "PhotoMap",
+  "description": "在世界地图上标记你的照片记忆",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#667eea",
+  "theme_color": "#667eea",
+  "icons": [
+    {
+      "src": "/vite.svg",
+      "sizes": "any",
+      "type": "image/svg+xml"
+    }
+  ]
+}

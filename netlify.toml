@@ -21,7 +21,7 @@
     X-Content-Type-Options = "nosniff"
     X-XSS-Protection = "1; mode=block"
     Referrer-Policy = "strict-origin-when-cross-origin"
-    Content-Security-Policy = "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://api.mapbox.com; style-src 'self' 'unsafe-inline' https://api.mapbox.com https://fonts.googleapis.com; img-src 'self' data: blob: https://*.mapbox.com https://*.tiles.mapbox.com; font-src 'self' https://fonts.gstatic.com; connect-src 'self' https://api.mapbox.com https://*.mapbox.com https://*.tiles.mapbox.com; worker-src 'self' blob:;"
+    Content-Security-Policy = "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://api.mapbox.com https://*.mapbox.com; style-src 'self' 'unsafe-inline' https://api.mapbox.com https://*.mapbox.com https://fonts.googleapis.com; img-src 'self' data: blob: https://*.mapbox.com https://*.tiles.mapbox.com; font-src 'self' https://fonts.gstatic.com; connect-src 'self' https://api.mapbox.com https://*.mapbox.com https://*.tiles.mapbox.com https://rumt-zh.com; worker-src 'self' blob:; manifest-src 'self';"
 
 # 静态资源缓存
 [[headers]]
