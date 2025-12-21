@@ -1,177 +1,336 @@
-# 地图相册 Photo Map
+# 🗺️ 地图相册 Photo Map
 
-一个基于 Electron + React 的桌面应用，让你在世界地图上标记旅行足迹并管理照片记忆。
+<div align="center">
 
-![应用截图](https://via.placeholder.com/800x500/4A90E2/FFFFFF?text=Photo+Map+Screenshot)
+![Version](https://img.shields.io/badge/version-1.0.0-blue.svg)
+![License](https://img.shields.io/badge/license-AGPL--3.0-green.svg)
+![Platform](https://img.shields.io/badge/platform-Windows%20%7C%20macOS%20%7C%20Linux%20%7C%20Web-lightgrey.svg)
+![React](https://img.shields.io/badge/React-18.2-61dafb.svg)
+![Electron](https://img.shields.io/badge/Electron-27-47848f.svg)
 
-## ✨ 主要功能
+**一个优雅的照片地图应用，帮助您在地图上标记和管理照片，记录旅行足迹，分享美好回忆。**
 
-- 🗺️ **交互式世界地图** - 基于 Mapbox GL，支持缩放、拖拽、搜索
-- 📍 **智能标记管理** - 点击地图创建标记，自动获取地名
-- 📷 **照片管理** - 每个标记可添加多张照片，支持备注
-- ✂️ **照片编辑** - 内置裁剪和旋转功能，类似手机相册体验
-- 🔍 **强大搜索** - 支持地名搜索和照片备注搜索
-- 🔥 **热力图模式** - 可视化显示照片密度分布
-- 💾 **本地存储** - 数据完全存储在本地，保护隐私
-- ⚡ **性能优化** - 虚拟滚动、懒加载、内存管理等多项优化
+[在线体验](https://photo-map.netlify.app) · [下载桌面版](https://github.com/your-repo/photo-map/releases) · [查看文档](./docs)
+
+</div>
+
+---
+
+## ✨ 功能特性
+
+### 🗺️ 交互式地图
+- 基于 Mapbox GL JS 的高性能地图引擎
+- 支持缩放、拖拽、旋转等手势操作
+- 多种地图样式切换（街道、卫星、暗色等）
+- 智能地名搜索和定位
+
+### 📍 标记管理
+- 点击地图任意位置创建标记
+- 自动获取地名和地址信息
+- 支持标记分组和标签管理
+- 标记入场动画和悬停效果
+
+### 📷 照片管理
+- 每个标记支持多张照片
+- 支持照片备注和描述
+- 全屏照片查看器
+- 照片缩略图预览
+
+### ✂️ 照片编辑
+- iOS 风格的照片编辑器
+- 支持裁剪和旋转功能
+- 实时预览编辑效果
+- 一键保存修改
+
+### 🔍 智能搜索
+- 地名和地址搜索
+- 照片备注内容搜索
+- 搜索历史记录
+- 搜索结果高亮
+
+### 🔥 数据可视化
+- 热力图模式显示照片密度
+- 标记聚合优化显示
+- 统计数据展示
+
+### ⚡ 性能优化
+- 虚拟滚动列表
+- 图片懒加载
+- LRU 缓存策略
+- 内存自动清理
+
+---
 
 ## 🚀 快速开始
 
-### 🌐 在线体验
+### 在线体验
 
-部署后将获得免费域名，如：
-- `https://photo-map-你的名字.netlify.app` (Netlify)
-- `https://photo-map-你的名字.vercel.app` (Vercel)
-- `https://你的用户名.github.io/photo-map` (GitHub Pages)
+访问 Web 版本，无需安装：
 
-### 💻 下载桌面版
+- **Netlify**: `https://photo-map.netlify.app`
+- **Vercel**: `https://photo-map.vercel.app`
 
-- **Windows**: [下载 .exe 安装包](https://github.com/你的用户名/photo-map/releases/latest)
-- **macOS**: [下载 .dmg 安装包](https://github.com/你的用户名/photo-map/releases/latest)
-- **Linux**: [下载 .AppImage 文件](https://github.com/你的用户名/photo-map/releases/latest)
+### 下载桌面版
 
-> 💡 **提示**: 将上面链接中的"你的用户名"替换为你的 GitHub 用户名
+| 平台 | 下载链接 | 系统要求 |
+|------|----------|----------|
+| 🪟 Windows | [photo-map-setup.exe](https://github.com/your-repo/photo-map/releases) | Windows 10+ |
+| 🍎 macOS | [photo-map.dmg](https://github.com/your-repo/photo-map/releases) | macOS 10.15+ |
+| 🐧 Linux | [photo-map.AppImage](https://github.com/your-repo/photo-map/releases) | Ubuntu 18.04+ |
 
-### 🛠️ 本地开发
+### 本地开发
 
-#### 快速开始（推荐）
 ```bash
-# 克隆项目（替换为你的 GitHub 用户名）
-git clone https://github.com/你的用户名/photo-map.git
+# 1. 克隆项目
+git clone https://github.com/your-repo/photo-map.git
 cd photo-map
 
-# 安装依赖
+# 2. 安装依赖
 npm install
 
-# 图形化启动菜单
-# Windows: 双击 run.bat
-# PowerShell: .\run.ps1  
-# Linux/macOS: ./run.sh
+# 3. 配置环境变量
+cp .env.example .env
+# 编辑 .env 文件，填入 Mapbox Access Token
 
-# 或使用命令行
-npm run setup        # 配置向导
-npm run dev          # Electron 版本
-npm run web:dev      # Web 版本
+# 4. 启动开发服务器
+npm run dev          # 桌面版开发
+npm run web:dev      # Web 版开发
 ```
 
-📖 **详细说明**: 
-- 快速测试: [QUICK_START.md](./QUICK_START.md)
-- 完整部署: [LAUNCH_GUIDE.md](./LAUNCH_GUIDE.md)
+---
 
-## 📖 使用说明
-
-### 🌐 Web 版 vs 💻 桌面版
-
-| 功能 | Web 版 | 桌面版 |
-|------|--------|--------|
-| 基础地图操作 | ✅ | ✅ |
-| 照片上传查看 | ✅ | ✅ |
-| 照片编辑 | ✅ | ✅ |
-| 数据存储 | 浏览器本地 | 本地文件系统 |
-| 离线使用 | ❌ | ✅ |
-| 性能 | 良好 | 优秀 |
-| 存储空间 | 有限 | 无限 |
-| 系统集成 | ❌ | ✅ |
+## 📖 使用指南
 
 ### 基本操作
 
-1. **创建标记** - 点击地图任意位置，应用会自动获取地名
-2. **添加照片** - 在标记菜单中选择"添加照片"，支持多选
-3. **查看照片** - 点击标记或照片缩略图进入全屏查看模式
-4. **编辑照片** - 在照片查看器中点击编辑按钮，支持裁剪和旋转
-5. **搜索功能** - 使用顶部搜索框搜索地名或照片备注
+| 操作 | 方法 |
+|------|------|
+| 创建标记 | 点击地图任意位置 |
+| 添加照片 | 在标记菜单中选择"添加照片" |
+| 查看照片 | 点击标记或照片缩略图 |
+| 编辑照片 | 在查看器中点击编辑按钮 |
+| 搜索 | 使用顶部搜索框 |
+| 删除标记 | 在标记菜单中选择"删除" |
 
-### 快捷键（桌面版）
+### 快捷键
 
-- `F` - 聚焦搜索框
-- `M` - 打开标记列表
-- `H` - 切换热力图模式
-- `S` - 打开设置面板
-- `R` - 测量模式
-- `Esc` - 关闭当前弹窗
-- `←/→` - 照片查看器中切换照片
+| 快捷键 | 功能 |
+|--------|------|
+| `F` | 聚焦搜索框 |
+| `M` | 打开标记列表 |
+| `H` | 切换热力图模式 |
+| `S` | 打开设置面板 |
+| `R` | 测量模式 |
+| `Esc` | 关闭当前弹窗 |
+| `←` / `→` | 切换照片 |
+| `+` / `-` | 缩放照片 |
+
+### Web 版 vs 桌面版
+
+| 功能 | Web 版 | 桌面版 |
+|------|:------:|:------:|
+| 地图操作 | ✅ | ✅ |
+| 照片上传 | ✅ | ✅ |
+| 照片编辑 | ✅ | ✅ |
+| 离线使用 | ⚠️ PWA | ✅ |
+| 数据存储 | IndexedDB | SQLite |
+| 存储空间 | 有限 | 无限 |
+| 性能 | 良好 | 优秀 |
+| 系统集成 | ❌ | ✅ |
+
+---
 
 ## 🛠️ 技术架构
 
-- **前端框架**: React 18 + Vite
-- **桌面框架**: Electron 27
-- **地图引擎**: Mapbox GL JS
-- **数据库**: SQLite (better-sqlite3)
-- **图片处理**: Sharp
-- **状态管理**: Zustand
-- **类型检查**: TypeScript
-- **样式**: CSS + CSS Modules
+### 技术栈
 
-## 📊 性能指标
-
-- 启动时间: 冷启动 ~1.2s，热启动 ~0.8s
-- 内存占用: 正常使用 200-300MB，目标优化到 300MB 以下
-- 地图性能: 流畅显示 200+ 标记，60fps 缩放拖拽
-- 图片加载: 缩略图 ~20ms，支持懒加载和三级缓存
-
-## 🔧 开发
+```
+前端框架    React 18 + Vite
+桌面框架    Electron 27
+地图引擎    Mapbox GL JS
+数据库      SQLite (better-sqlite3)
+图片处理    Sharp
+状态管理    Zustand
+类型检查    TypeScript
+样式方案    CSS + CSS Modules
+测试框架    Vitest + Playwright
+```
 
 ### 项目结构
 
 ```
 photo-map/
-├── src/                    # 渲染进程代码
-│   ├── components/         # React 组件
-│   ├── utils/             # 工具函数
-│   ├── store/             # 状态管理
-│   └── types/             # TypeScript 类型定义
-├── main.cjs               # 主进程代码
-├── preload.cjs            # 预加载脚本
-├── database.cjs           # 数据库操作
-└── public/                # 静态资源
+├── src/                      # 源代码
+│   ├── components/           # React 组件
+│   │   ├── PhotoViewer.jsx   # 照片查看器
+│   │   ├── PhotoEditor.jsx   # 照片编辑器
+│   │   ├── MinimalLoader.jsx # 加载页面
+│   │   └── ErrorBoundary.jsx # 错误边界
+│   ├── utils/                # 工具函数
+│   │   ├── helpers.js        # 通用工具
+│   │   ├── LRUCache.ts       # LRU 缓存
+│   │   ├── memoryManager.ts  # 内存管理
+│   │   ├── seoManager.js     # SEO 管理
+│   │   ├── pwaManager.js     # PWA 管理
+│   │   └── webAnalytics.js   # 分析统计
+│   ├── constants/            # 常量定义
+│   │   └── index.js          # 全局常量
+│   ├── styles/               # 样式文件
+│   │   ├── variables.css     # CSS 变量
+│   │   └── components/       # 组件样式
+│   ├── store/                # 状态管理
+│   └── types/                # TypeScript 类型
+├── src-web/                  # Web 版专用代码
+├── public/                   # 静态资源
+│   ├── sw.js                 # Service Worker
+│   ├── manifest.json         # PWA 配置
+│   └── offline.html          # 离线页面
+├── config/                   # 配置文件
+│   ├── development.json      # 开发环境配置
+│   └── production.json       # 生产环境配置
+├── docs/                     # 文档
+├── scripts/                  # 脚本工具
+├── main.cjs                  # Electron 主进程
+├── preload.cjs               # 预加载脚本
+├── database.cjs              # 数据库操作
+├── vite.config.js            # Vite 配置
+└── package.json              # 项目配置
 ```
 
-### 开发命令
+### 性能指标
 
-```bash
-npm run dev          # 开发模式
-npm run build        # 构建前端
-npm run electron     # 运行 Electron
-npm run test         # 运行测试
-npm run lint         # 代码检查
-```
-
-## 📝 更新日志
-
-查看 [TODO.md](./TODO.md) 了解开发进度和计划功能。
-
-查看 [TECHNICAL_GUIDE.md](./TECHNICAL_GUIDE.md) 了解详细技术文档。
-
-## 🤝 贡献
-
-欢迎提交 Issue 和 Pull Request！
-
-1. Fork 本项目
-2. 创建功能分支 (`git checkout -b feature/AmazingFeature`)
-3. 提交更改 (`git commit -m 'Add some AmazingFeature'`)
-4. 推送到分支 (`git push origin feature/AmazingFeature`)
-5. 打开 Pull Request
-
-## 📄 许可证
-
-本项目采用 AGPL-3.0 许可证进行开源。
-
-- ✅ **个人使用**: 完全免费
-- ✅ **学习研究**: 完全免费  
-- ✅ **非商业使用**: 完全免费
-- ⚠️ **商业使用**: 需要购买商业许可证
-
-如需商业许可证，请联系：[你的邮箱]
-
-查看 [LICENSE](LICENSE) 文件了解详情。
-
-## 🙏 致谢
-
-- [Mapbox](https://www.mapbox.com/) - 提供优秀的地图服务
-- [Electron](https://www.electronjs.org/) - 跨平台桌面应用框架
-- [React](https://reactjs.org/) - 用户界面库
-- [Sharp](https://sharp.pixelplumbing.com/) - 高性能图像处理库
+| 指标 | 目标值 | 当前值 |
+|------|--------|--------|
+| 冷启动时间 | < 2s | ~1.2s |
+| 热启动时间 | < 1s | ~0.8s |
+| 内存占用 | < 300MB | ~250MB |
+| 标记渲染 | 200+ | 500+ |
+| 帧率 | 60fps | 60fps |
 
 ---
 
-如果这个项目对你有帮助，请给个 ⭐ Star 支持一下！
+## 📦 开发命令
+
+### 开发
+
+```bash
+npm run dev          # 启动 Electron 开发模式
+npm run web:dev      # 启动 Web 开发模式
+npm run vite-dev     # 仅启动 Vite 开发服务器
+```
+
+### 构建
+
+```bash
+npm run build        # 构建前端代码
+npm run web:build    # 构建 Web 版本
+npm run build:all    # 构建所有版本
+npm run dist         # 打包 Electron 应用
+```
+
+### 测试
+
+```bash
+npm run test         # 运行单元测试
+npm run test:watch   # 监听模式测试
+npm run test:coverage # 测试覆盖率
+npm run test:e2e     # 端到端测试
+```
+
+### 代码质量
+
+```bash
+npm run lint         # ESLint 检查
+npm run lint:fix     # 自动修复
+npm run format       # Prettier 格式化
+npm run type-check   # TypeScript 类型检查
+```
+
+### 其他
+
+```bash
+npm run setup        # 运行配置向导
+npm run clean        # 清理构建文件
+npm run audit        # 安全审计
+npm run release      # 发布新版本
+```
+
+---
+
+## 📚 文档
+
+| 文档 | 描述 |
+|------|------|
+| [TECHNICAL_GUIDE.md](./docs/TECHNICAL_GUIDE.md) | 技术实现详解 |
+| [API.md](./docs/API.md) | API 接口文档 |
+| [DEVELOPMENT.md](./docs/DEVELOPMENT.md) | 开发指南 |
+| [DEPLOY_STEP_BY_STEP.md](./docs/DEPLOY_STEP_BY_STEP.md) | 部署教程 |
+| [MONITORING_SETUP.md](./docs/MONITORING_SETUP.md) | 监控配置 |
+| [WEB_OPTIMIZATION_GUIDE.md](./docs/WEB_OPTIMIZATION_GUIDE.md) | Web 优化指南 |
+| [PROJECT_STRUCTURE.md](./docs/PROJECT_STRUCTURE.md) | 项目结构说明 |
+
+---
+
+## 🤝 贡献指南
+
+我们欢迎所有形式的贡献！
+
+### 如何贡献
+
+1. **Fork** 本项目
+2. **创建** 功能分支 (`git checkout -b feature/AmazingFeature`)
+3. **提交** 更改 (`git commit -m 'Add some AmazingFeature'`)
+4. **推送** 到分支 (`git push origin feature/AmazingFeature`)
+5. **打开** Pull Request
+
+### 代码规范
+
+- 使用 ESLint 和 Prettier 保持代码风格一致
+- 遵循 [Conventional Commits](https://www.conventionalcommits.org/) 提交规范
+- 为新功能编写测试用例
+- 更新相关文档
+
+### 问题反馈
+
+- 使用 [GitHub Issues](https://github.com/your-repo/photo-map/issues) 报告 Bug
+- 使用 [GitHub Discussions](https://github.com/your-repo/photo-map/discussions) 讨论功能建议
+
+---
+
+## 📄 许可证
+
+本项目采用 **AGPL-3.0** 许可证。
+
+| 使用场景 | 是否允许 |
+|----------|:--------:|
+| 个人使用 | ✅ 免费 |
+| 学习研究 | ✅ 免费 |
+| 非商业使用 | ✅ 免费 |
+| 商业使用 | ⚠️ 需授权 |
+
+如需商业许可证，请联系：[your-email@example.com]
+
+查看 [LICENSE](LICENSE) 文件了解详情。
+
+---
+
+## 🙏 致谢
+
+感谢以下开源项目和服务：
+
+- [Mapbox](https://www.mapbox.com/) - 地图服务
+- [Electron](https://www.electronjs.org/) - 桌面应用框架
+- [React](https://reactjs.org/) - UI 框架
+- [Vite](https://vitejs.dev/) - 构建工具
+- [Sharp](https://sharp.pixelplumbing.com/) - 图像处理
+- [SQLite](https://www.sqlite.org/) - 数据库
+
+---
+
+<div align="center">
+
+**如果这个项目对你有帮助，请给个 ⭐ Star 支持一下！**
+
+Made with ❤️ by Photo Map Team
+
+</div>

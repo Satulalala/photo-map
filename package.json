@@ -7,78 +7,226 @@
   "scripts": {
     "start": "electron .",
     "postinstall": "electron-rebuild",
+    
     "dev": "concurrently \"npm run vite-dev\" \"wait-on http://localhost:3000 && electron .\"",
     "vite-dev": "vite",
+    
     "build": "vite build",
     "build:analyze": "vite build --mode analyze",
     "preview": "vite preview",
-    "rebuild": "electron-rebuild",
-    "electron-build": "npm run build && electron-builder",
-    "pack": "npm run build && electron-builder --dir",
-    "dist": "npm run build && electron-builder",
+    
     "web:dev": "cross-env BUILD_TARGET=web vite",
     "web:build": "cross-env BUILD_TARGET=web vite build",
     "web:preview": "cross-env BUILD_TARGET=web vite preview",
+    
     "build:all": "npm run build && npm run web:build",
+    
+    "electron-build": "npm run build && electron-builder",
+    "pack": "npm run build && electron-builder --dir",
+    "dist": "npm run build && electron-builder",
+    "rebuild": "electron-rebuild",
+    
     "test": "vitest run",
     "test:watch": "vitest",
     "test:coverage": "vitest run --coverage",
     "test:e2e": "playwright test",
     "test:e2e:ui": "playwright test --ui",
+    
+    "lint": "eslint src --ext .js,.jsx,.ts,.tsx",
+    "lint:fix": "eslint src --ext .js,.jsx,.ts,.tsx --fix",
+    "lint:staged": "lint-staged",
+    "format": "prettier --write \"src/**/*.{js,jsx,ts,tsx,css,md}\"",
+    "format:check": "prettier --check \"src/**/*.{js,jsx,ts,tsx,css,md}\"",
+    "type-check": "tsc --noEmit",
+    
+    "prepare": "husky install",
+    "precommit": "lint-staged",
+    
+    "docs": "jsdoc -c jsdoc.config.json",
+    "docs:serve": "npx serve docs/api",
+    
+    "storybook": "storybook dev -p 6006",
+    "storybook:build": "storybook build -o docs/storybook",
+    
     "audit": "npm audit",
     "audit:fix": "npm audit fix",
     "audit:report": "npm audit --json > audit-report.json",
+    
+    "clean": "rimraf dist build node_modules/.vite",
+    "clean:all": "rimraf dist build node_modules",
+    
     "setup": "node scripts/setup.js",
-    "menu": "node -e \"console.log('\\n🚀 快速启动:\\n'); console.log('Windows: 双击 run.bat'); console.log('PowerShell: .\\\\run.ps1'); console.log('Linux/macOS: ./run.sh'); console.log('\\n📖 或使用 npm 命令:\\n'); console.log('npm run dev      # Electron 版本'); console.log('npm run web:dev  # Web 版本'); console.log('npm run setup    # 项目设置');\""
+    "setup:monitoring": "node scripts/setup-monitoring.js",
+    "setup:hooks": "husky install",
+    "release": "semantic-release",
+    "release:dry": "semantic-release --dry-run",
+    "version:bump": "node scripts/version-manager.js bump",
+    "version:bump:minor": "node scripts/version-manager.js bump minor",
+    "version:bump:major": "node scripts/version-manager.js bump major",
+    "version:prerelease": "node scripts/version-manager.js prerelease",
+    "version:info": "node scripts/version-manager.js info",
+    "version:generate": "node scripts/version-manager.js generate",
+    
+    "monitor:report": "node -e \"const m = require('./src/utils/monitoring.js').default; m.generateReport().then(console.log)\"",
+    "monitor:export": "node -e \"const m = require('./src/utils/monitoring.js').default; m.exportData()\"",
+    
+    "perf:report": "node -e \"console.log('在浏览器控制台运行: window.__PERF__.printReport()')\"",
+    
+    "menu": "node -e \"console.log('\\n🚀 快速启动:\\n'); console.log('Windows: 双击 start.bat'); console.log('PowerShell: .\\\\start.ps1'); console.log('Linux/macOS: ./start.sh'); console.log('\\n📖 开发命令:\\n'); console.log('npm run dev      # Electron 版本'); console.log('npm run web:dev  # Web 版本'); console.log('npm run setup    # 项目设置'); console.log('npm run test     # 运行测试'); console.log('npm run lint     # 代码检查'); console.log('npm run format   # 格式化代码');\""
   },
   "build": {
     "appId": "com.photomap.app",
     "productName": "地图相册",
+    "artifactName": "${productName}-${version}-${os}-${arch}.${ext}",
     "directories": {
-      "output": "dist"
+      "output": "dist",
+      "buildResources": "build"
     },
     "files": [
       "build/**/*",
       "main.cjs",
       "preload.cjs",
       "database.cjs",
-      "node_modules/**/*"
+      "!node_modules/**/*",
+      "node_modules/better-sqlite3/**/*",
+      "node_modules/electron-store/**/*",
+      "node_modules/electron-log/**/*",
+      "node_modules/sharp/**/*",
+      "node_modules/exif-parser/**/*",
+      "node_modules/uuid/**/*"
     ],
-    "asar": false,
+    "extraResources": [
+      {
+        "from": "node_modules/better-sqlite3/build/Release",
+        "to": "better-sqlite3",
+        "filter": ["*.node"]
+      }
+    ],
+    "asar": true,
+    "asarUnpack": [
+      "node_modules/better-sqlite3/**/*",
+      "node_modules/sharp/**/*",
+      "**/*.node"
+    ],
+    "compression": "maximum",
+    "removePackageScripts": true,
+    "nodeGypRebuild": false,
+    "buildDependenciesFromSource": false,
     "win": {
       "target": [
         {
           "target": "nsis",
-          "arch": [
-            "x64"
-          ]
+          "arch": ["x64"]
+        },
+        {
+          "target": "portable",
+          "arch": ["x64"]
         }
       ],
-      "icon": "build/icon.ico"
+      "icon": "build/icon.ico",
+      "requestedExecutionLevel": "asInvoker"
     },
     "nsis": {
       "oneClick": false,
       "allowToChangeInstallationDirectory": true,
-      "installerLanguages": [
-        "zh_CN"
-      ],
+      "installerLanguages": ["zh_CN"],
       "language": "2052",
       "createDesktopShortcut": true,
       "createStartMenuShortcut": true,
-      "shortcutName": "地图相册"
+      "shortcutName": "地图相册",
+      "differentialPackage": true,
+      "deleteAppDataOnUninstall": false,
+      "installerIcon": "build/icon.ico",
+      "uninstallerIcon": "build/icon.ico",
+      "installerHeaderIcon": "build/icon.ico"
+    },
+    "mac": {
+      "target": [
+        {
+          "target": "dmg",
+          "arch": ["x64", "arm64"]
+        },
+        {
+          "target": "zip",
+          "arch": ["x64", "arm64"]
+        }
+      ],
+      "icon": "build/icon.icns",
+      "category": "public.app-category.photography",
+      "hardenedRuntime": true,
+      "gatekeeperAssess": false,
+      "entitlements": "build/entitlements.mac.plist",
+      "entitlementsInherit": "build/entitlements.mac.plist",
+      "darkModeSupport": true
+    },
+    "dmg": {
+      "contents": [
+        {
+          "x": 130,
+          "y": 220
+        },
+        {
+          "x": 410,
+          "y": 220,
+          "type": "link",
+          "path": "/Applications"
+        }
+      ],
+      "window": {
+        "width": 540,
+        "height": 380
+      }
+    },
+    "linux": {
+      "target": [
+        {
+          "target": "AppImage",
+          "arch": ["x64"]
+        },
+        {
+          "target": "deb",
+          "arch": ["x64"]
+        },
+        {
+          "target": "rpm",
+          "arch": ["x64"]
+        }
+      ],
+      "icon": "build/icons",
+      "category": "Photography",
+      "maintainer": "Satula <1920393579@qq.com>",
+      "desktop": {
+        "Name": "地图相册",
+        "Comment": "在地图上标记和管理照片",
+        "Categories": "Photography;Graphics;"
+      }
+    },
+    "appImage": {
+      "artifactName": "${productName}-${version}-${arch}.${ext}"
+    },
+    "publish": {
+      "provider": "github",
+      "owner": "your-github-username",
+      "repo": "photo-map",
+      "releaseType": "release"
     }
   },
   "dependencies": {
+    "@types/three": "^0.182.0",
     "better-sqlite3": "^12.5.0",
     "electron-log": "^5.4.3",
     "electron-rebuild": "^3.2.9",
     "electron-store": "^8.1.0",
+    "electron-updater": "^6.1.0",
     "exif-parser": "^0.1.12",
+    "gsap": "^3.14.2",
+    "lottie-react": "^2.4.1",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
     "react-window": "^1.8.11",
     "sharp": "^0.34.5",
     "supercluster": "^8.0.1",
+    "three": "^0.182.0",
     "uuid": "^9.0.0",
     "v8-compile-cache": "^2.4.0",
     "zustand": "^5.0.9"
@@ -90,13 +238,25 @@
     "@types/node": "^25.0.2",
     "@types/react": "^19.2.7",
     "@types/react-dom": "^19.2.3",
+    "@typescript-eslint/eslint-plugin": "^6.0.0",
+    "@typescript-eslint/parser": "^6.0.0",
     "@vitejs/plugin-react": "^4.7.0",
+    "clean-jsdoc-theme": "^4.2.0",
     "concurrently": "^8.2.0",
     "cross-env": "^7.0.3",
     "electron": "^27.0.0",
     "electron-builder": "^24.6.0",
     "electron-reload": "^2.0.0-alpha.1",
+    "eslint": "^8.50.0",
+    "eslint-plugin-jsx-a11y": "^6.7.0",
+    "eslint-plugin-react": "^7.33.0",
+    "eslint-plugin-react-hooks": "^4.6.0",
     "fs-extra": "^11.1.1",
+    "husky": "^8.0.0",
+    "jsdoc": "^4.0.0",
+    "lint-staged": "^15.0.0",
+    "prettier": "^3.0.0",
+    "prop-types": "^15.8.0",
     "rollup-plugin-visualizer": "^6.0.5",
     "typescript": "^5.9.3",
     "vite": "^6.4.1",

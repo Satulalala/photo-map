@@ -1,293 +1,125 @@
 /* Web 版本专用样式 */
 
-/* 下载按钮浮动样式 */
-.download-float-btn {
-  position: fixed;
-  bottom: 20px;
-  right: 20px;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  color: white;
-  border: none;
-  border-radius: 50px;
-  padding: 12px 20px;
-  font-size: 14px;
-  font-weight: 600;
+/* 下载按钮 */
+.web-dl-btn {
+  background: #f8fafc;
+  color: #475569;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  padding: 8px 14px;
+  font-size: 13px;
   cursor: pointer;
-  box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
-  transition: all 0.3s ease;
-  z-index: 1000;
-  display: flex;
+  transition: all 0.15s;
+  white-space: nowrap;
+  display: inline-flex;
   align-items: center;
-  gap: 8px;
+  gap: 4px;
+}
+.web-dl-btn:hover {
+  background: #3b82f6;
+  color: #fff;
+  border-color: #3b82f6;
 }
 
-.download-float-btn:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 6px 20px rgba(102, 126, 234, 0.6);
-}
-
-/* 下载弹窗样式 */
-.download-modal-overlay {
+/* 弹窗遮罩 */
+.web-dl-overlay {
   position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background: rgba(0, 0, 0, 0.7);
+  inset: 0;
+  background: rgba(0,0,0,0.4);
   display: flex;
   align-items: center;
   justify-content: center;
-  z-index: 2000;
-  padding: 20px;
+  z-index: 9999;
 }
 
-.download-modal {
-  background: white;
-  border-radius: 16px;
-  max-width: 600px;
-  width: 100%;
-  max-height: 90vh;
-  overflow-y: auto;
-  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+/* 弹窗 */
+.web-dl-modal {
+  background: #fff;
+  border-radius: 12px;
+  width: 320px;
+  box-shadow: 0 8px 30px rgba(0,0,0,0.15);
+  overflow: hidden;
 }
 
-.download-header {
+.web-dl-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 24px 24px 0;
-  border-bottom: 1px solid #eee;
-  margin-bottom: 24px;
+  padding: 14px 16px;
+  border-bottom: 1px solid #f1f5f9;
+  font-weight: 600;
+  font-size: 15px;
 }
-
-.download-header h2 {
-  margin: 0;
-  font-size: 24px;
-  font-weight: 700;
-  color: #333;
-}
-
-.download-close {
+.web-dl-header button {
   background: none;
   border: none;
-  font-size: 24px;
+  font-size: 18px;
+  color: #94a3b8;
   cursor: pointer;
-  color: #999;
-  width: 32px;
-  height: 32px;
-  border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
+  line-height: 1;
 }
 
-.download-close:hover {
-  background: #f5f5f5;
-  color: #333;
-}
-
-.download-content {
-  padding: 0 24px 24px;
-}
-
-/* 优势列表 */
-.download-benefits {
-  margin-bottom: 32px;
-}
-
-.download-benefits h3 {
-  margin: 0 0 16px;
-  font-size: 18px;
-  font-weight: 600;
-  color: #333;
-}
-
-.download-benefits ul {
-  list-style: none;
-  padding: 0;
-  margin: 0;
-}
-
-.download-benefits li {
-  padding: 8px 0;
-  font-size: 14px;
-  color: #666;
-}
-
-/* 下载卡片 */
-.download-primary,
-.download-others {
-  margin-bottom: 32px;
-}
-
-.download-primary h3,
-.download-others h3 {
-  margin: 0 0 16px;
-  font-size: 18px;
-  font-weight: 600;
-  color: #333;
-}
-
-.download-card {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
+.web-dl-body {
   padding: 16px;
-  border: 2px solid #eee;
-  border-radius: 12px;
-  margin-bottom: 12px;
-  transition: all 0.2s ease;
 }
-
-.download-card:hover {
-  border-color: #667eea;
-  background: #f8f9ff;
-}
-
-.download-card.primary {
-  border-color: #667eea;
-  background: linear-gradient(135deg, #f8f9ff 0%, #f0f2ff 100%);
-}
-
-.download-info {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-}
-
-.download-icon {
-  font-size: 24px;
-}
-
-.download-name {
-  font-weight: 600;
-  color: #333;
-  margin-bottom: 4px;
-}
-
-.download-size {
-  font-size: 12px;
-  color: #999;
-}
-
-.download-btn {
-  background: #667eea;
-  color: white;
-  text-decoration: none;
-  padding: 10px 20px;
-  border-radius: 8px;
-  font-weight: 600;
-  font-size: 14px;
-  transition: all 0.2s ease;
-}
-
-.download-btn:hover {
-  background: #5a6fd8;
-  transform: translateY(-1px);
-}
-
-.download-btn.primary {
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  padding: 12px 24px;
-  font-size: 16px;
-}
-
-/* 系统要求 */
-.download-requirements {
-  margin-bottom: 24px;
-}
-
-.download-requirements h3 {
-  margin: 0 0 16px;
-  font-size: 18px;
-  font-weight: 600;
-  color: #333;
-}
-
-.requirements-grid {
-  display: grid;
-  gap: 12px;
-  font-size: 14px;
-  color: #666;
-}
-
-.requirements-grid strong {
-  color: #333;
-}
-
-/* GitHub 链接 */
-.download-github {
+.web-dl-body p {
+  margin: 0 0 14px;
+  font-size: 13px;
+  color: #64748b;
   text-align: center;
-  padding-top: 16px;
-  border-top: 1px solid #eee;
 }
 
-.download-github p {
-  margin: 0;
-  font-size: 14px;
-  color: #666;
-}
-
-.download-github a {
-  color: #667eea;
-  text-decoration: none;
-  font-weight: 600;
-  margin-left: 8px;
-}
-
-.download-github a:hover {
-  text-decoration: underline;
-}
-
-/* Web 版本提示 */
-.web-notice {
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  color: white;
-  z-index: 999;
-  padding: 8px 0;
-}
-
-.web-notice-content {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  gap: 16px;
+/* 主下载按钮 */
+.web-dl-main {
+  display: block;
+  background: #3b82f6;
+  color: #fff;
+  text-align: center;
+  padding: 12px;
+  border-radius: 8px;
   font-size: 14px;
   font-weight: 500;
+  text-decoration: none;
+  transition: background 0.15s;
+}
+.web-dl-main:hover {
+  background: #2563eb;
 }
 
-/* 为 Web 版本调整主应用的顶部边距 */
-.web-app .app-container {
-  padding-top: 40px;
+/* 其他版本 */
+.web-dl-others {
+  display: flex;
+  justify-content: center;
+  gap: 16px;
+  margin-top: 12px;
+  padding-top: 12px;
+  border-top: 1px solid #f1f5f9;
+}
+.web-dl-others a {
+  font-size: 12px;
+  color: #64748b;
+  text-decoration: none;
+}
+.web-dl-others a:hover {
+  color: #3b82f6;
 }
 
-/* 响应式设计 */
-@media (max-width: 768px) {
-  .download-modal {
-    margin: 10px;
-    max-width: none;
-  }
-  
-  .download-card {
-    flex-direction: column;
-    gap: 12px;
-    text-align: center;
-  }
-  
-  .download-float-btn {
-    bottom: 10px;
-    right: 10px;
-    padding: 10px 16px;
-    font-size: 12px;
-  }
-  
-  .web-notice-content {
-    flex-direction: column;
-    gap: 4px;
-    font-size: 12px;
-  }
+/* 搜索栏右侧容器 */
+.web-download-beside-search {
+  position: absolute;
+  left: calc(100% + 12px);
+  top: 50%;
+  transform: translateY(-50%);
+  z-index: 600;
+  white-space: nowrap;
+}
+
+.web-app .search-bar-container {
+  position: fixed;
+  top: 12px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 420px;
+  max-width: calc(100vw - 40px);
+  z-index: 600;
 }

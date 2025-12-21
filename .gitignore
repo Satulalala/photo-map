@@ -71,3 +71,5 @@ coverage/
 
 # 其他
 .cache/
+# Local Netlify folder
+.netlify

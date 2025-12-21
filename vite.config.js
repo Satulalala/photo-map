@@ -6,7 +6,7 @@ import { visualizer } from 'rollup-plugin-visualizer';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
-export default defineConfig(({ mode }) => {
+export default defineConfig(({ mode, command }) => {
   const isWeb = process.env.BUILD_TARGET === 'web';
   
   const config = {
@@ -27,7 +27,18 @@ export default defineConfig(({ mode }) => {
       port: isWeb ? 3001 : 3000,
       strictPort: true,
       host: true,
+      // HMR 配置
+      hmr: {
+        overlay: true,
+      },
+      // 监听文件变化
+      watch: {
+        usePolling: false,
+      },
     },
+
+    // 缓存配置
+    cacheDir: 'node_modules/.vite',
 
     // 构建配置
     build: {
@@ -109,7 +120,30 @@ export default defineConfig(({ mode }) => {
 
   // Web 版本特殊配置
   if (isWeb) {
-    config.build.rollupOptions.input = path.resolve(__dirname, 'index-web.html');
+    config.root = __dirname;
+    
+    // 添加插件来重写 index.html 请求到 index-web.html
+    config.plugins.push({
+      name: 'html-rewrite',
+      configureServer(server) {
+        server.middlewares.use((req, res, next) => {
+          // 将根路径和 index.html 重定向到 index-web.html
+          if (req.url === '/' || req.url === '/index.html') {
+            req.url = '/index-web.html';
+          }
+          next();
+        });
+      }
+    });
+    
+    if (command === 'build') {
+      config.build.rollupOptions.input = path.resolve(__dirname, 'index-web.html');
+    } else {
+      config.server = {
+        ...config.server,
+        open: '/index-web.html',
+      };
+    }
   }
 
   return config;

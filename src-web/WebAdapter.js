@@ -8,6 +8,23 @@ class WebElectronAPI {
   constructor() {
     this.isWeb = true;
     this.isElectron = false;
+    
+    // 绑定所有方法到实例
+    this.selectPhotos = this.selectPhotos.bind(this);
+    this.getPhotoUrl = this.getPhotoUrl.bind(this);
+    this.getThumbnailUrl = this.getThumbnailUrl.bind(this);
+    this.generateThumbnail = this.generateThumbnail.bind(this);
+    this.storePhoto = this.storePhoto.bind(this);
+    this.getStoredPhoto = this.getStoredPhoto.bind(this);
+    this.loadMarkers = this.loadMarkers.bind(this);
+    this.saveMarkers = this.saveMarkers.bind(this);
+    this.addMarker = this.addMarker.bind(this);
+    this.updateMarker = this.updateMarker.bind(this);
+    this.deleteMarker = this.deleteMarker.bind(this);
+    this.addPhotosToMarker = this.addPhotosToMarker.bind(this);
+    this.deletePhotoFromMarker = this.deletePhotoFromMarker.bind(this);
+    this.getMarkerPhotos = this.getMarkerPhotos.bind(this);
+    this.getPhotoInfo = this.getPhotoInfo.bind(this);
   }
 
   // 照片管理 - 使用 Web File API
@@ -140,6 +157,109 @@ class WebElectronAPI {
     } catch {
       return false;
     }
+  }
+
+  // 添加标记
+  async addMarker(marker) {
+    try {
+      const markers = await this.loadMarkers();
+      markers.push(marker);
+      await this.saveMarkers(markers);
+      return marker;
+    } catch (e) {
+      console.error('添加标记失败:', e);
+      return null;
+    }
+  }
+
+  // 更新标记
+  async updateMarker(updatedMarker) {
+    try {
+      const markers = await this.loadMarkers();
+      const index = markers.findIndex(m => m.id === updatedMarker.id);
+      if (index !== -1) {
+        markers[index] = { ...markers[index], ...updatedMarker };
+        await this.saveMarkers(markers);
+      }
+      return true;
+    } catch (e) {
+      console.error('更新标记失败:', e);
+      return false;
+    }
+  }
+
+  // 删除标记
+  async deleteMarker(markerId) {
+    try {
+      const markers = await this.loadMarkers();
+      const filtered = markers.filter(m => m.id !== markerId);
+      await this.saveMarkers(filtered);
+      return true;
+    } catch (e) {
+      console.error('删除标记失败:', e);
+      return false;
+    }
+  }
+
+  // 添加照片到标记
+  async addPhotosToMarker({ markerId, photos }) {
+    try {
+      const markers = await this.loadMarkers();
+      const marker = markers.find(m => m.id === markerId);
+      if (marker) {
+        if (!marker.photos) marker.photos = [];
+        marker.photos.push(...photos);
+        marker.photoCount = marker.photos.length;
+        if (!marker.firstPhoto && photos.length > 0) {
+          marker.firstPhoto = photos[0];
+        }
+        await this.saveMarkers(markers);
+        
+        // 存储照片数据
+        for (const photo of photos) {
+          await this.storePhoto(photo);
+        }
+      }
+      return true;
+    } catch (e) {
+      console.error('添加照片失败:', e);
+      return false;
+    }
+  }
+
+  // 从标记删除照片
+  async deletePhotoFromMarker({ markerId, photoIndex }) {
+    try {
+      const markers = await this.loadMarkers();
+      const marker = markers.find(m => m.id === markerId);
+      if (marker && marker.photos) {
+        marker.photos.splice(photoIndex, 1);
+        marker.photoCount = marker.photos.length;
+        marker.firstPhoto = marker.photos[0] || null;
+        await this.saveMarkers(markers);
+      }
+      return true;
+    } catch (e) {
+      console.error('删除照片失败:', e);
+      return false;
+    }
+  }
+
+  // 获取标记的所有照片
+  async getMarkerPhotos(markerId) {
+    try {
+      const markers = await this.loadMarkers();
+      const marker = markers.find(m => m.id === markerId);
+      return marker?.photos || [];
+    } catch {
+      return [];
+    }
+  }
+
+  // 获取照片信息
+  async getPhotoInfo(photoId) {
+    const photo = await this.getStoredPhoto(photoId);
+    return photo || null;
   }
 
   // 照片编辑 - 使用 Canvas API

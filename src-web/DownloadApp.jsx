@@ -7,6 +7,9 @@ import { useState, useEffect } from 'react';
 function DownloadApp() {
   const [os, setOs] = useState('');
   const [showDownload, setShowDownload] = useState(false);
+  
+  // 调试信息
+  console.log('DownloadApp 组件已渲染');
 
   useEffect(() => {
     // 检测操作系统

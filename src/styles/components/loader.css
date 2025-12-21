@@ -1,0 +1,157 @@
+/* ========== Globe 加载器样式 ========== */
+
+.globe-loader {
+  position: fixed;
+  inset: 0;
+  z-index: 10000;
+  overflow: hidden;
+}
+
+.globe-map-container {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+}
+
+.globe-loader .mapboxgl-ctrl-logo,
+.globe-loader .mapboxgl-ctrl-attrib,
+.globe-loader .mapboxgl-ctrl {
+  display: none !important;
+}
+
+.globe-bottom-gradient {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 260px;
+  background: linear-gradient(
+    to top,
+    rgba(11, 11, 25, 0.95) 0%,
+    rgba(11, 11, 25, 0.7) 40%,
+    transparent 100%
+  );
+  pointer-events: none;
+}
+
+.globe-content {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  padding: 0 20px 50px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  z-index: 10;
+}
+
+.globe-header {
+  text-align: center;
+  margin-bottom: 28px;
+}
+
+.globe-title {
+  font-size: 32px;
+  font-weight: 600;
+  color: #fff;
+  margin: 0 0 6px 0;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  letter-spacing: 1px;
+}
+
+.globe-subtitle {
+  font-size: 14px;
+  color: rgba(255, 255, 255, 0.5);
+  margin: 0;
+  font-weight: 400;
+}
+
+/* 进度条/按钮容器 */
+.globe-action {
+  width: 100%;
+  max-width: 280px;
+}
+
+/* 进度条/按钮 - 统一元素，通过状态变形 */
+.globe-bar {
+  position: relative;
+  height: 44px;
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 22px;
+  overflow: hidden;
+  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* 就绪状态 - 变成按钮 */
+.globe-action.is-ready .globe-bar {
+  cursor: pointer;
+  background: rgba(255, 255, 255, 0.1);
+  border-color: rgba(255, 255, 255, 0.2);
+}
+
+.globe-action.is-ready .globe-bar:hover {
+  background: rgba(255, 255, 255, 0.15);
+  border-color: rgba(255, 255, 255, 0.3);
+  transform: scale(1.02);
+}
+
+.globe-action.is-ready .globe-bar:active {
+  transform: scale(0.98);
+}
+
+/* 进度填充 */
+.globe-bar-fill {
+  position: absolute;
+  top: 0;
+  left: 0;
+  height: 100%;
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 22px;
+  transition: width 0.15s ease-out;
+}
+
+.globe-action.is-ready .globe-bar-fill {
+  background: transparent;
+}
+
+/* 文字 */
+.globe-bar-text {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 14px;
+  font-weight: 500;
+  color: rgba(255, 255, 255, 0.7);
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  transition: all 0.3s ease;
+  letter-spacing: 0.5px;
+}
+
+.globe-action.is-ready .globe-bar-text {
+  color: rgba(255, 255, 255, 0.9);
+}
+
+/* 响应式 */
+@media (max-width: 480px) {
+  .globe-content {
+    padding: 0 16px 40px;
+  }
+  
+  .globe-title {
+    font-size: 26px;
+  }
+  
+  .globe-action {
+    max-width: 240px;
+  }
+  
+  .globe-bar {
+    height: 40px;
+    border-radius: 20px;
+  }
+}

@@ -6,6 +6,134 @@ import { startPeriodicCleanup, stopPeriodicCleanup } from './utils/memoryManager
 import PhotoViewer from './components/PhotoViewer.jsx';
 import PhotoEditor from './components/PhotoEditor.jsx';
 import MemoryMonitor from './components/MemoryMonitor.jsx';
+import ErrorBoundary, { withErrorBoundary, NetworkErrorBoundary, AsyncErrorBoundary } from './components/ErrorBoundary.jsx';
+import { useSEO } from './utils/seoManager.js';
+import { useAnalytics } from './utils/webAnalytics.js';
+import { usePWA } from './utils/pwaManager.js';
+
+// 如果是Web版本，导入Web样式
+if (!window.electronAPI) {
+  import('../src-web/web-styles.css');
+}
+
+import { createPortal } from 'react-dom';
+
+// Web 版本下载按钮组件
+const WebDownloadButton = () => {
+  const [show, setShow] = useState(false);
+  const os = navigator.userAgent.includes('Mac') ? 'mac' : navigator.userAgent.includes('Linux') ? 'linux' : 'windows';
+  const dl = {
+    windows: { name: 'Windows', file: 'photo-map-setup-1.0.0.exe', size: '~85MB' },
+    mac: { name: 'macOS', file: 'photo-map-1.0.0.dmg', size: '~90MB' },
+    linux: { name: 'Linux', file: 'photo-map-1.0.0.AppImage', size: '~88MB' }
+  };
+
+  const features = [
+    { icon: '⚡', text: '更快的性能和响应速度' },
+    { icon: '💾', text: '本地存储，数据更安全' },
+    { icon: '📴', text: '离线使用，无需网络' },
+    { icon: '🖼️', text: '更好的图片处理能力' }
+  ];
+
+  const modal = show ? createPortal(
+    <div
+      style={{ position: 'fixed', top: 0, left: 0, width: '100vw', height: '100vh', background: 'rgba(0,0,0,0.4)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 99999 }}
+      onClick={() => setShow(false)}
+    >
+      <div
+        style={{ background: '#fff', borderRadius: '12px', width: '360px', maxWidth: '90vw', boxShadow: '0 16px 48px rgba(0,0,0,0.2)' }}
+        onClick={e => e.stopPropagation()}
+      >
+        <div style={{ padding: '20px 20px 16px', borderBottom: '1px solid #e5e7eb' }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+            <h2 style={{ margin: 0, fontSize: '17px', fontWeight: 600, color: '#111' }}>下载桌面版</h2>
+            <button onClick={() => setShow(false)} style={{ background: 'none', border: 'none', fontSize: '18px', color: '#9ca3af', cursor: 'pointer', padding: 0 }}>×</button>
+          </div>
+          <p style={{ margin: '6px 0 0', fontSize: '13px', color: '#6b7280' }}>获得更好的使用体验</p>
+        </div>
+        <div style={{ padding: '16px 20px' }}>
+          <div style={{ marginBottom: '16px' }}>
+            {features.map((f, i) => (
+              <div key={i} style={{ display: 'flex', alignItems: 'center', gap: '10px', padding: '6px 0', fontSize: '13px', color: '#374151' }}>
+                <span>{f.icon}</span>
+                <span>{f.text}</span>
+              </div>
+            ))}
+          </div>
+          <div style={{ background: '#f9fafb', border: '1px solid #e5e7eb', borderRadius: '8px', padding: '14px', marginBottom: '14px' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '10px' }}>
+              <div>
+                <div style={{ fontWeight: 500, fontSize: '14px', color: '#111' }}>{dl[os].name}</div>
+                <div style={{ fontSize: '12px', color: '#9ca3af' }}>{dl[os].size}</div>
+              </div>
+              <span style={{ background: '#ecfdf5', color: '#059669', fontSize: '11px', padding: '3px 6px', borderRadius: '4px', fontWeight: 500 }}>推荐</span>
+            </div>
+            <a
+              href={`/downloads/${dl[os].file}`}
+              download
+              style={{ display: 'block', background: '#111', color: '#fff', textAlign: 'center', padding: '10px', borderRadius: '6px', fontSize: '13px', fontWeight: 500, textDecoration: 'none' }}
+            >
+              立即下载
+            </a>
+          </div>
+          <div style={{ display: 'flex', justifyContent: 'center', gap: '20px' }}>
+            {Object.entries(dl).filter(([k]) => k !== os).map(([k, v]) => (
+              <a key={k} href={`/downloads/${v.file}`} download style={{ fontSize: '12px', color: '#6b7280', textDecoration: 'underline' }}>
+                {v.name}
+              </a>
+            ))}
+          </div>
+        </div>
+        <div style={{ borderTop: '1px solid #e5e7eb', padding: '12px 20px', textAlign: 'center' }}>
+          <a href="https://github.com/Satulalala/photo-map" target="_blank" rel="noopener noreferrer" style={{ fontSize: '12px', color: '#6b7280', textDecoration: 'none' }}>
+            GitHub →
+          </a>
+        </div>
+      </div>
+    </div>,
+    document.body
+  ) : null;
+
+  return (
+    <>
+      <style>{`
+        @keyframes subtle-pulse {
+          0%, 100% { opacity: 1; }
+          50% { opacity: 0.85; }
+        }
+        .web-dl-btn-dark {
+          background: #111;
+          color: #fff;
+          border: none;
+          border-radius: 6px;
+          padding: 8px 12px;
+          font-size: 13px;
+          font-weight: 500;
+          cursor: pointer;
+          white-space: nowrap;
+          animation: subtle-pulse 3s ease-in-out infinite;
+          transition: transform 0.15s, opacity 0.15s;
+        }
+        .web-dl-btn-dark:hover {
+          transform: scale(1.03);
+          opacity: 0.9;
+        }
+      `}</style>
+      <button onClick={() => setShow(true)} className="web-dl-btn-dark">⬇ 桌面版</button>
+      {modal}
+    </>
+  );
+};
+
+
+
+// 导入简洁加载器
+import MinimalLoader from './components/MinimalLoader.jsx';
+
+// 简洁优雅的加载动画
+const FilmLoader = ({ onComplete }) => {
+  return <MinimalLoader onComplete={onComplete} />;
+};
 
 // 懒加载组件 - 减少首屏 JS 体积，按需加载
 const SettingsPanel = lazy(() => import('./components/SettingsPanel.jsx'));
@@ -81,8 +209,16 @@ const MarkerListItem = memo(function MarkerListItem({ marker, onClick }) {
   );
 });
 
-const mapboxgl = window.mapboxgl;
-mapboxgl.accessToken = 'pk.eyJ1IjoiZm43cXAiLCJhIjoiY21peTUyd3B5MGJqMTNjcTU4aDVtdnNqNiJ9.TadVpAbhvEATQxuflxmqdA';
+// 安全的 Mapbox 初始化
+const initMapbox = () => {
+  if (typeof window !== 'undefined' && window.mapboxgl) {
+    window.mapboxgl.accessToken = import.meta.env.VITE_MAPBOX_TOKEN || 'pk.eyJ1IjoiZm43cXAiLCJhIjoiY21peTUyd3B5MGJqMTNjcTU4aDVtdnNqNiJ9.TadVpAbhvEATQxuflxmqdA';
+    return window.mapboxgl;
+  }
+  return null;
+};
+
+const mapboxgl = initMapbox();
 
 // GCJ-02 转 WGS-84 坐标转换（高德坐标 → Mapbox坐标）
 const gcj02ToWgs84 = (lng, lat) => {
@@ -119,8 +255,27 @@ const gcj02ToWgs84 = (lng, lat) => {
 };
 
 function App() {
+  // Web 优化功能 Hooks
+  const seo = useSEO();
+  const analytics = useAnalytics();
+  const pwa = usePWA();
+
+  // Mapbox 加载检查
+  const [mapboxReady, setMapboxReady] = useState(false);
+  
+  useEffect(() => {
+    const checkMapbox = () => {
+      if (typeof window !== 'undefined' && window.mapboxgl) {
+        setMapboxReady(true);
+      } else {
+        // 如果 Mapbox 还没加载，等待一下再检查
+        setTimeout(checkMapbox, 100);
+      }
+    };
+    checkMapbox();
+  }, []);
+  
   const [isLoggedIn, setIsLoggedIn] = useState(false);
-  const [isLoggingIn, setIsLoggingIn] = useState(false);
   const [markers, setMarkers] = useState([]);
   const [cursorInfo, setCursorInfo] = useState({ lat: 0, lng: 0, x: 0, y: 0 });
   const [contextMenu, setContextMenu] = useState(null);
@@ -384,7 +539,7 @@ function App() {
           Promise.all(needName.map(async m => {
             try {
               const res = await fetch(
-                `https://api.mapbox.com/geocoding/v5/mapbox.places/${m.lng},${m.lat}.json?access_token=${mapboxgl.accessToken}&language=zh&limit=1`
+                `https://api.mapbox.com/geocoding/v5/mapbox.places/${m.lng},${m.lat}.json?access_token=${window.mapboxgl?.accessToken}&language=zh&limit=1`
               );
               const data = await res.json();
               if (data.features?.[0]) {
@@ -413,6 +568,40 @@ function App() {
       stopPeriodicCleanup();
     };
   }, []);
+
+  // Web 优化功能初始化
+  useEffect(() => {
+    if (!window.electronAPI) {
+      // 只在 Web 版本中初始化
+
+      // 初始化 SEO
+      seo.updateSEO({
+        title: '地图相册',
+        description: '一个优雅的照片地图应用，帮助您在地图上标记和管理照片，记录旅行足迹，分享美好回忆。',
+        keywords: '地图相册,照片地图,GPS照片,旅行记录,位置标记,照片管理'
+      });
+
+      // 跟踪页面浏览
+      analytics.trackPage('/', '地图相册 - 首页');
+
+      // 跟踪应用启动
+      analytics.trackEvent('app_start', {
+        version: '1.0.0',
+        platform: 'web',
+        userAgent: navigator.userAgent,
+        language: navigator.language,
+        screenResolution: `${screen.width}x${screen.height}`,
+        viewportSize: `${window.innerWidth}x${window.innerHeight}`
+      });
+
+      // 跟踪性能指标
+      setTimeout(() => {
+        analytics.trackPerformance();
+      }, 2000);
+
+      console.log('✅ Web optimization features initialized');
+    }
+  }, [seo, analytics]);
 
   // IP定位 - 快速超时
   useEffect(() => {
@@ -455,34 +644,57 @@ function App() {
 
   // 初始化 Mapbox GL 地图
   useEffect(() => {
-    if (!isLoggedIn || !mapContainerRef.current || mapRef.current) return;
+    if (!isLoggedIn || !mapContainerRef.current || mapRef.current || !mapboxReady) return;
 
-    // 检查 WebGL 支持（跳过检测，直接尝试创建地图）
-    // Electron 有时会误报不支持 WebGL
+    if (!window.mapboxgl) {
+      console.error('Mapbox GL JS 未加载');
+      return;
+    }
 
-    const map = new mapboxgl.Map({
-      container: mapContainerRef.current,
-      style: 'mapbox://styles/mapbox/streets-v12',
-      center: [105, 35],
-      zoom: 1,
-      pitch: 0,
-      language: 'zh-Hans',
-      antialias: mapSettings.antialias,
-      fadeDuration: mapSettings.fadeDuration,
-      maxTileCacheSize: mapSettings.maxTileCacheSize,
-      dragRotate: mapSettings.dragRotate,
-      renderWorldCopies: mapSettings.renderWorldCopies,
-      maxZoom: mapSettings.maxZoom,
-      minZoom: mapSettings.minZoom,
-      trackResize: true,
-      refreshExpiredTiles: false,
-      scrollZoom: true,
-      pitchWithRotate: false,
-      crossSourceCollisions: false,
-      collectResourceTiming: false,
-      preserveDrawingBuffer: false,
-      failIfMajorPerformanceCaveat: false,
-    });
+    // 从加载器获取最终位置
+    const finalState = window.__loaderFinalState || {};
+    const userLocation = finalState.center || window.__userLocation || [117.28, 31.86];
+    const initialZoom = finalState.zoom || 13;
+
+    // 保存用户位置引用
+    userLocationRef.current = userLocation;
+
+    try {
+      const map = new window.mapboxgl.Map({
+        container: mapContainerRef.current,
+        style: 'mapbox://styles/mapbox/streets-v12',
+        center: userLocation,
+        zoom: initialZoom,
+        pitch: 0,
+        projection: 'globe',
+        language: 'zh-Hans',
+        antialias: mapSettings.antialias,
+        fadeDuration: mapSettings.fadeDuration,
+        maxTileCacheSize: mapSettings.maxTileCacheSize,
+        dragRotate: mapSettings.dragRotate,
+          renderWorldCopies: mapSettings.renderWorldCopies,
+          maxZoom: mapSettings.maxZoom,
+          minZoom: mapSettings.minZoom,
+          trackResize: true,
+          refreshExpiredTiles: false,
+          scrollZoom: true,
+          pitchWithRotate: false,
+          crossSourceCollisions: false,
+          collectResourceTiming: false,
+          preserveDrawingBuffer: false,
+          failIfMajorPerformanceCaveat: false,
+        });
+
+        // 设置地球大气层效果
+        map.on('style.load', () => {
+          map.setFog({
+            color: 'rgb(186, 210, 235)',
+            'high-color': 'rgb(36, 92, 223)',
+            'horizon-blend': 0.02,
+            'space-color': 'rgb(11, 11, 25)',
+            'star-intensity': 0.6
+          });
+        });
 
     // 拖动状态
     map.on('dragstart', () => setIsDragging(true));
@@ -564,7 +776,7 @@ function App() {
           .catch(() => clearTimeout(timeoutId));
       } else {
         // 国外用 Mapbox API（简体中文）
-        fetch(`https://api.mapbox.com/geocoding/v5/mapbox.places/${latlng.lng},${latlng.lat}.json?access_token=${mapboxgl.accessToken}&language=zh-Hans&limit=1`, 
+        fetch(`https://api.mapbox.com/geocoding/v5/mapbox.places/${latlng.lng},${latlng.lat}.json?access_token=${window.mapboxgl?.accessToken}&language=zh-Hans&limit=1`, 
           { signal: controller.signal }
         )
           .then(r => r.json())
@@ -634,9 +846,13 @@ function App() {
     // 瓦片缓存已移除 - 避免重复请求导致加载变慢
     // Mapbox GL 自带内存缓存，无需额外处理
 
-    mapRef.current = map;
-    return () => { map.remove(); mapRef.current = null; };
-  }, [isLoggedIn]);
+      mapRef.current = map;
+      return () => { map.remove(); mapRef.current = null; };
+    } catch (error) {
+      console.error('地图初始化失败:', error);
+      // 可以在这里显示错误提示给用户
+    }
+  }, [isLoggedIn, mapboxReady]);
 
   // 简单距离计算（Haversine公式）
   const turf_distance = (from, to) => {
@@ -721,10 +937,11 @@ function App() {
     el.className = 'marker-pin';
     el.style.cssText = `cursor:pointer;display:flex;flex-direction:column;align-items:center;${isNew ? 'animation:markerDrop 0.5s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;' : ''}`;
     
-    const photoId = m.firstPhoto?.id || null;
+    const firstPhoto = m.firstPhoto;
     const photoCount = m.photoCount ?? 0;
+    const hasPhoto = firstPhoto && (firstPhoto.id || firstPhoto.data);
     
-    if (photoId) {
+    if (hasPhoto) {
       el.innerHTML = `
         <div class="marker-photo-preview" style="width:48px;height:48px;border-radius:6px;overflow:hidden;border:2px solid white;box-shadow:0 2px 6px rgba(0,0,0,0.3);background:#e2e8f0;margin-bottom:2px;position:relative;">
           <img src="" style="width:100%;height:100%;object-fit:cover;display:block;opacity:0;transition:opacity 0.2s;" />
@@ -732,15 +949,24 @@ function App() {
         </div>
         <svg xmlns="http://www.w3.org/2000/svg" width="20" height="26" viewBox="0 0 24 32"><path d="M12 0C5.4 0 0 5.4 0 12c0 9 12 20 12 20s12-11 12-20C24 5.4 18.6 0 12 0z" fill="#ff6b6b"/><circle cx="12" cy="12" r="4" fill="white"/></svg>
       `;
+      
       // 加载缩略图
-      if (window.electronAPI?.getThumbnailUrl) {
-        window.electronAPI.getThumbnailUrl(photoId).then(url => {
-          const img = el.querySelector('img');
-          if (img && url) {
-            img.onload = () => { img.style.opacity = '1'; };
-            img.src = url;
-          }
-        });
+      const img = el.querySelector('img');
+      if (img) {
+        // 如果有 base64 数据，直接使用
+        if (firstPhoto.data && firstPhoto.data.startsWith('data:')) {
+          img.onload = () => { img.style.opacity = '1'; };
+          img.src = firstPhoto.data;
+        } 
+        // 否则通过 API 获取
+        else if (firstPhoto.id && window.electronAPI?.getThumbnailUrl) {
+          window.electronAPI.getThumbnailUrl(firstPhoto.id).then(url => {
+            if (url) {
+              img.onload = () => { img.style.opacity = '1'; };
+              img.src = url;
+            }
+          });
+        }
       }
     } else {
       el.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="32" viewBox="0 0 24 32"><path d="M12 0C5.4 0 0 5.4 0 12c0 9 12 20 12 20s12-11 12-20C24 5.4 18.6 0 12 0z" fill="#ff6b6b"/><circle cx="12" cy="12" r="5" fill="white"/></svg>`;
@@ -777,7 +1003,7 @@ function App() {
     markers.forEach(m => {
       const isNew = newMarkerIds.has(m.id);
       const el = createMarkerElement(m, isNew);
-      const marker = new mapboxgl.Marker({ element: el, anchor: 'bottom' })
+      const marker = new window.mapboxgl.Marker({ element: el, anchor: 'bottom' })
         .setLngLat([m.lng, m.lat])
         .addTo(mapRef.current);
       mapMarkersRef.current[m.id] = marker;
@@ -832,7 +1058,7 @@ function App() {
     
     if (previewPin) {
       const el = createMarkerEl('#00b894');
-      previewMarkerRef.current = new mapboxgl.Marker({ element: el, anchor: 'bottom' })
+      previewMarkerRef.current = new window.mapboxgl.Marker({ element: el, anchor: 'bottom' })
         .setLngLat([previewPin.lng, previewPin.lat])
         .addTo(mapRef.current);
     }
@@ -863,7 +1089,7 @@ function App() {
       } else {
         // 国外用 Mapbox API（简体中文）
         const res = await fetch(
-          `https://api.mapbox.com/geocoding/v5/mapbox.places/${lng},${lat}.json?access_token=${mapboxgl.accessToken}&language=zh-Hans&limit=1`,
+          `https://api.mapbox.com/geocoding/v5/mapbox.places/${lng},${lat}.json?access_token=${window.mapboxgl?.accessToken}&language=zh-Hans&limit=1`,
           { signal: AbortSignal.timeout(3000) }
         );
         const data = await res.json();
@@ -893,7 +1119,9 @@ function App() {
       lat: latlng.lat,
       lng: latlng.lng,
       name,
-      photos: photos.map(p => ({ id: p.id, note: '' })),
+      photos: photos.map(p => ({ id: p.id, data: p.data, note: '' })),
+      photoCount: photos.length,
+      firstPhoto: photos[0] ? { id: photos[0].id, data: photos[0].data } : null,
       createdAt: Date.now()
     };
     
@@ -934,17 +1162,7 @@ function App() {
     }
   }, [refreshMarkers, showToast]);
 
-  const handleLogin = useCallback(() => {
-    setIsLoggingIn(true);
-    // 切换标题栏按钮为深色（适配浅色地图背景）
-    window.electronAPI?.setTitleBarOverlay?.({
-      color: '#00000000',
-      symbolColor: '#64748b',
-      height: 32
-    });
-    // 等待转场动画完成
-    setTimeout(() => setIsLoggedIn(true), 600);
-  }, []);
+
 
   const goToMyLocation = useCallback(() => {
     if (mapRef.current && userLocationRef.current) {
@@ -1184,49 +1402,38 @@ function App() {
     setMeasureLines([]);
   };
 
-  if (!isLoggedIn) {
-    return (
-      <div 
-        className={`login-page ${isLoggingIn ? 'exiting' : ''}`}
-        onMouseMove={(e) => {
-          const x = (e.clientX / window.innerWidth - 0.5) * 30;
-          const y = (e.clientY / window.innerHeight - 0.5) * 30;
-          document.documentElement.style.setProperty('--mouse-x', `${x}px`);
-          document.documentElement.style.setProperty('--mouse-y', `${y}px`);
-        }}
-      >
-        <div className="login-bg">
-          <div className="login-circle c1"></div>
-          <div className="login-circle c2"></div>
-          <div className="login-circle c3"></div>
-        </div>
-        <div className="login-card">
-          <div className="login-icon">📍</div>
-          <h1>地图相册</h1>
-          <p>在地图上记录你的旅行回忆</p>
-          <div className="login-progress-wrap">
-            <div className="login-progress">
-              <div className="login-progress-bar" style={{ width: `${locateProgress}%` }} />
-            </div>
-            <span className="login-progress-text">{locateProgress < 100 ? `定位中 ${Math.round(locateProgress)}%` : '定位完成'}</span>
-          </div>
-          <button 
-            className="login-btn" 
-            onClick={handleLogin} 
-            disabled={isLoggingIn || locateProgress < 100}
-          >
-            {isLoggingIn ? '进入中...' : '开始探索'}
-          </button>
-          <div className="login-footer">
-            <span>🌍</span> 探索世界，记录美好
-          </div>
-        </div>
-      </div>
-    );
+
+
+  // 检测是否为 Web 版本 - 多重检测确保准确性
+  const isWebVersion = !window.electronAPI || 
+                       window.location.pathname.includes('index-web') ||
+                       window.location.port === '3001' ||
+                       window.location.hostname.includes('netlify') ||
+                       window.location.hostname.includes('vercel');
+  
+  // 调试信息
+  console.log('App 组件渲染 - Web 版本:', isWebVersion, '已登录:', isLoggedIn, '地图已加载:', mapLoaded);
+  console.log('window.electronAPI:', window.electronAPI);
+  console.log('当前URL:', window.location.href);
+
+  // 如果 Mapbox 还没准备好，只显示加载动画
+  if (!mapboxReady) {
+    return <FilmLoader onComplete={() => {
+      setMapboxReady(true);
+      setIsLoggedIn(true);
+    }} />;
   }
 
+  // Web 版本样式已在 main-web.jsx 中导入
+
   return (
-    <div className="app">
+      <div className={`app ${isWebVersion ? 'web-app' : ''}`}>
+      {/* 加载器覆盖层 - 飞行动画期间保持显示 */}
+      {!isLoggedIn && <FilmLoader onComplete={() => {
+        setMapboxReady(true);
+        setIsLoggedIn(true);
+      }} />}
+      
       {/* 无边框窗口拖拽区域 */}
       <div className="window-drag-region" />
       
@@ -1256,6 +1463,13 @@ function App() {
               }}>✕</button>
             )}
           </div>
+          
+          {/* Web 版本下载按钮 - 搜索栏右侧独立位置 */}
+          {isWebVersion && isLoggedIn && (
+            <div className="web-download-beside-search">
+              <WebDownloadButton />
+            </div>
+          )}
           
           {/* 搜索结果/历史 */}
           {showSearchResults && (
@@ -2352,8 +2566,25 @@ function App() {
       {/* 内存监控面板（仅开发模式） */}
       <MemoryMonitor />
 
+
+
     </div>
   );
 }
 
-export default App;
+// 使用错误边界包装的 App 组件
+const AppWithErrorBoundary = () => (
+  <ErrorBoundary 
+    name="App"
+    title="应用遇到了问题"
+    message="地图相册遇到了意外错误，请尝试刷新页面。如果问题持续存在，请联系技术支持。"
+  >
+    <NetworkErrorBoundary>
+      <AsyncErrorBoundary>
+        <App />
+      </AsyncErrorBoundary>
+    </NetworkErrorBoundary>
+  </ErrorBoundary>
+);
+
+export default AppWithErrorBoundary;

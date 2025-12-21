@@ -3,6 +3,10 @@
    设计风格：简洁、明亮、流畅
 ======================================== */
 
+/* 导入组件样式 */
+@import './styles/components/error-boundary.css';
+@import './styles/components/loader.css';
+
 * {
   margin: 0;
   padding: 0;
@@ -362,6 +366,432 @@ body {
   color: var(--text-muted);
 }
 
+/* ========== 简单加载器 ========== */
+.simple-loader {
+  position: fixed;
+  inset: 0;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 3000;
+  animation: fadeIn 0.5s ease;
+}
+
+.loader-content {
+  text-align: center;
+  color: white;
+}
+
+.app-icon {
+  font-size: 64px;
+  margin-bottom: 16px;
+  animation: bounce 2s ease-in-out infinite;
+}
+
+.loader-content h1 {
+  font-size: 32px;
+  font-weight: 700;
+  margin: 0 0 32px 0;
+  text-shadow: 0 2px 4px rgba(0,0,0,0.3);
+}
+
+.progress-ring {
+  position: relative;
+  display: inline-block;
+}
+
+.progress-text {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  font-size: 18px;
+  font-weight: 600;
+  color: white;
+}
+
+/* 简单星空背景 */
+.starfield {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+
+.stars-layer::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background-image: 
+    radial-gradient(1px 1px at 15% 25%, rgba(255,255,255,0.9), transparent),
+    radial-gradient(1px 1px at 85% 15%, rgba(255,255,255,0.7), transparent),
+    radial-gradient(1px 1px at 45% 75%, rgba(255,255,255,0.8), transparent),
+    radial-gradient(1px 1px at 75% 85%, rgba(255,255,255,0.6), transparent),
+    radial-gradient(1px 1px at 25% 55%, rgba(255,255,255,0.5), transparent),
+    radial-gradient(1px 1px at 65% 35%, rgba(255,255,255,0.9), transparent);
+  background-repeat: repeat;
+  background-size: 300px 200px;
+  animation: starTwinkle 6s ease-in-out infinite;
+}
+
+@keyframes starTwinkle {
+  0%, 100% { 
+    opacity: 0.6; 
+    transform: scale(1);
+  }
+  50% { 
+    opacity: 1; 
+    transform: scale(1.1);
+  }
+}
+
+@keyframes filmSpin {
+  0% { 
+    transform: rotateY(0deg) rotateX(0deg); 
+  }
+  25% { 
+    transform: rotateY(90deg) rotateX(15deg); 
+  }
+  50% { 
+    transform: rotateY(180deg) rotateX(0deg); 
+  }
+  75% { 
+    transform: rotateY(270deg) rotateX(-15deg); 
+  }
+  100% { 
+    transform: rotateY(360deg) rotateX(0deg); 
+  }
+}
+
+/* 🎞️ 简单优雅的胶片进度条 */
+.film-progress-container {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 400px;
+  height: 40px;
+}
+
+.film-progress-bar {
+  height: 100%;
+  background: linear-gradient(
+    to right,
+    #e8e8e8 0%,
+    #d4d4d4 20%,
+    #c0c0c0 40%,
+    #a8a8a8 60%,
+    #909090 80%,
+    #787878 100%
+  );
+  border: 2px solid #505050;
+  border-radius: 6px;
+  position: relative;
+  box-shadow: 
+    0 4px 12px rgba(0, 0, 0, 0.3),
+    inset 0 2px 0 rgba(255, 255, 255, 0.4),
+    inset 0 -2px 0 rgba(0, 0, 0, 0.2);
+  transition: width 0.3s ease-out;
+  overflow: hidden;
+}
+
+.film-frames {
+  position: absolute;
+  inset: 4px;
+  background-image: 
+    /* 上排孔洞 */
+    radial-gradient(circle at 8px 4px, transparent 2px, #2a2a2a 2px, #2a2a2a 3px, transparent 3px),
+    radial-gradient(circle at 24px 4px, transparent 2px, #2a2a2a 2px, #2a2a2a 3px, transparent 3px),
+    radial-gradient(circle at 40px 4px, transparent 2px, #2a2a2a 2px, #2a2a2a 3px, transparent 3px),
+    /* 下排孔洞 */
+    radial-gradient(circle at 8px calc(100% - 4px), transparent 2px, #2a2a2a 2px, #2a2a2a 3px, transparent 3px),
+    radial-gradient(circle at 24px calc(100% - 4px), transparent 2px, #2a2a2a 2px, #2a2a2a 3px, transparent 3px),
+    radial-gradient(circle at 40px calc(100% - 4px), transparent 2px, #2a2a2a 2px, #2a2a2a 3px, transparent 3px),
+    /* 中间图像帧 */
+    repeating-linear-gradient(
+      to right,
+      #1a1a1a 0px,
+      #1a1a1a 1px,
+      #2a2a2a 1px,
+      #2a2a2a 15px,
+      #1a1a1a 15px,
+      #1a1a1a 16px
+    );
+  background-size: 16px 8px, 16px 8px, 16px 8px, 16px 8px, 16px 8px, 16px 8px, 16px 100%;
+  background-repeat: repeat-x;
+  border-radius: 2px;
+}
+
+.film-icons {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+
+.film-icon {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  font-size: 32px;
+  animation: filmIconFloat 2s ease-in-out infinite;
+}
+
+.film-icon.left {
+  left: -50px;
+  animation-delay: 0s;
+}
+
+.film-icon.right {
+  right: -50px;
+  animation-delay: 1s;
+}
+
+@keyframes filmIconFloat {
+  0%, 100% { transform: translateY(-50%) rotate(0deg); }
+  50% { transform: translateY(-60%) rotate(10deg); }
+}
+
+/* 🎞️ 胶卷主体样式 - 模仿emoji外观 */
+.film-ribbon {
+  background: 
+    /* 胶片的金属光泽 */
+    linear-gradient(
+      to bottom,
+      #e8e8e8 0%,
+      #d4d4d4 20%,
+      #c0c0c0 40%,
+      #a8a8a8 60%,
+      #909090 80%,
+      #787878 100%
+    );
+  border: 2px solid #505050;
+  border-radius: 3px;
+  position: relative;
+  /* 胶片的立体阴影 */
+  box-shadow: 
+    0 3px 8px rgba(0, 0, 0, 0.4),
+    0 1px 3px rgba(0, 0, 0, 0.2),
+    inset 0 1px 0 rgba(255, 255, 255, 0.5),
+    inset 0 -1px 0 rgba(0, 0, 0, 0.2);
+  /* 3D变换支持 */
+  transform-style: preserve-3d;
+}
+
+/* 🎞️ 胶片孔洞 - 简单清晰的圆形孔洞 */
+.film-perforations {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+
+/* 上下两排圆形孔洞 - 像🎞️emoji */
+.film-perforations::before,
+.film-perforations::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  right: 0;
+  height: 6px;
+  background: 
+    repeating-linear-gradient(
+      to right,
+      transparent 0px,
+      transparent 4px,
+      #1a1a1a 4px,
+      #1a1a1a 8px,
+      transparent 8px,
+      transparent 12px
+    );
+  /* 让孔洞看起来是圆形的 */
+  border-radius: 3px;
+  box-shadow: 
+    inset 0 1px 2px rgba(0,0,0,0.8),
+    0 1px 0 rgba(255,255,255,0.1);
+}
+
+.film-perforations::before {
+  top: 3px;
+}
+
+.film-perforations::after {
+  bottom: 3px;
+}
+
+/* 使用额外的元素创建更真实的圆形孔洞 */
+.film-perforations::after {
+  background-image: 
+    radial-gradient(circle at 6px center, transparent 2px, #1a1a1a 2px, #1a1a1a 3px, transparent 3px),
+    radial-gradient(circle at 18px center, transparent 2px, #1a1a1a 2px, #1a1a1a 3px, transparent 3px),
+    radial-gradient(circle at 30px center, transparent 2px, #1a1a1a 2px, #1a1a1a 3px, transparent 3px),
+    radial-gradient(circle at 42px center, transparent 2px, #1a1a1a 2px, #1a1a1a 3px, transparent 3px),
+    radial-gradient(circle at 54px center, transparent 2px, #1a1a1a 2px, #1a1a1a 3px, transparent 3px),
+    radial-gradient(circle at 66px center, transparent 2px, #1a1a1a 2px, #1a1a1a 3px, transparent 3px),
+    radial-gradient(circle at 78px center, transparent 2px, #1a1a1a 2px, #1a1a1a 3px, transparent 3px),
+    radial-gradient(circle at 90px center, transparent 2px, #1a1a1a 2px, #1a1a1a 3px, transparent 3px);
+  background-size: 12px 6px;
+  background-repeat: repeat-x;
+}
+
+.film-perforations::before {
+  background-image: 
+    radial-gradient(circle at 6px center, transparent 2px, #1a1a1a 2px, #1a1a1a 3px, transparent 3px),
+    radial-gradient(circle at 18px center, transparent 2px, #1a1a1a 2px, #1a1a1a 3px, transparent 3px),
+    radial-gradient(circle at 30px center, transparent 2px, #1a1a1a 2px, #1a1a1a 3px, transparent 3px),
+    radial-gradient(circle at 42px center, transparent 2px, #1a1a1a 2px, #1a1a1a 3px, transparent 3px),
+    radial-gradient(circle at 54px center, transparent 2px, #1a1a1a 2px, #1a1a1a 3px, transparent 3px),
+    radial-gradient(circle at 66px center, transparent 2px, #1a1a1a 2px, #1a1a1a 3px, transparent 3px),
+    radial-gradient(circle at 78px center, transparent 2px, #1a1a1a 2px, #1a1a1a 3px, transparent 3px),
+    radial-gradient(circle at 90px center, transparent 2px, #1a1a1a 2px, #1a1a1a 3px, transparent 3px);
+  background-size: 12px 6px;
+  background-repeat: repeat-x;
+}
+
+/* 🎞️ 中间的图像帧区域 - emoji风格 */
+.film-ribbon::after {
+  content: '';
+  position: absolute;
+  top: 11px;
+  bottom: 11px;
+  left: 6px;
+  right: 6px;
+  background: 
+    /* 胶片图像帧的分割线 */
+    repeating-linear-gradient(
+      to right,
+      #2a2a2a 0px,
+      #2a2a2a 1px,
+      #1a1a1a 1px,
+      #1a1a1a 8px,
+      #2a2a2a 8px,
+      #2a2a2a 9px,
+      #1a1a1a 9px,
+      #1a1a1a 16px
+    );
+  border: 1px solid #0a0a0a;
+  border-radius: 1px;
+  /* 内凹的胶片效果 */
+  box-shadow: 
+    inset 0 1px 2px rgba(0, 0, 0, 0.6),
+    inset 0 -1px 1px rgba(255, 255, 255, 0.1),
+    0 1px 0 rgba(255, 255, 255, 0.05);
+}
+
+/* 连接效果 */
+.connection-effect {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 100px;
+  height: 100px;
+}
+
+.ripple {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 20px;
+  height: 20px;
+  border: 2px solid rgba(255, 255, 255, 0.6);
+  border-radius: 50%;
+  transform: translate(-50%, -50%);
+  animation: rippleExpand 2s ease-out infinite;
+}
+
+.ripple.delay-1 {
+  animation-delay: 0.5s;
+  border-color: rgba(59, 130, 246, 0.6);
+}
+
+.ripple.delay-2 {
+  animation-delay: 1s;
+  border-color: rgba(139, 92, 246, 0.6);
+}
+
+@keyframes rippleExpand {
+  0% {
+    width: 20px;
+    height: 20px;
+    opacity: 1;
+  }
+  100% {
+    width: 100px;
+    height: 100px;
+    opacity: 0;
+  }
+}
+
+/* 加载信息 */
+.loader-info {
+  position: absolute;
+  bottom: 100px;
+  left: 50%;
+  transform: translateX(-50%);
+  text-align: center;
+  animation: slideUp 0.8s cubic-bezier(0.34, 1.56, 0.64, 1) 0.5s both;
+}
+
+.loader-title {
+  font-size: 28px;
+  font-weight: 700;
+  margin-bottom: 8px;
+  background: linear-gradient(135deg, #ffffff 0%, #e2e8f0 50%, #cbd5e1 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  text-shadow: 0 0 20px rgba(255, 255, 255, 0.3);
+  letter-spacing: 1px;
+}
+
+.loader-subtitle {
+  font-size: 14px;
+  color: rgba(255, 255, 255, 0.7);
+  font-weight: 400;
+  transition: all 0.5s ease;
+  letter-spacing: 0.5px;
+}
+
+/* 连接阶段 - 进度条闪烁效果 */
+.film-loader.connecting .film-progress-bar {
+  animation: filmGlow 1s ease-in-out infinite alternate;
+}
+
+@keyframes filmGlow {
+  0% { 
+    box-shadow: 
+      0 4px 12px rgba(0, 0, 0, 0.3),
+      inset 0 2px 0 rgba(255, 255, 255, 0.4),
+      inset 0 -2px 0 rgba(0, 0, 0, 0.2);
+  }
+  100% { 
+    box-shadow: 
+      0 6px 20px rgba(59, 130, 246, 0.4),
+      inset 0 2px 0 rgba(255, 255, 255, 0.6),
+      inset 0 -2px 0 rgba(0, 0, 0, 0.2),
+      0 0 20px rgba(59, 130, 246, 0.3);
+  }
+}
+
+/* 完成阶段 - 胶片淡出 */
+.film-loader.complete {
+  animation: fadeIn 1.2s ease reverse forwards;
+}
+
+.film-loader.complete .film-ribbon {
+  animation: fadeOut 1.2s ease forwards;
+}
+
+@keyframes fadeOut {
+  0% {
+    opacity: 1;
+    transform: scale(1);
+  }
+  100% {
+    opacity: 0;
+    transform: scale(1.1);
+  }
+}
+
 /* ========== 坐标显示 ========== */
 .cursor-info {
   position: fixed;
@@ -493,6 +923,784 @@ body {
   transform: translateY(-50%) translateX(-12px);
 }
 
+
+/* ========== iOS风格动画 ========== */
+@keyframes modalSlideIn {
+  0% {
+    opacity: 0;
+    transform: scale(0.9) translateY(20px);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+}
+
+@keyframes modalSlideOut {
+  0% {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+  100% {
+    opacity: 0;
+    transform: scale(0.9) translateY(20px);
+  }
+}
+
+@keyframes overlayFadeIn {
+  0% {
+    opacity: 0;
+  }
+  100% {
+    opacity: 1;
+  }
+}
+
+@keyframes overlayFadeOut {
+  0% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+  }
+}
+
+@keyframes buttonPress {
+  0% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(0.95);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+
+/* 通用弹窗动画类 */
+.modal-enter {
+  animation: modalSlideIn 0.3s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+}
+
+.modal-exit {
+  animation: modalSlideOut 0.25s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards;
+}
+
+.overlay-enter {
+  animation: overlayFadeIn 0.3s ease-out forwards;
+}
+
+.overlay-exit {
+  animation: overlayFadeOut 0.25s ease-in forwards;
+}
+
+/* 按钮按压动画 */
+.btn-press {
+  animation: buttonPress 0.15s ease-out;
+}
+
+/* ========== 简洁加载器样式 ========== */
+/* ========== 苹果风格加载器样式 ========== */
+.apple-loader {
+  position: fixed;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: 
+    radial-gradient(ellipse 800px 600px at 20% 30%, rgba(255,255,255,0.15) 0%, transparent 50%),
+    radial-gradient(ellipse 600px 400px at 80% 70%, rgba(200,200,200,0.1) 0%, transparent 50%),
+    radial-gradient(ellipse 400px 300px at 60% 20%, rgba(150,150,150,0.08) 0%, transparent 50%),
+    linear-gradient(135deg, #000000 0%, #1a1a1a 15%, #333333 30%, #4d4d4d 45%, #666666 60%, #808080 75%, #999999 85%, #cccccc 95%, #ffffff 100%);
+  background-size: 
+    150% 120%,
+    120% 100%,
+    100% 80%,
+    300% 300%;
+  animation: 
+    waveLayer1 6s ease-in-out infinite,
+    waveLayer2 8s ease-in-out infinite reverse,
+    waveLayer3 10s ease-in-out infinite,
+    waveGradient 12s ease-in-out infinite;
+  z-index: 3000;
+  overflow: hidden;
+  transition: all 0.5s ease;
+}
+
+/* 添加伪元素创建更多层次 */
+.apple-loader::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: 
+    radial-gradient(ellipse 500px 300px at var(--before-pos-1, 40% 80%), rgba(255,255,255,0.05) 0%, transparent 60%),
+    radial-gradient(ellipse 300px 200px at var(--before-pos-2, 90% 10%), rgba(180,180,180,0.08) 0%, transparent 50%);
+  background-size: 200% 150%, 150% 120%;
+  animation: 
+    waveOverlay1 7s ease-in-out infinite,
+    waveOverlay2 9s ease-in-out infinite reverse;
+  pointer-events: none;
+}
+
+.apple-loader::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: 
+    radial-gradient(ellipse 700px 400px at var(--after-pos-1, 10% 60%), rgba(220,220,220,0.06) 0%, transparent 70%),
+    radial-gradient(ellipse 400px 250px at var(--after-pos-2, 70% 40%), rgba(160,160,160,0.04) 0%, transparent 60%);
+  background-size: 180% 140%, 130% 110%;
+  animation: 
+    waveOverlay3 11s ease-in-out infinite,
+    waveOverlay4 13s ease-in-out infinite reverse;
+  pointer-events: none;
+}
+
+/* 交互模式下的伪元素 */
+.apple-loader.interactive-mode::before {
+  animation: none;
+  background-size: 250% 180%, 180% 140%;
+  transition: background 0.5s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+}
+
+.apple-loader.interactive-mode::after {
+  animation: none;
+  background-size: 220% 160%, 160% 130%;
+  transition: background 0.6s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+}
+
+/* 交互模式 - 鼠标跟随波浪效果 */
+.apple-loader.interactive-mode {
+  animation: none;
+  background-size: 
+    200% 150%,
+    150% 120%,
+    120% 100%,
+    400% 400%;
+  transition: background-position 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+}
+
+/* 波浪渐变动画 - 主层 */
+@keyframes waveGradient {
+  0% { background-position: 0% 50%, 20% 30%, 80% 70%, 0% 0%; }
+  15% { background-position: 25% 60%, 30% 20%, 70% 80%, 15% 10%; }
+  30% { background-position: 60% 80%, 50% 40%, 60% 60%, 40% 30%; }
+  45% { background-position: 90% 70%, 80% 60%, 40% 40%, 70% 60%; }
+  60% { background-position: 100% 40%, 90% 80%, 20% 20%, 90% 80%; }
+  75% { background-position: 80% 20%, 70% 90%, 10% 50%, 60% 90%; }
+  90% { background-position: 40% 30%, 40% 70%, 30% 80%, 20% 70%; }
+  100% { background-position: 0% 50%, 20% 30%, 80% 70%, 0% 0%; }
+}
+
+/* 波浪层动画 - 不同速度和方向 */
+@keyframes waveLayer1 {
+  0%, 100% { background-position: 0% 40%, 10% 60%; }
+  25% { background-position: 30% 70%, 40% 30%; }
+  50% { background-position: 70% 80%, 80% 20%; }
+  75% { background-position: 90% 50%, 60% 90%; }
+}
+
+@keyframes waveLayer2 {
+  0%, 100% { background-position: 100% 60%, 90% 40%; }
+  20% { background-position: 80% 30%, 70% 80%; }
+  40% { background-position: 50% 20%, 40% 90%; }
+  60% { background-position: 20% 70%, 10% 50%; }
+  80% { background-position: 10% 90%, 30% 20%; }
+}
+
+@keyframes waveLayer3 {
+  0%, 100% { background-position: 50% 50%, 60% 70%; }
+  30% { background-position: 80% 20%, 90% 40%; }
+  60% { background-position: 20% 90%, 10% 80%; }
+  90% { background-position: 40% 30%, 50% 10%; }
+}
+
+/* 覆盖层动画 - 创造深度感 */
+@keyframes waveOverlay1 {
+  0%, 100% { background-position: 20% 80%, 80% 20%; }
+  33% { background-position: 60% 40%, 40% 70%; }
+  66% { background-position: 90% 10%, 10% 90%; }
+}
+
+@keyframes waveOverlay2 {
+  0%, 100% { background-position: 70% 30%, 30% 80%; }
+  25% { background-position: 40% 60%, 80% 40%; }
+  50% { background-position: 10% 90%, 90% 10%; }
+  75% { background-position: 50% 20%, 60% 70%; }
+}
+
+@keyframes waveOverlay3 {
+  0%, 100% { background-position: 40% 60%, 70% 40%; }
+  40% { background-position: 80% 90%, 20% 10%; }
+  80% { background-position: 10% 30%, 90% 80%; }
+}
+
+@keyframes waveOverlay4 {
+  0%, 100% { background-position: 60% 20%, 40% 90%; }
+  50% { background-position: 20% 70%, 80% 30%; }
+}
+
+/* 主要内容容器 */
+.loader-content {
+  text-align: center;
+  color: #ffffff;
+  max-width: 500px;
+  width: 90%;
+  background: rgba(0, 0, 0, 0.4);
+  padding: 50px 40px;
+  border-radius: 24px;
+  backdrop-filter: blur(20px);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+  position: relative;
+  z-index: 10;
+}
+
+/* 装饰性浮动图标 */
+.loader-decorations {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 5;
+}
+
+.floating-icon {
+  position: absolute;
+  font-size: 24px;
+  opacity: 0.6;
+  animation: floatIcon 4s ease-in-out infinite;
+}
+
+.icon-1 {
+  top: 15%;
+  left: 10%;
+  animation-delay: 0s;
+}
+
+.icon-2 {
+  top: 25%;
+  right: 15%;
+  animation-delay: 1s;
+}
+
+.icon-3 {
+  bottom: 30%;
+  left: 8%;
+  animation-delay: 2s;
+}
+
+.icon-4 {
+  bottom: 20%;
+  right: 12%;
+  animation-delay: 3s;
+}
+
+@keyframes floatIcon {
+  0%, 100% {
+    transform: translateY(0px) rotate(0deg);
+    opacity: 0.4;
+  }
+  50% {
+    transform: translateY(-20px) rotate(5deg);
+    opacity: 0.8;
+  }
+}
+
+/* 应用品牌区域 */
+.app-branding {
+  margin-bottom: 60px;
+  animation: fadeInUp 0.8s ease-out;
+}
+
+.logo-container {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+  margin-bottom: 20px;
+}
+
+.app-logo {
+  font-size: 40px;
+  animation: logoSpin 3s ease-in-out infinite;
+}
+
+@keyframes logoSpin {
+  0%, 100% { transform: rotate(0deg) scale(1); }
+  50% { transform: rotate(10deg) scale(1.1); }
+}
+
+.app-title {
+  font-size: 42px;
+  font-weight: 700;
+  margin: 0;
+  color: #ffffff;
+  letter-spacing: -1px;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  text-shadow: 0 4px 8px rgba(0, 0, 0, 0.5);
+  background: linear-gradient(135deg, #ffffff, #e0e0e0);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.app-subtitle {
+  font-size: 16px;
+  margin: 12px 0 24px 0;
+  color: #b0b0b0;
+  font-weight: 400;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
+}
+
+.feature-tags {
+  display: flex;
+  justify-content: center;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin-top: 16px;
+}
+
+.tag {
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 20px;
+  padding: 6px 14px;
+  font-size: 13px;
+  color: #e0e0e0;
+  backdrop-filter: blur(10px);
+  transition: all 0.3s ease;
+}
+
+.tag:hover {
+  background: rgba(255, 255, 255, 0.15);
+  transform: translateY(-2px);
+}
+
+/* 进度条区域 */
+.progress-section {
+  animation: fadeInUp 0.8s ease-out 0.2s both;
+}
+
+.progress-indicator {
+  margin-bottom: 20px;
+}
+
+.stage-dots {
+  display: flex;
+  justify-content: center;
+  gap: 12px;
+  align-items: center;
+}
+
+.stage-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.2);
+  transition: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+  position: relative;
+}
+
+.stage-dot.active {
+  background: #ffffff;
+  box-shadow: 0 0 12px rgba(255, 255, 255, 0.8);
+  transform: scale(1.3);
+}
+
+.stage-dot.active::after {
+  content: '';
+  position: absolute;
+  inset: -4px;
+  border-radius: 50%;
+  border: 2px solid rgba(255, 255, 255, 0.3);
+  animation: dotPulse 1s ease-out infinite;
+}
+
+@keyframes dotPulse {
+  0% {
+    transform: scale(1);
+    opacity: 1;
+  }
+  100% {
+    transform: scale(1.5);
+    opacity: 0;
+  }
+}
+
+.progress-container {
+  margin-bottom: 16px;
+  position: relative;
+}
+
+.progress-track {
+  width: 100%;
+  height: 3px;
+  background: rgba(255, 255, 255, 0.15);
+  border-radius: 2px;
+  overflow: visible;
+  position: relative;
+  box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.3);
+}
+
+.progress-fill-left {
+  position: absolute;
+  left: 0;
+  top: 0;
+  height: 100%;
+  background: linear-gradient(90deg, #ffffff, #f0f0f0);
+  border-radius: 2px;
+  transition: width 0.3s cubic-bezier(0.25, 0.1, 0.25, 1);
+  transform-origin: left;
+  box-shadow: 0 0 10px rgba(255, 255, 255, 0.5);
+}
+
+.progress-fill-right {
+  position: absolute;
+  right: 0;
+  top: 0;
+  height: 100%;
+  background: linear-gradient(270deg, #ffffff, #f0f0f0);
+  border-radius: 2px;
+  transition: width 0.3s cubic-bezier(0.25, 0.1, 0.25, 1);
+  transform-origin: right;
+  box-shadow: 0 0 10px rgba(255, 255, 255, 0.5);
+}
+
+.progress-glow {
+  position: absolute;
+  inset: -2px;
+  background: radial-gradient(ellipse at center, rgba(255, 255, 255, 0.3), transparent);
+  border-radius: 4px;
+  pointer-events: none;
+  animation: glowPulse 2s ease-in-out infinite;
+}
+
+@keyframes glowPulse {
+  0%, 100% { opacity: 0.5; }
+  50% { opacity: 1; }
+}
+
+.progress-percentage {
+  position: absolute;
+  top: -30px;
+  left: 50%;
+  transform: translateX(-50%);
+  font-size: 20px;
+  font-weight: 700;
+  color: #ffffff;
+  text-shadow: 0 2px 8px rgba(0, 0, 0, 0.5);
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+}
+
+/* 进度信息 */
+.progress-info {
+  text-align: center;
+  margin-top: 20px;
+}
+
+.progress-text {
+  color: #d0d0d0;
+  font-size: 15px;
+  font-weight: 500;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  transition: all 0.3s ease;
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
+  min-height: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* 入场动画 */
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* ========== 成功消息和进入按钮样式 ========== */
+.enter-button-section {
+  animation: buttonFadeIn 1.2s ease-out;
+}
+
+.success-message {
+  margin-bottom: 40px;
+  text-align: center;
+}
+
+.success-icon {
+  font-size: 48px;
+  margin-bottom: 16px;
+  animation: successBounce 1s ease-out;
+}
+
+@keyframes successBounce {
+  0% { transform: scale(0) rotate(0deg); }
+  50% { transform: scale(1.2) rotate(180deg); }
+  100% { transform: scale(1) rotate(360deg); }
+}
+
+.success-title {
+  font-size: 28px;
+  font-weight: 700;
+  margin: 0 0 8px 0;
+  color: #ffffff;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  text-shadow: 0 2px 8px rgba(0, 0, 0, 0.5);
+}
+
+.success-subtitle {
+  font-size: 16px;
+  margin: 0;
+  color: #c0c0c0;
+  font-weight: 400;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+}
+
+.enter-map-button {
+  position: relative;
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.15), rgba(255, 255, 255, 0.05));
+  border: 2px solid rgba(255, 255, 255, 0.3);
+  border-radius: 50px;
+  padding: 18px 36px;
+  color: #ffffff;
+  font-size: 18px;
+  font-weight: 600;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  cursor: pointer;
+  overflow: hidden;
+  backdrop-filter: blur(20px);
+  transition: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
+  min-width: 220px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  margin: 0 auto 32px auto;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+}
+
+.enter-map-button:hover {
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.25), rgba(255, 255, 255, 0.1));
+  border-color: rgba(255, 255, 255, 0.5);
+  transform: translateY(-4px) scale(1.02);
+  box-shadow: 0 12px 48px rgba(255, 255, 255, 0.2);
+}
+
+.enter-map-button:active {
+  transform: translateY(-2px) scale(0.98);
+  box-shadow: 0 6px 24px rgba(255, 255, 255, 0.15);
+}
+
+.button-icon {
+  font-size: 20px;
+  animation: iconFloat 2s ease-in-out infinite;
+}
+
+@keyframes iconFloat {
+  0%, 100% { transform: translateY(0px); }
+  50% { transform: translateY(-3px); }
+}
+
+.button-text {
+  position: relative;
+  z-index: 2;
+}
+
+.button-wave-effect {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(45deg, 
+    rgba(255, 255, 255, 0.1), 
+    rgba(255, 255, 255, 0.05), 
+    rgba(255, 255, 255, 0.1)
+  );
+  background-size: 200% 200%;
+  animation: buttonWave 3s ease-in-out infinite;
+  border-radius: inherit;
+  z-index: 1;
+}
+
+@keyframes buttonWave {
+  0%, 100% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+}
+
+.quick-features {
+  display: flex;
+  justify-content: center;
+  gap: 24px;
+  flex-wrap: wrap;
+}
+
+.feature-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  padding: 16px 12px;
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 16px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(10px);
+  transition: all 0.3s ease;
+  min-width: 80px;
+}
+
+.feature-item:hover {
+  background: rgba(255, 255, 255, 0.1);
+  transform: translateY(-2px);
+}
+
+.feature-icon {
+  font-size: 20px;
+}
+
+.feature-text {
+  font-size: 12px;
+  color: #d0d0d0;
+  font-weight: 500;
+  text-align: center;
+}
+
+@keyframes buttonFadeIn {
+  0% {
+    opacity: 0;
+    transform: translateY(40px) scale(0.9);
+  }
+  60% {
+    opacity: 0.8;
+    transform: translateY(-8px) scale(1.02);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+/* 响应式设计 */
+@media (max-width: 768px) {
+  .loader-content {
+    padding: 40px 30px;
+    margin: 20px;
+    max-width: 450px;
+  }
+  
+  .app-title {
+    font-size: 36px;
+  }
+  
+  .app-subtitle {
+    font-size: 15px;
+  }
+  
+  .app-branding {
+    margin-bottom: 50px;
+  }
+  
+  .floating-icon {
+    font-size: 20px;
+  }
+  
+  .feature-tags {
+    gap: 8px;
+  }
+  
+  .tag {
+    font-size: 12px;
+    padding: 5px 12px;
+  }
+  
+  .enter-map-button {
+    padding: 16px 32px;
+    font-size: 16px;
+    min-width: 200px;
+  }
+  
+  .quick-features {
+    gap: 16px;
+  }
+  
+  .feature-item {
+    min-width: 70px;
+    padding: 12px 8px;
+  }
+}
+
+@media (max-width: 480px) {
+  .loader-content {
+    width: 90%;
+    padding: 35px 25px;
+    max-width: 380px;
+  }
+  
+  .app-title {
+    font-size: 32px;
+  }
+  
+  .app-subtitle {
+    font-size: 14px;
+  }
+  
+  .app-branding {
+    margin-bottom: 40px;
+  }
+  
+  .floating-icon {
+    font-size: 18px;
+  }
+  
+  .feature-tags {
+    gap: 6px;
+  }
+  
+  .tag {
+    font-size: 11px;
+    padding: 4px 10px;
+  }
+  
+  .progress-text {
+    font-size: 14px;
+  }
+  
+  .enter-map-button {
+    padding: 14px 28px;
+    font-size: 15px;
+    min-width: 180px;
+  }
+  
+  .success-title {
+    font-size: 24px;
+  }
+  
+  .success-icon {
+    font-size: 40px;
+  }
+  
+  .quick-features {
+    gap: 12px;
+  }
+  
+  .feature-item {
+    min-width: 60px;
+    padding: 10px 6px;
+  }
+  
+  .feature-text {
+    font-size: 11px;
+  }
+}
 
 /* ========== 搜索栏 ========== */
 .search-bar-container {
@@ -773,7 +1981,7 @@ body {
   max-width: 280px;
   z-index: 1000;
   box-shadow: var(--shadow-xl);
-  animation: scaleIn 0.2s cubic-bezier(0.34, 1.56, 0.64, 1);
+  animation: modalSlideIn 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
   overflow: hidden;
   /* GPU 加速 */
   transform: translateZ(0);
@@ -906,8 +2114,8 @@ body {
   box-shadow: 0 4px 12px rgba(99, 102, 241, 0.25);
 }
 
-.menu-btn.primary:active {
-  transform: translateY(0);
+.menu-btn:active {
+  transform: translateY(0) scale(0.95);
   transition-duration: 0.1s;
 }
 
@@ -1023,7 +2231,12 @@ body {
   animation: pulse 0.5s ease infinite;
 }
 
-.context-overlay { position: fixed; inset: 0; z-index: 800; }
+.context-overlay { 
+  position: fixed; 
+  inset: 0; 
+  z-index: 800;
+  animation: overlayFadeIn 0.25s ease-out forwards;
+}
 
 /* ========== 标记图钉 ========== */
 .marker-pin {
@@ -1080,7 +2293,7 @@ body {
   justify-content: flex-end;
   padding: 20px;
   padding-bottom: 72px;
-  animation: fadeIn 0.2s;
+  animation: overlayFadeIn 0.3s ease-out forwards;
 }
 
 .marker-list-panel {
@@ -1792,8 +3005,8 @@ body {
   display: flex;
   align-items: center;
   justify-content: center;
+  animation: overlayFadeIn 0.3s ease-out forwards;
   padding: 24px;
-  animation: fadeIn 0.2s;
 }
 
 .settings-panel {
@@ -2954,8 +4167,12 @@ body {
 .menu-btn:active,
 .action-btn:active,
 .sort-btns button:active,
-.login-btn:active {
+.login-btn:active,
+.download-btn:active,
+.save-btn:active,
+.search-clear:active {
   transform: scale(0.95);
+  transition: transform 0.1s ease;
 }
 
 /* ========== 加载中按钮 ========== */

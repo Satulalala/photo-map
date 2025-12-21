@@ -1,0 +1,49 @@
+{
+  "source": {
+    "include": ["src"],
+    "includePattern": ".+\\.jsx?$",
+    "excludePattern": "(node_modules|dist|build)"
+  },
+  "plugins": ["plugins/markdown"],
+  "templates": {
+    "cleverLinks": true,
+    "monospaceLinks": true,
+    "default": {
+      "outputSourceFiles": true,
+      "includeDate": false
+    }
+  },
+  "opts": {
+    "destination": "./docs/api",
+    "recurse": true,
+    "readme": "./README.md",
+    "template": "node_modules/clean-jsdoc-theme",
+    "theme_opts": {
+      "title": "地图相册 API 文档",
+      "menu": [
+        {
+          "title": "GitHub",
+          "link": "https://github.com/your-repo/photo-map",
+          "target": "_blank"
+        }
+      ],
+      "meta": [
+        {
+          "name": "author",
+          "content": "Photo Map Team"
+        },
+        {
+          "name": "description",
+          "content": "地图相册应用 API 文档"
+        }
+      ],
+      "search": true,
+      "codepen": false,
+      "default_theme": "light"
+    }
+  },
+  "tags": {
+    "allowUnknownTags": true,
+    "dictionaries": ["jsdoc", "closure"]
+  }
+}

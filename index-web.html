@@ -6,156 +6,35 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     
     <!-- SEO 优化 -->
-    <title>地图相册 - 在世界地图上标记你的照片记忆</title>
-    <meta name="description" content="一个基于 React 的地图相册应用，让你在世界地图上标记旅行足迹并管理照片记忆。支持照片编辑、搜索、热力图等功能。" />
-    <meta name="keywords" content="地图相册,照片管理,旅行足迹,Mapbox,React,照片编辑" />
-    <meta name="author" content="你的姓名" />
-    
-    <!-- Open Graph -->
-    <meta property="og:title" content="地图相册 - 在世界地图上标记你的照片记忆" />
-    <meta property="og:description" content="一个基于 React 的地图相册应用，让你在世界地图上标记旅行足迹并管理照片记忆。" />
-    <meta property="og:type" content="website" />
-    <meta property="og:url" content="https://你的域名.com" />
-    <meta property="og:image" content="https://你的域名.com/og-image.jpg" />
-    
-    <!-- Twitter Card -->
-    <meta name="twitter:card" content="summary_large_image" />
-    <meta name="twitter:title" content="地图相册 - 在世界地图上标记你的照片记忆" />
-    <meta name="twitter:description" content="一个基于 React 的地图相册应用，让你在世界地图上标记旅行足迹并管理照片记忆。" />
-    <meta name="twitter:image" content="https://你的域名.com/og-image.jpg" />
+    <title>地图相册 - 记录每一个值得纪念的地点</title>
+    <meta name="description" content="一个基于 React 的地图相册应用，让你在世界地图上标记旅行足迹并管理照片记忆。" />
+    <meta name="keywords" content="地图相册,照片管理,旅行足迹,Mapbox,React" />
     
     <!-- PWA 支持 -->
     <link rel="manifest" href="/manifest.json" />
-    <meta name="theme-color" content="#667eea" />
+    <meta name="theme-color" content="#0b0b19" />
     
     <!-- 预加载关键资源 -->
     <link rel="preconnect" href="https://api.mapbox.com" />
-    <link rel="preconnect" href="https://fonts.googleapis.com" />
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     
     <!-- Mapbox GL JS -->
-    <link href="https://api.mapbox.com/mapbox-gl-js/v2.15.0/mapbox-gl.css" rel="stylesheet" />
-    <script src="https://api.mapbox.com/mapbox-gl-js/v2.15.0/mapbox-gl.js"></script>
+    <link href="https://api.mapbox.com/mapbox-gl-js/v2.14.1/mapbox-gl.css" rel="stylesheet" />
+    <script src="https://api.mapbox.com/mapbox-gl-js/v2.14.1/mapbox-gl.js"></script>
     
-    <!-- 字体 -->
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
-    
-    <!-- 样式 -->
     <style>
-      /* 加载动画 */
-      .loading-screen {
-        position: fixed;
-        top: 0;
-        left: 0;
-        right: 0;
-        bottom: 0;
-        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        justify-content: center;
-        color: white;
-        font-family: 'Inter', sans-serif;
-        z-index: 9999;
+      /* 初始背景色与地球加载器一致，避免白屏 */
+      html, body {
+        margin: 0;
+        padding: 0;
+        background: rgb(11, 11, 25);
       }
-      
-      .loading-logo {
-        font-size: 48px;
-        margin-bottom: 24px;
-        animation: pulse 2s infinite;
-      }
-      
-      .loading-text {
-        font-size: 24px;
-        font-weight: 600;
-        margin-bottom: 8px;
-      }
-      
-      .loading-subtitle {
-        font-size: 16px;
-        opacity: 0.8;
-        margin-bottom: 32px;
-      }
-      
-      .loading-spinner {
-        width: 40px;
-        height: 40px;
-        border: 3px solid rgba(255, 255, 255, 0.3);
-        border-top: 3px solid white;
-        border-radius: 50%;
-        animation: spin 1s linear infinite;
-      }
-      
-      @keyframes pulse {
-        0%, 100% { transform: scale(1); }
-        50% { transform: scale(1.1); }
-      }
-      
-      @keyframes spin {
-        0% { transform: rotate(0deg); }
-        100% { transform: rotate(360deg); }
-      }
-      
-      /* 隐藏加载屏幕 */
-      .loading-screen.hidden {
-        opacity: 0;
-        pointer-events: none;
-        transition: opacity 0.5s ease;
+      #root {
+        min-height: 100vh;
       }
     </style>
   </head>
   <body>
-    <!-- 加载屏幕 -->
-    <div id="loading" class="loading-screen">
-      <div class="loading-logo">🗺️</div>
-      <div class="loading-text">地图相册</div>
-      <div class="loading-subtitle">正在加载应用...</div>
-      <div class="loading-spinner"></div>
-    </div>
-    
-    <!-- 应用根节点 -->
     <div id="root"></div>
-    
-    <!-- Web 版本入口脚本 -->
     <script type="module" src="/src-web/main-web.jsx"></script>
-    
-    <!-- 加载完成后隐藏加载屏幕 -->
-    <script>
-      window.addEventListener('load', () => {
-        setTimeout(() => {
-          const loading = document.getElementById('loading');
-          if (loading) {
-            loading.classList.add('hidden');
-            setTimeout(() => loading.remove(), 500);
-          }
-        }, 1000);
-      });
-    </script>
-    
-    <!-- 错误处理 -->
-    <script>
-      window.addEventListener('error', (e) => {
-        console.error('应用加载错误:', e.error);
-        const loading = document.getElementById('loading');
-        if (loading) {
-          loading.innerHTML = `
-            <div style="text-align: center;">
-              <div style="font-size: 48px; margin-bottom: 24px;">⚠️</div>
-              <div style="font-size: 24px; font-weight: 600; margin-bottom: 16px;">加载失败</div>
-              <div style="font-size: 16px; opacity: 0.8; margin-bottom: 24px;">请刷新页面重试</div>
-              <button onclick="location.reload()" style="
-                background: white;
-                color: #667eea;
-                border: none;
-                padding: 12px 24px;
-                border-radius: 8px;
-                font-weight: 600;
-                cursor: pointer;
-              ">刷新页面</button>
-            </div>
-          `;
-        }
-      });
-    </script>
   </body>
 </html>

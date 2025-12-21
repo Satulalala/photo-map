@@ -1,0 +1,134 @@
+/* ========== 进度条组件样式 ========== */
+
+.progress-section {
+  animation: fadeInUp 0.8s ease-out 0.2s both;
+}
+
+.progress-indicator {
+  margin-bottom: var(--space-xl);
+}
+
+.stage-dots {
+  display: flex;
+  justify-content: center;
+  gap: var(--space-md);
+  align-items: center;
+}
+
+.stage-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.2);
+  transition: all 0.4s var(--ease-bounce);
+  position: relative;
+}
+
+.stage-dot.active {
+  background: var(--text-inverse);
+  box-shadow: 0 0 12px rgba(255, 255, 255, 0.8);
+  transform: scale(1.3);
+}
+
+.stage-dot.active::after {
+  content: '';
+  position: absolute;
+  inset: -4px;
+  border-radius: 50%;
+  border: 2px solid rgba(255, 255, 255, 0.3);
+  animation: dotPulse 1s ease-out infinite;
+}
+
+@keyframes dotPulse {
+  0% {
+    transform: scale(1);
+    opacity: 1;
+  }
+  100% {
+    transform: scale(1.5);
+    opacity: 0;
+  }
+}
+
+.progress-container {
+  margin-bottom: var(--space-lg);
+  position: relative;
+}
+
+.progress-track {
+  width: 100%;
+  height: 3px;
+  background: rgba(255, 255, 255, 0.15);
+  border-radius: 2px;
+  overflow: visible;
+  position: relative;
+  box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.3);
+}
+
+.progress-fill-left {
+  position: absolute;
+  left: 0;
+  top: 0;
+  height: 100%;
+  background: linear-gradient(90deg, #ffffff, #f0f0f0);
+  border-radius: 2px;
+  transition: width 0.3s var(--ease-out);
+  transform-origin: left;
+  box-shadow: 0 0 10px rgba(255, 255, 255, 0.5);
+}
+
+.progress-fill-right {
+  position: absolute;
+  right: 0;
+  top: 0;
+  height: 100%;
+  background: linear-gradient(270deg, #ffffff, #f0f0f0);
+  border-radius: 2px;
+  transition: width 0.3s var(--ease-out);
+  transform-origin: right;
+  box-shadow: 0 0 10px rgba(255, 255, 255, 0.5);
+}
+
+.progress-glow {
+  position: absolute;
+  inset: -2px;
+  background: radial-gradient(ellipse at center, rgba(255, 255, 255, 0.3), transparent);
+  border-radius: 4px;
+  pointer-events: none;
+  animation: glowPulse 2s ease-in-out infinite;
+}
+
+@keyframes glowPulse {
+  0%, 100% { opacity: 0.5; }
+  50% { opacity: 1; }
+}
+
+.progress-percentage {
+  position: absolute;
+  top: -30px;
+  left: 50%;
+  transform: translateX(-50%);
+  font-size: var(--text-xl);
+  font-weight: var(--font-bold);
+  color: var(--text-inverse);
+  text-shadow: 0 2px 8px rgba(0, 0, 0, 0.5);
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+}
+
+.progress-info {
+  text-align: center;
+  margin-top: var(--space-xl);
+}
+
+.progress-text {
+  color: #d0d0d0;
+  font-size: var(--text-sm);
+  font-weight: var(--font-medium);
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  transition: all var(--transition-normal);
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
+  min-height: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}

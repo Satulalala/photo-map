@@ -1,11 +1,16 @@
 # Netlify 部署配置
 [build]
   publish = "dist-web"
-  command = "npm run web:build"
+  command = "npm ci && npm run web:build"
 
 # 环境配置 - 使用 Node 18 LTS
 [build.environment]
   NODE_VERSION = "18"
+  NPM_FLAGS = "--prefer-offline --no-audit"
+
+# 构建优化
+[build.processing]
+  skip_processing = false
 
 # 重定向规则 - SPA 路由支持
 [[redirects]]

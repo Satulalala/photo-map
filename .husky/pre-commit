@@ -1,0 +1,8 @@
+#!/usr/bin/env sh
+. "$(dirname -- "$0")/_/husky.sh"
+
+# 运行 lint-staged 检查暂存的文件
+npx lint-staged
+
+# 运行类型检查（可选，取消注释启用）
+# npm run type-check

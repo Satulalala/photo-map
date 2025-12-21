@@ -2,7 +2,7 @@
 
 > 💡 **分天完成建议**: 这个部署过程可以分 3-4 天完成，每天 30-60 分钟，轻松无压力！
 
-## � 分天完成计必划
+## 📅 分天完成计划
 
 ### 📅 第一天：项目准备 (30-45分钟)
 - ✅ 检查项目运行状态
@@ -16,7 +16,7 @@
 - ✅ 配置仓库设置
 - 🎯 **完成标志**: 代码成功上传到 GitHub
 
-### � 第三天准：Web 部署 (60-90分钟)
+### 📅 第三天：Web 部署 (60-90分钟)
 - ✅ 选择部署平台 (Netlify 推荐)
 - ✅ 配置构建设置和环境变量
 - ✅ 完成 Web 版本上线
@@ -37,8 +37,6 @@
 - [ ] 已有 GitHub 账号
 - [ ] 已有 Mapbox Token
 - [ ] Node.js 18+ 已安装
-
----
 
 # 📅 第一天：项目准备和文件配置
 > ⏱️ **预计时间**: 30-45 分钟  
@@ -227,6 +225,47 @@ git push -u origin main
 - [ ] 照片编辑功能正常
 - [ ] 搜索功能正常
 
+### 方案 B：Vercel 部署（备选）
+
+1. **注册 Vercel**
+   - 打开 https://vercel.com
+   - 用 GitHub 账号登录
+
+2. **导入项目**
+   - 点击 "New Project"
+   - 选择 `photo-map` 仓库
+
+3. **配置设置**
+   ```
+   Framework Preset: Vite
+   Build Command: npm run web:build
+   Output Directory: dist-web
+   Install Command: npm install
+   ```
+
+4. **添加环境变量**
+   ```
+   VITE_MAPBOX_TOKEN = pk.eyJ1IjoiZm43cXAiLCJhIjoiY21peTUyd3B5MGJqMTNjcTU4aDVtdnNqNiJ9.TadVpAbhvEATQxuflxmqdA
+   ```
+
+5. **部署**
+   - 点击 "Deploy"
+   - 等待构建完成
+
+### 方案 C：GitHub Pages 部署
+
+1. **启用 GitHub Pages**
+   - 在 GitHub 仓库页面，点击 "Settings"
+   - 滚动到 "Pages" 部分
+   - Source 选择 "GitHub Actions"
+
+2. **配置会自动运行**
+   - GitHub Actions 已经配置好了
+   - 推送代码后会自动部署
+
+3. **访问网站**
+   - 地址：`https://你的用户名.github.io/photo-map`
+
 ✅ **第三天完成！** 你的 Web 版本已经上线了！明天发布桌面版。
 
 ---
@@ -271,6 +310,22 @@ GitHub Actions 已经配置好了，会自动构建桌面版：
    - 构建完成后，在 "Actions" 页面下载 artifacts
    - 或等待自动创建 Release
 
+### 4.2 手动构建（备选）
+
+如果自动构建失败，可以手动构建：
+
+```bash
+# 安装依赖
+npm install
+
+# 构建桌面版
+npm run dist
+
+# 构建文件在 dist/ 目录
+```
+
+---
+
 ## 🎯 第五步：创建 Release
 
 ### 5.1 创建 GitHub Release
@@ -303,7 +358,7 @@ GitHub Actions 已经配置好了，会自动构建桌面版：
    - **macOS**: photo-map-1.0.0.dmg
    - **Linux**: photo-map-1.0.0.AppImage
    
-   ### � 系统要求
+   ### 💻 系统要求
    - Windows 10 或更高版本
    - macOS 10.15 或更高版本
    - Ubuntu 18.04+ 或同等 Linux 发行版
@@ -315,6 +370,8 @@ GitHub Actions 已经配置好了，会自动构建桌面版：
 
 4. **发布 Release**
    - 点击 "Publish release"
+
+---
 
 ## 📊 第六步：验证部署
 
@@ -335,6 +392,8 @@ GitHub Actions 已经配置好了，会自动构建桌面版：
 - [ ] 所有功能正常运行
 - [ ] 数据持久化正常
 - [ ] 性能表现良好
+
+---
 
 ## 🎨 第七步：完善项目
 
@@ -375,7 +434,7 @@ GitHub Actions 已经配置好了，会自动构建桌面版：
 
 ---
 
-# 📅 后续维护：持续更新和优化
+# � 后续维护：持续更新和优化
 > ⏱️ **预计时间**: 根据需要  
 > 🎯 **目标**: 保持项目活跃，持续改进
 

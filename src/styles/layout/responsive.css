@@ -1,0 +1,141 @@
+/* ========== 响应式布局样式 ========== */
+
+/* 平板设备 */
+@media (max-width: 768px) {
+  .loader-content {
+    padding: var(--space-4xl) var(--space-3xl);
+    margin: var(--space-xl);
+    max-width: 450px;
+  }
+  
+  .app-title {
+    font-size: 36px;
+  }
+  
+  .app-subtitle {
+    font-size: var(--text-sm);
+  }
+  
+  .app-branding {
+    margin-bottom: var(--space-5xl);
+  }
+  
+  .floating-icon {
+    font-size: var(--text-xl);
+  }
+  
+  .feature-tags {
+    gap: var(--space-sm);
+  }
+  
+  .tag {
+    font-size: var(--text-xs);
+    padding: 5px var(--space-md);
+  }
+  
+  .enter-map-button {
+    padding: var(--space-lg) var(--space-3xl);
+    font-size: var(--text-base);
+    min-width: 200px;
+  }
+  
+  .quick-features {
+    gap: var(--space-lg);
+  }
+  
+  .feature-item {
+    min-width: 70px;
+    padding: var(--space-md) var(--space-sm);
+  }
+}
+
+/* 手机设备 */
+@media (max-width: 480px) {
+  .loader-content {
+    width: 90%;
+    padding: 35px 25px;
+    max-width: 380px;
+  }
+  
+  .app-title {
+    font-size: 32px;
+  }
+  
+  .app-subtitle {
+    font-size: var(--text-sm);
+  }
+  
+  .app-branding {
+    margin-bottom: var(--space-4xl);
+  }
+  
+  .floating-icon {
+    font-size: var(--text-lg);
+  }
+  
+  .feature-tags {
+    gap: 6px;
+  }
+  
+  .tag {
+    font-size: 11px;
+    padding: 4px 10px;
+  }
+  
+  .progress-text {
+    font-size: var(--text-sm);
+  }
+  
+  .enter-map-button {
+    padding: 14px 28px;
+    font-size: var(--text-sm);
+    min-width: 180px;
+  }
+  
+  .success-title {
+    font-size: var(--text-2xl);
+  }
+  
+  .success-icon {
+    font-size: 40px;
+  }
+  
+  .quick-features {
+    gap: var(--space-md);
+  }
+  
+  .feature-item {
+    min-width: 60px;
+    padding: 10px 6px;
+  }
+  
+  .feature-text {
+    font-size: 11px;
+  }
+}
+
+/* 超小屏幕 */
+@media (max-width: 320px) {
+  .loader-content {
+    padding: var(--space-3xl) var(--space-xl);
+    margin: var(--space-md);
+  }
+  
+  .app-title {
+    font-size: 28px;
+  }
+  
+  .feature-tags {
+    flex-direction: column;
+    align-items: center;
+  }
+  
+  .enter-map-button {
+    min-width: 160px;
+    padding: var(--space-md) var(--space-2xl);
+  }
+  
+  .quick-features {
+    gap: var(--space-sm);
+  }
+}
