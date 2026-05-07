@@ -1,0 +1,125 @@
+/* Web 版本专用样式 */
+
+/* 下载按钮 */
+.web-dl-btn {
+  background: #f8fafc;
+  color: #475569;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  padding: 8px 14px;
+  font-size: 13px;
+  cursor: pointer;
+  transition: all 0.15s;
+  white-space: nowrap;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+.web-dl-btn:hover {
+  background: #3b82f6;
+  color: #fff;
+  border-color: #3b82f6;
+}
+
+/* 弹窗遮罩 */
+.web-dl-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.4);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 9999;
+}
+
+/* 弹窗 */
+.web-dl-modal {
+  background: #fff;
+  border-radius: 12px;
+  width: 320px;
+  box-shadow: 0 8px 30px rgba(0,0,0,0.15);
+  overflow: hidden;
+}
+
+.web-dl-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 14px 16px;
+  border-bottom: 1px solid #f1f5f9;
+  font-weight: 600;
+  font-size: 15px;
+}
+.web-dl-header button {
+  background: none;
+  border: none;
+  font-size: 18px;
+  color: #94a3b8;
+  cursor: pointer;
+  line-height: 1;
+}
+
+.web-dl-body {
+  padding: 16px;
+}
+.web-dl-body p {
+  margin: 0 0 14px;
+  font-size: 13px;
+  color: #64748b;
+  text-align: center;
+}
+
+/* 主下载按钮 */
+.web-dl-main {
+  display: block;
+  background: #3b82f6;
+  color: #fff;
+  text-align: center;
+  padding: 12px;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 500;
+  text-decoration: none;
+  transition: background 0.15s;
+}
+.web-dl-main:hover {
+  background: #2563eb;
+}
+
+/* 其他版本 */
+.web-dl-others {
+  display: flex;
+  justify-content: center;
+  gap: 16px;
+  margin-top: 12px;
+  padding-top: 12px;
+  border-top: 1px solid #f1f5f9;
+}
+.web-dl-others a {
+  font-size: 12px;
+  color: #64748b;
+  text-decoration: none;
+}
+.web-dl-others a:hover {
+  color: #3b82f6;
+}
+
+/* 搜索栏右侧容器 */
+.web-download-beside-search {
+  position: absolute;
+  left: calc(100% + 12px);
+  top: 50%;
+  transform: translateY(-50%);
+  z-index: 600;
+  white-space: nowrap;
+}
+
+.web-app .search-bar-container {
+  position: fixed;
+  top: 12px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 420px;
+  max-width: calc(100vw - 40px);
+  z-index: 600;
+}

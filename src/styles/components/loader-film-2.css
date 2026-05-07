@@ -1,0 +1,215 @@
+/* 🎞️ 胶片孔洞 - 简单清晰的圆形孔洞 */
+.film-perforations {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+
+/* 上下两排圆形孔洞 - 像🎞️emoji */
+.film-perforations::before,
+.film-perforations::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  right: 0;
+  height: 6px;
+  background: 
+    repeating-linear-gradient(
+      to right,
+      transparent 0px,
+      transparent 4px,
+      #1a1a1a 4px,
+      #1a1a1a 8px,
+      transparent 8px,
+      transparent 12px
+    );
+  /* 让孔洞看起来是圆形的 */
+  border-radius: 3px;
+  box-shadow: 
+    inset 0 1px 2px rgba(0,0,0,0.8),
+    0 1px 0 rgba(255,255,255,0.1);
+}
+
+.film-perforations::before {
+  top: 3px;
+}
+
+.film-perforations::after {
+  bottom: 3px;
+}
+
+/* 使用额外的元素创建更真实的圆形孔洞 */
+.film-perforations::after {
+  background-image: 
+    radial-gradient(circle at 6px center, transparent 2px, #1a1a1a 2px, #1a1a1a 3px, transparent 3px),
+    radial-gradient(circle at 18px center, transparent 2px, #1a1a1a 2px, #1a1a1a 3px, transparent 3px),
+    radial-gradient(circle at 30px center, transparent 2px, #1a1a1a 2px, #1a1a1a 3px, transparent 3px),
+    radial-gradient(circle at 42px center, transparent 2px, #1a1a1a 2px, #1a1a1a 3px, transparent 3px),
+    radial-gradient(circle at 54px center, transparent 2px, #1a1a1a 2px, #1a1a1a 3px, transparent 3px),
+    radial-gradient(circle at 66px center, transparent 2px, #1a1a1a 2px, #1a1a1a 3px, transparent 3px),
+    radial-gradient(circle at 78px center, transparent 2px, #1a1a1a 2px, #1a1a1a 3px, transparent 3px),
+    radial-gradient(circle at 90px center, transparent 2px, #1a1a1a 2px, #1a1a1a 3px, transparent 3px);
+  background-size: 12px 6px;
+  background-repeat: repeat-x;
+}
+
+.film-perforations::before {
+  background-image: 
+    radial-gradient(circle at 6px center, transparent 2px, #1a1a1a 2px, #1a1a1a 3px, transparent 3px),
+    radial-gradient(circle at 18px center, transparent 2px, #1a1a1a 2px, #1a1a1a 3px, transparent 3px),
+    radial-gradient(circle at 30px center, transparent 2px, #1a1a1a 2px, #1a1a1a 3px, transparent 3px),
+    radial-gradient(circle at 42px center, transparent 2px, #1a1a1a 2px, #1a1a1a 3px, transparent 3px),
+    radial-gradient(circle at 54px center, transparent 2px, #1a1a1a 2px, #1a1a1a 3px, transparent 3px),
+    radial-gradient(circle at 66px center, transparent 2px, #1a1a1a 2px, #1a1a1a 3px, transparent 3px),
+    radial-gradient(circle at 78px center, transparent 2px, #1a1a1a 2px, #1a1a1a 3px, transparent 3px),
+    radial-gradient(circle at 90px center, transparent 2px, #1a1a1a 2px, #1a1a1a 3px, transparent 3px);
+  background-size: 12px 6px;
+  background-repeat: repeat-x;
+}
+
+/* 🎞️ 中间的图像帧区域 - emoji风格 */
+.film-ribbon::after {
+  content: '';
+  position: absolute;
+  top: 11px;
+  bottom: 11px;
+  left: 6px;
+  right: 6px;
+  background: 
+    /* 胶片图像帧的分割线 */
+    repeating-linear-gradient(
+      to right,
+      #2a2a2a 0px,
+      #2a2a2a 1px,
+      #1a1a1a 1px,
+      #1a1a1a 8px,
+      #2a2a2a 8px,
+      #2a2a2a 9px,
+      #1a1a1a 9px,
+      #1a1a1a 16px
+    );
+  border: 1px solid #0a0a0a;
+  border-radius: 1px;
+  /* 内凹的胶片效果 */
+  box-shadow: 
+    inset 0 1px 2px rgba(0, 0, 0, 0.6),
+    inset 0 -1px 1px rgba(255, 255, 255, 0.1),
+    0 1px 0 rgba(255, 255, 255, 0.05);
+}
+
+/* 连接效果 */
+.connection-effect {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 100px;
+  height: 100px;
+}
+
+.ripple {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 20px;
+  height: 20px;
+  border: 2px solid rgba(255, 255, 255, 0.6);
+  border-radius: 50%;
+  transform: translate(-50%, -50%);
+  animation: rippleExpand 2s ease-out infinite;
+}
+
+.ripple.delay-1 {
+  animation-delay: 0.5s;
+  border-color: rgba(59, 130, 246, 0.6);
+}
+
+.ripple.delay-2 {
+  animation-delay: 1s;
+  border-color: rgba(139, 92, 246, 0.6);
+}
+
+@keyframes rippleExpand {
+  0% {
+    width: 20px;
+    height: 20px;
+    opacity: 1;
+  }
+  100% {
+    width: 100px;
+    height: 100px;
+    opacity: 0;
+  }
+}
+
+/* 加载信息 */
+.loader-info {
+  position: absolute;
+  bottom: 100px;
+  left: 50%;
+  transform: translateX(-50%);
+  text-align: center;
+  animation: slideUp 0.8s cubic-bezier(0.34, 1.56, 0.64, 1) 0.5s both;
+}
+
+.loader-title {
+  font-size: 28px;
+  font-weight: 700;
+  margin-bottom: 8px;
+  background: linear-gradient(135deg, #ffffff 0%, #e2e8f0 50%, #cbd5e1 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  text-shadow: 0 0 20px rgba(255, 255, 255, 0.3);
+  letter-spacing: 1px;
+}
+
+.loader-subtitle {
+  font-size: 14px;
+  color: rgba(255, 255, 255, 0.7);
+  font-weight: 400;
+  transition: all 0.5s ease;
+  letter-spacing: 0.5px;
+}
+
+/* 连接阶段 - 进度条闪烁效果 */
+.film-loader.connecting .film-progress-bar {
+  animation: filmGlow 1s ease-in-out infinite alternate;
+}
+
+@keyframes filmGlow {
+  0% { 
+    box-shadow: 
+      0 4px 12px rgba(0, 0, 0, 0.3),
+      inset 0 2px 0 rgba(255, 255, 255, 0.4),
+      inset 0 -2px 0 rgba(0, 0, 0, 0.2);
+  }
+  100% { 
+    box-shadow: 
+      0 6px 20px rgba(59, 130, 246, 0.4),
+      inset 0 2px 0 rgba(255, 255, 255, 0.6),
+      inset 0 -2px 0 rgba(0, 0, 0, 0.2),
+      0 0 20px rgba(59, 130, 246, 0.3);
+  }
+}
+
+/* 完成阶段 - 胶片淡出 */
+.film-loader.complete {
+  animation: fadeIn 1.2s ease reverse forwards;
+}
+
+.film-loader.complete .film-ribbon {
+  animation: fadeOut 1.2s ease forwards;
+}
+
+@keyframes fadeOut {
+  0% {
+    opacity: 1;
+    transform: scale(1);
+  }
+  100% {
+    opacity: 0;
+    transform: scale(1.1);
+  }
+}
+

@@ -1,0 +1,278 @@
+/* ========== 成功消息和进入按钮样式 ========== */
+.enter-button-section {
+  animation: buttonFadeIn 1.2s ease-out;
+}
+
+.success-message {
+  margin-bottom: 40px;
+  text-align: center;
+}
+
+.success-icon {
+  font-size: 48px;
+  margin-bottom: 16px;
+  animation: successBounce 1s ease-out;
+}
+
+@keyframes successBounce {
+  0% { transform: scale(0) rotate(0deg); }
+  50% { transform: scale(1.2) rotate(180deg); }
+  100% { transform: scale(1) rotate(360deg); }
+}
+
+.success-title {
+  font-size: 28px;
+  font-weight: 700;
+  margin: 0 0 8px 0;
+  color: #ffffff;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  text-shadow: 0 2px 8px rgba(0, 0, 0, 0.5);
+}
+
+.success-subtitle {
+  font-size: 16px;
+  margin: 0;
+  color: #c0c0c0;
+  font-weight: 400;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+}
+
+.enter-map-button {
+  position: relative;
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.15), rgba(255, 255, 255, 0.05));
+  border: 2px solid rgba(255, 255, 255, 0.3);
+  border-radius: 50px;
+  padding: 18px 36px;
+  color: #ffffff;
+  font-size: 18px;
+  font-weight: 600;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  cursor: pointer;
+  overflow: hidden;
+  backdrop-filter: blur(20px);
+  transition: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
+  min-width: 220px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  margin: 0 auto 32px auto;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+}
+
+.enter-map-button:hover {
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.25), rgba(255, 255, 255, 0.1));
+  border-color: rgba(255, 255, 255, 0.5);
+  transform: translateY(-4px) scale(1.02);
+  box-shadow: 0 12px 48px rgba(255, 255, 255, 0.2);
+}
+
+.enter-map-button:active {
+  transform: translateY(-2px) scale(0.98);
+  box-shadow: 0 6px 24px rgba(255, 255, 255, 0.15);
+}
+
+.button-icon {
+  font-size: 20px;
+  animation: iconFloat 2s ease-in-out infinite;
+}
+
+@keyframes iconFloat {
+  0%, 100% { transform: translateY(0px); }
+  50% { transform: translateY(-3px); }
+}
+
+.button-text {
+  position: relative;
+  z-index: 2;
+}
+
+.button-wave-effect {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(45deg, 
+    rgba(255, 255, 255, 0.1), 
+    rgba(255, 255, 255, 0.05), 
+    rgba(255, 255, 255, 0.1)
+  );
+  background-size: 200% 200%;
+  animation: buttonWave 3s ease-in-out infinite;
+  border-radius: inherit;
+  z-index: 1;
+}
+
+@keyframes buttonWave {
+  0%, 100% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+}
+
+.quick-features {
+  display: flex;
+  justify-content: center;
+  gap: 24px;
+  flex-wrap: wrap;
+}
+
+.feature-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  padding: 16px 12px;
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 16px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(10px);
+  transition: all 0.3s ease;
+  min-width: 80px;
+}
+
+.feature-item:hover {
+  background: rgba(255, 255, 255, 0.1);
+  transform: translateY(-2px);
+}
+
+.feature-icon {
+  font-size: 20px;
+}
+
+.feature-text {
+  font-size: 12px;
+  color: #d0d0d0;
+  font-weight: 500;
+  text-align: center;
+}
+
+@keyframes buttonFadeIn {
+  0% {
+    opacity: 0;
+    transform: translateY(40px) scale(0.9);
+  }
+  60% {
+    opacity: 0.8;
+    transform: translateY(-8px) scale(1.02);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+/* 响应式设计 */
+@media (max-width: 768px) {
+  .loader-content {
+    padding: 40px 30px;
+    margin: 20px;
+    max-width: 450px;
+  }
+  
+  .app-title {
+    font-size: 36px;
+  }
+  
+  .app-subtitle {
+    font-size: 15px;
+  }
+  
+  .app-branding {
+    margin-bottom: 50px;
+  }
+  
+  .floating-icon {
+    font-size: 20px;
+  }
+  
+  .feature-tags {
+    gap: 8px;
+  }
+  
+  .tag {
+    font-size: 12px;
+    padding: 5px 12px;
+  }
+  
+  .enter-map-button {
+    padding: 16px 32px;
+    font-size: 16px;
+    min-width: 200px;
+  }
+  
+  .quick-features {
+    gap: 16px;
+  }
+  
+  .feature-item {
+    min-width: 70px;
+    padding: 12px 8px;
+  }
+}
+
+@media (max-width: 480px) {
+  .loader-content {
+    width: 90%;
+    padding: 35px 25px;
+    max-width: 380px;
+  }
+  
+  .app-title {
+    font-size: 32px;
+  }
+  
+  .app-subtitle {
+    font-size: 14px;
+  }
+  
+  .app-branding {
+    margin-bottom: 40px;
+  }
+  
+  .floating-icon {
+    font-size: 18px;
+  }
+  
+  .feature-tags {
+    gap: 6px;
+  }
+  
+  .tag {
+    font-size: 11px;
+    padding: 4px 10px;
+  }
+  
+  .progress-text {
+    font-size: 14px;
+  }
+  
+  .enter-map-button {
+    padding: 14px 28px;
+    font-size: 15px;
+    min-width: 180px;
+  }
+  
+  .success-title {
+    font-size: 24px;
+  }
+  
+  .success-icon {
+    font-size: 40px;
+  }
+  
+  .quick-features {
+    gap: 12px;
+  }
+  
+  .feature-item {
+    min-width: 60px;
+    padding: 10px 6px;
+  }
+  
+  .feature-text {
+    font-size: 11px;
+  }
+}
+

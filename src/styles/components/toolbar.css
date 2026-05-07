@@ -1,0 +1,123 @@
+/* ========== 工具栏 ========== */
+.toolbar {
+  position: fixed;
+  top: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  z-index: 500;
+}
+
+.toolbar-left {
+  left: 12px;
+  animation: slideRight 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.toolbar-right {
+  right: 12px;
+  animation: slideLeft 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.toolbar button {
+  width: 44px;
+  height: 44px;
+  min-width: 44px;
+  min-height: 44px;
+  border: 1px solid rgba(255, 255, 255, 0.7);
+  background: rgba(255, 255, 255, 0.88);
+  backdrop-filter: blur(8px);
+  color: #30415f;
+  cursor: pointer;
+  border-radius: 12px;
+  box-shadow: 0 4px 12px rgba(12, 20, 34, 0.14);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s ease;
+  position: relative;
+  overflow: hidden;
+}
+
+.toolbar button svg {
+  width: 20px;
+  height: 20px;
+  transition: all 0.2s ease;
+}
+
+.main-tool-icon {
+  font-size: 19px;
+  line-height: 1;
+  transition: transform 0.2s ease;
+}
+
+.toolbar button::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(circle at 50% 20%, rgba(80, 140, 255, 0.18), transparent 58%);
+  opacity: 0;
+  transition: opacity 0.2s;
+  border-radius: 12px;
+}
+
+.toolbar button:hover {
+  background: #ffffff;
+  transform: translateY(-2px) scale(1.03);
+  box-shadow: 0 8px 18px rgba(17, 29, 48, 0.2);
+  border-color: rgba(167, 198, 255, 0.75);
+}
+
+.toolbar button:hover svg,
+.toolbar button:hover .main-tool-icon {
+  transform: scale(1.1);
+  color: #2f5fb3;
+}
+
+.toolbar button:hover::before {
+  opacity: 1;
+}
+
+.toolbar button:active {
+  transform: translateY(0) scale(0.96);
+  transition-duration: 0.1s;
+}
+
+.toolbar button.active {
+  background: #edf3ff;
+  color: #2f5fb3;
+  box-shadow: 0 7px 16px rgba(42, 93, 181, 0.22);
+  border-color: rgba(125, 171, 245, 0.7);
+}
+
+.toolbar button.active svg {
+  stroke: #2f5fb3;
+}
+
+.toolbar button.active:hover {
+  transform: translateY(-2px) scale(1.03);
+  box-shadow: 0 10px 20px rgba(42, 93, 181, 0.26);
+}
+
+/* 左侧工具栏的提示显示在右边 */
+.toolbar-left [data-tooltip]::after {
+  left: 100%;
+  right: auto;
+  transform: translateY(-50%) translateX(8px);
+}
+
+.toolbar-left [data-tooltip]:hover::after {
+  transform: translateY(-50%) translateX(12px);
+}
+
+/* 右侧工具栏的提示显示在左边 */
+.toolbar-right [data-tooltip]::after {
+  left: auto;
+  right: 100%;
+  transform: translateY(-50%) translateX(-8px);
+}
+
+.toolbar-right [data-tooltip]:hover::after {
+  transform: translateY(-50%) translateX(-12px);
+}
+
+

@@ -1,0 +1,353 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>离线模式 - 地图相册</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #0f1419 0%, #1a2332 50%, #2d3748 100%);
+            color: #ffffff;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .offline-container {
+            text-align: center;
+            max-width: 500px;
+            width: 100%;
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 16px;
+            padding: 40px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+        }
+
+        .offline-icon {
+            font-size: 64px;
+            margin-bottom: 24px;
+            animation: pulse 2s ease-in-out infinite;
+        }
+
+        .offline-title {
+            font-size: 28px;
+            font-weight: 700;
+            margin-bottom: 16px;
+            color: #ffffff;
+        }
+
+        .offline-message {
+            font-size: 16px;
+            color: #cccccc;
+            line-height: 1.6;
+            margin-bottom: 32px;
+        }
+
+        .offline-actions {
+            display: flex;
+            gap: 12px;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        .offline-button {
+            background: linear-gradient(135deg, #4a90e2, #357abd);
+            border: none;
+            border-radius: 8px;
+            padding: 12px 24px;
+            color: #ffffff;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            min-width: 120px;
+            justify-content: center;
+        }
+
+        .offline-button:hover {
+            background: linear-gradient(135deg, #5ba0f2, #4080cd);
+            transform: translateY(-2px);
+            box-shadow: 0 6px 24px rgba(74, 144, 226, 0.4);
+        }
+
+        .offline-button-secondary {
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .offline-button-secondary:hover {
+            background: rgba(255, 255, 255, 0.2);
+        }
+
+        .offline-features {
+            margin-top: 32px;
+            padding-top: 24px;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .offline-features h3 {
+            font-size: 18px;
+            margin-bottom: 16px;
+            color: #ffffff;
+        }
+
+        .feature-list {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 16px;
+            text-align: left;
+        }
+
+        .feature-item {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 8px;
+            padding: 16px;
+        }
+
+        .feature-icon {
+            font-size: 24px;
+            margin-bottom: 8px;
+        }
+
+        .feature-title {
+            font-size: 14px;
+            font-weight: 600;
+            color: #ffffff;
+            margin-bottom: 4px;
+        }
+
+        .feature-desc {
+            font-size: 12px;
+            color: #cccccc;
+            line-height: 1.4;
+        }
+
+        .network-status {
+            margin-top: 24px;
+            padding: 12px;
+            background: rgba(255, 165, 0, 0.1);
+            border: 1px solid rgba(255, 165, 0, 0.3);
+            border-radius: 8px;
+            font-size: 14px;
+            color: #ffa500;
+        }
+
+        .network-status.online {
+            background: rgba(76, 175, 80, 0.1);
+            border-color: rgba(76, 175, 80, 0.3);
+            color: #4caf50;
+        }
+
+        @keyframes pulse {
+            0%, 100% {
+                transform: scale(1);
+                opacity: 1;
+            }
+            50% {
+                transform: scale(1.1);
+                opacity: 0.8;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .offline-container {
+                padding: 30px 20px;
+                margin: 20px;
+            }
+
+            .offline-icon {
+                font-size: 48px;
+            }
+
+            .offline-title {
+                font-size: 24px;
+            }
+
+            .offline-actions {
+                flex-direction: column;
+                align-items: center;
+            }
+
+            .offline-button {
+                width: 100%;
+                max-width: 200px;
+            }
+
+            .feature-list {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="offline-container">
+        <div class="offline-icon">📡</div>
+        
+        <h1 class="offline-title">离线模式</h1>
+        
+        <p class="offline-message">
+            您当前处于离线状态。地图相册的部分功能可能无法使用，但您仍然可以查看已缓存的内容。
+        </p>
+
+        <div class="offline-actions">
+            <button class="offline-button" onclick="checkConnection()">
+                🔄 检查连接
+            </button>
+            <button class="offline-button offline-button-secondary" onclick="goHome()">
+                🏠 返回首页
+            </button>
+        </div>
+
+        <div class="network-status" id="networkStatus">
+            📡 网络状态：离线
+        </div>
+
+        <div class="offline-features">
+            <h3>离线可用功能</h3>
+            <div class="feature-list">
+                <div class="feature-item">
+                    <div class="feature-icon">📸</div>
+                    <div class="feature-title">查看缓存照片</div>
+                    <div class="feature-desc">浏览已缓存的照片和标记</div>
+                </div>
+                <div class="feature-item">
+                    <div class="feature-icon">🗺️</div>
+                    <div class="feature-title">离线地图</div>
+                    <div class="feature-desc">查看已下载的地图区域</div>
+                </div>
+                <div class="feature-item">
+                    <div class="feature-icon">🔍</div>
+                    <div class="feature-title">本地搜索</div>
+                    <div class="feature-desc">搜索本地缓存的内容</div>
+                </div>
+                <div class="feature-item">
+                    <div class="feature-icon">⚙️</div>
+                    <div class="feature-title">基本设置</div>
+                    <div class="feature-desc">调整应用基本配置</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // 检查网络连接状态
+        function updateNetworkStatus() {
+            const statusEl = document.getElementById('networkStatus');
+            const isOnline = navigator.onLine;
+            
+            if (isOnline) {
+                statusEl.textContent = '🌐 网络状态：在线';
+                statusEl.className = 'network-status online';
+            } else {
+                statusEl.textContent = '📡 网络状态：离线';
+                statusEl.className = 'network-status';
+            }
+        }
+
+        // 检查连接
+        function checkConnection() {
+            updateNetworkStatus();
+            
+            if (navigator.onLine) {
+                // 尝试重新加载应用
+                window.location.href = '/';
+            } else {
+                // 显示提示
+                alert('网络仍然不可用，请检查您的网络连接。');
+            }
+        }
+
+        // 返回首页
+        function goHome() {
+            window.location.href = '/';
+        }
+
+        // 监听网络状态变化
+        window.addEventListener('online', () => {
+            updateNetworkStatus();
+            setTimeout(() => {
+                if (confirm('网络已恢复，是否重新加载应用？')) {
+                    window.location.href = '/';
+                }
+            }, 1000);
+        });
+
+        window.addEventListener('offline', updateNetworkStatus);
+
+        // 初始化
+        updateNetworkStatus();
+
+        // 定期检查网络状态
+        setInterval(() => {
+            // 尝试发送一个小的网络请求来检测真实的网络状态
+            fetch('/favicon.ico', { 
+                method: 'HEAD',
+                cache: 'no-cache',
+                timeout: 5000
+            })
+            .then(() => {
+                if (!navigator.onLine) {
+                    // 网络实际可用但navigator.onLine为false
+                    window.dispatchEvent(new Event('online'));
+                }
+            })
+            .catch(() => {
+                if (navigator.onLine) {
+                    // 网络实际不可用但navigator.onLine为true
+                    window.dispatchEvent(new Event('offline'));
+                }
+            });
+        }, 10000); // 每10秒检查一次
+
+        // 键盘快捷键
+        document.addEventListener('keydown', (event) => {
+            if (event.key === 'F5' || (event.ctrlKey && event.key === 'r')) {
+                event.preventDefault();
+                checkConnection();
+            }
+            
+            if (event.key === 'Escape') {
+                goHome();
+            }
+        });
+
+        // 添加一些交互反馈
+        document.querySelectorAll('.offline-button').forEach(button => {
+            button.addEventListener('click', function() {
+                this.style.transform = 'scale(0.95)';
+                setTimeout(() => {
+                    this.style.transform = '';
+                }, 150);
+            });
+        });
+
+        // 页面加载完成后的提示
+        window.addEventListener('load', () => {
+            console.log('📡 离线页面已加载');
+            
+            // 如果支持Service Worker，尝试获取缓存信息
+            if ('serviceWorker' in navigator) {
+                navigator.serviceWorker.ready.then(registration => {
+                    console.log('Service Worker已准备就绪');
+                });
+            }
+        });
+    </script>
+</body>
+</html>

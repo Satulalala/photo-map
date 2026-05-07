@@ -1,0 +1,207 @@
+/* ========== 简洁加载器样式 ========== */
+/* ========== 苹果风格加载器样式 ========== */
+.apple-loader {
+  position: fixed;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: 
+    radial-gradient(ellipse 800px 600px at 20% 30%, rgba(255,255,255,0.15) 0%, transparent 50%),
+    radial-gradient(ellipse 600px 400px at 80% 70%, rgba(200,200,200,0.1) 0%, transparent 50%),
+    radial-gradient(ellipse 400px 300px at 60% 20%, rgba(150,150,150,0.08) 0%, transparent 50%),
+    linear-gradient(135deg, #000000 0%, #1a1a1a 15%, #333333 30%, #4d4d4d 45%, #666666 60%, #808080 75%, #999999 85%, #cccccc 95%, #ffffff 100%);
+  background-size: 
+    150% 120%,
+    120% 100%,
+    100% 80%,
+    300% 300%;
+  animation: 
+    waveLayer1 6s ease-in-out infinite,
+    waveLayer2 8s ease-in-out infinite reverse,
+    waveLayer3 10s ease-in-out infinite,
+    waveGradient 12s ease-in-out infinite;
+  z-index: 3000;
+  overflow: hidden;
+  transition: all 0.5s ease;
+}
+
+/* 添加伪元素创建更多层次 */
+.apple-loader::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: 
+    radial-gradient(ellipse 500px 300px at var(--before-pos-1, 40% 80%), rgba(255,255,255,0.05) 0%, transparent 60%),
+    radial-gradient(ellipse 300px 200px at var(--before-pos-2, 90% 10%), rgba(180,180,180,0.08) 0%, transparent 50%);
+  background-size: 200% 150%, 150% 120%;
+  animation: 
+    waveOverlay1 7s ease-in-out infinite,
+    waveOverlay2 9s ease-in-out infinite reverse;
+  pointer-events: none;
+}
+
+.apple-loader::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: 
+    radial-gradient(ellipse 700px 400px at var(--after-pos-1, 10% 60%), rgba(220,220,220,0.06) 0%, transparent 70%),
+    radial-gradient(ellipse 400px 250px at var(--after-pos-2, 70% 40%), rgba(160,160,160,0.04) 0%, transparent 60%);
+  background-size: 180% 140%, 130% 110%;
+  animation: 
+    waveOverlay3 11s ease-in-out infinite,
+    waveOverlay4 13s ease-in-out infinite reverse;
+  pointer-events: none;
+}
+
+/* 交互模式下的伪元素 */
+.apple-loader.interactive-mode::before {
+  animation: none;
+  background-size: 250% 180%, 180% 140%;
+  transition: background 0.5s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+}
+
+.apple-loader.interactive-mode::after {
+  animation: none;
+  background-size: 220% 160%, 160% 130%;
+  transition: background 0.6s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+}
+
+/* 交互模式 - 鼠标跟随波浪效果 */
+.apple-loader.interactive-mode {
+  animation: none;
+  background-size: 
+    200% 150%,
+    150% 120%,
+    120% 100%,
+    400% 400%;
+  transition: background-position 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+}
+
+/* 波浪渐变动画 - 主层 */
+@keyframes waveGradient {
+  0% { background-position: 0% 50%, 20% 30%, 80% 70%, 0% 0%; }
+  15% { background-position: 25% 60%, 30% 20%, 70% 80%, 15% 10%; }
+  30% { background-position: 60% 80%, 50% 40%, 60% 60%, 40% 30%; }
+  45% { background-position: 90% 70%, 80% 60%, 40% 40%, 70% 60%; }
+  60% { background-position: 100% 40%, 90% 80%, 20% 20%, 90% 80%; }
+  75% { background-position: 80% 20%, 70% 90%, 10% 50%, 60% 90%; }
+  90% { background-position: 40% 30%, 40% 70%, 30% 80%, 20% 70%; }
+  100% { background-position: 0% 50%, 20% 30%, 80% 70%, 0% 0%; }
+}
+
+/* 波浪层动画 - 不同速度和方向 */
+@keyframes waveLayer1 {
+  0%, 100% { background-position: 0% 40%, 10% 60%; }
+  25% { background-position: 30% 70%, 40% 30%; }
+  50% { background-position: 70% 80%, 80% 20%; }
+  75% { background-position: 90% 50%, 60% 90%; }
+}
+
+@keyframes waveLayer2 {
+  0%, 100% { background-position: 100% 60%, 90% 40%; }
+  20% { background-position: 80% 30%, 70% 80%; }
+  40% { background-position: 50% 20%, 40% 90%; }
+  60% { background-position: 20% 70%, 10% 50%; }
+  80% { background-position: 10% 90%, 30% 20%; }
+}
+
+@keyframes waveLayer3 {
+  0%, 100% { background-position: 50% 50%, 60% 70%; }
+  30% { background-position: 80% 20%, 90% 40%; }
+  60% { background-position: 20% 90%, 10% 80%; }
+  90% { background-position: 40% 30%, 50% 10%; }
+}
+
+/* 覆盖层动画 - 创造深度感 */
+@keyframes waveOverlay1 {
+  0%, 100% { background-position: 20% 80%, 80% 20%; }
+  33% { background-position: 60% 40%, 40% 70%; }
+  66% { background-position: 90% 10%, 10% 90%; }
+}
+
+@keyframes waveOverlay2 {
+  0%, 100% { background-position: 70% 30%, 30% 80%; }
+  25% { background-position: 40% 60%, 80% 40%; }
+  50% { background-position: 10% 90%, 90% 10%; }
+  75% { background-position: 50% 20%, 60% 70%; }
+}
+
+@keyframes waveOverlay3 {
+  0%, 100% { background-position: 40% 60%, 70% 40%; }
+  40% { background-position: 80% 90%, 20% 10%; }
+  80% { background-position: 10% 30%, 90% 80%; }
+}
+
+@keyframes waveOverlay4 {
+  0%, 100% { background-position: 60% 20%, 40% 90%; }
+  50% { background-position: 20% 70%, 80% 30%; }
+}
+
+/* 主要内容容器 */
+.loader-content {
+  text-align: center;
+  color: #ffffff;
+  max-width: 500px;
+  width: 90%;
+  background: rgba(0, 0, 0, 0.4);
+  padding: 50px 40px;
+  border-radius: 24px;
+  backdrop-filter: blur(20px);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+  position: relative;
+  z-index: 10;
+}
+
+/* 装饰性浮动图标 */
+.loader-decorations {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 5;
+}
+
+.floating-icon {
+  position: absolute;
+  font-size: 24px;
+  opacity: 0.6;
+  animation: floatIcon 4s ease-in-out infinite;
+}
+
+.icon-1 {
+  top: 15%;
+  left: 10%;
+  animation-delay: 0s;
+}
+
+.icon-2 {
+  top: 25%;
+  right: 15%;
+  animation-delay: 1s;
+}
+
+.icon-3 {
+  bottom: 30%;
+  left: 8%;
+  animation-delay: 2s;
+}
+
+.icon-4 {
+  bottom: 20%;
+  right: 12%;
+  animation-delay: 3s;
+}
+
+@keyframes floatIcon {
+  0%, 100% {
+    transform: translateY(0px) rotate(0deg);
+    opacity: 0.4;
+  }
+  50% {
+    transform: translateY(-20px) rotate(5deg);
+    opacity: 0.8;
+  }
+}
+

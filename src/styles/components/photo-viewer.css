@@ -1,0 +1,400 @@
+/* ========== 照片查看器 ========== */
+.photo-viewer {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.95);
+  z-index: 2000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  animation: fadeIn 0.25s;
+  contain: strict;
+}
+
+.photo-main-wrapper {
+  max-width: 90vw;
+  max-height: 85vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: grab;
+  overflow: hidden;
+  animation: scaleIn 0.35s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.photo-main-wrapper:active { cursor: grabbing; }
+
+.photo-main-wrapper img {
+  max-width: 100%;
+  max-height: 85vh;
+  object-fit: contain;
+  user-select: none;
+  border-radius: var(--radius-md);
+  /* GPU 加速 - 平滑缩放和拖动 */
+  will-change: transform;
+  transform-origin: center center;
+  backface-visibility: hidden;
+}
+
+.photo-nav {
+  position: fixed;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 48px;
+  height: 48px;
+  background: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(10px);
+  border: 1px solid var(--border-light);
+  color: var(--text-secondary);
+  cursor: pointer;
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-lg);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  z-index: 2100;
+}
+
+.photo-nav svg {
+  width: 22px;
+  height: 22px;
+}
+
+.photo-nav.prev { left: 24px; }
+.photo-nav.next { right: 24px; }
+
+.photo-nav:hover {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: white;
+  transform: translateY(-50%) scale(1.08);
+  box-shadow: var(--shadow-xl), 0 4px 12px rgba(59, 130, 246, 0.4);
+}
+
+.photo-nav:active {
+  transform: translateY(-50%) scale(0.95);
+}
+
+/* 照片容器 - 包含图片和侧边工具栏 */
+.photo-container {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 20px;
+  animation: scaleIn 0.35s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+/* 侧边工具栏 - 紧贴照片右侧，竖向排列 */
+.photo-toolbar-side {
+  display: flex !important;
+  flex-direction: column !important;
+  flex-wrap: nowrap !important;
+  gap: 10px;
+  padding: 14px 10px;
+  background: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(10px);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-lg);
+  z-index: 2100;
+}
+
+.photo-toolbar-side .toolbar-btn {
+  width: 48px;
+  height: 48px;
+  min-width: 48px;
+  min-height: 48px;
+  background: transparent;
+  border: 1px solid var(--border-light);
+  color: var(--text-secondary);
+  cursor: pointer;
+  border-radius: var(--radius-md);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  position: relative;
+}
+
+.photo-toolbar-side .toolbar-btn svg {
+  width: 24px;
+  height: 24px;
+}
+
+.photo-toolbar-side .toolbar-btn:hover {
+  background: var(--accent-light);
+  border-color: var(--accent);
+  color: var(--accent);
+  transform: scale(1.08);
+}
+
+.photo-toolbar-side .toolbar-btn.danger:hover {
+  background: var(--danger-light);
+  border-color: var(--danger);
+  color: var(--danger);
+}
+
+.photo-toolbar-side .toolbar-btn.close:hover {
+  background: var(--danger);
+  border-color: var(--danger);
+  color: white;
+}
+
+.photo-toolbar-side .toolbar-divider {
+  height: 1px;
+  background: var(--border-light);
+  margin: 4px 0;
+}
+
+/* ========== 通用 Tooltip 系统 ========== */
+/* 所有带 data-tooltip 的元素都会显示提示 */
+[data-tooltip] {
+  position: relative;
+}
+
+[data-tooltip]::before,
+[data-tooltip]::after {
+  position: absolute;
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  z-index: 10000;
+}
+
+/* Tooltip 文字 */
+[data-tooltip]::after {
+  content: attr(data-tooltip);
+  padding: 8px 12px;
+  background: rgba(30, 30, 30, 0.95);
+  color: white;
+  font-size: 13px;
+  font-weight: 500;
+  line-height: 1.4;
+  white-space: pre-wrap;
+  max-width: 200px;
+  word-wrap: break-word;
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+  backdrop-filter: blur(10px);
+}
+
+/* Tooltip 小箭头 */
+[data-tooltip]::before {
+  content: '';
+  width: 0;
+  height: 0;
+  border: 6px solid transparent;
+}
+
+/* 悬停时显示 */
+[data-tooltip]:hover::before,
+[data-tooltip]:hover::after {
+  opacity: 1;
+  visibility: visible;
+}
+
+/* ========== 默认位置：右侧 ========== */
+[data-tooltip]::after {
+  left: 100%;
+  top: 50%;
+  transform: translateY(-50%) translateX(8px);
+}
+
+[data-tooltip]::before {
+  left: 100%;
+  top: 50%;
+  transform: translateY(-50%) translateX(2px);
+  border-right-color: rgba(30, 30, 30, 0.95);
+}
+
+[data-tooltip]:hover::after {
+  transform: translateY(-50%) translateX(12px);
+}
+
+[data-tooltip]:hover::before {
+  transform: translateY(-50%) translateX(6px);
+}
+
+/* ========== 左侧工具栏：提示在右边 ========== */
+.toolbar-left [data-tooltip]::after {
+  left: 100%;
+  right: auto;
+  top: 50%;
+  transform: translateY(-50%) translateX(8px);
+}
+
+.toolbar-left [data-tooltip]::before {
+  left: 100%;
+  right: auto;
+  top: 50%;
+  transform: translateY(-50%) translateX(2px);
+  border-right-color: rgba(30, 30, 30, 0.95);
+  border-left-color: transparent;
+}
+
+.toolbar-left [data-tooltip]:hover::after {
+  transform: translateY(-50%) translateX(12px);
+}
+
+.toolbar-left [data-tooltip]:hover::before {
+  transform: translateY(-50%) translateX(6px);
+}
+
+/* ========== 右侧工具栏：提示在左边 ========== */
+.toolbar-right [data-tooltip]::after {
+  left: auto;
+  right: 100%;
+  top: 50%;
+  transform: translateY(-50%) translateX(-8px);
+}
+
+.toolbar-right [data-tooltip]::before {
+  left: auto;
+  right: 100%;
+  top: 50%;
+  transform: translateY(-50%) translateX(-2px);
+  border-left-color: rgba(30, 30, 30, 0.95);
+  border-right-color: transparent;
+}
+
+.toolbar-right [data-tooltip]:hover::after {
+  transform: translateY(-50%) translateX(-12px);
+}
+
+.toolbar-right [data-tooltip]:hover::before {
+  transform: translateY(-50%) translateX(-6px);
+}
+
+/* ========== 照片查看器导航按钮 ========== */
+.photo-nav.prev[data-tooltip]::after {
+  left: 100%;
+  right: auto;
+  transform: translateY(-50%) translateX(8px);
+}
+
+.photo-nav.prev[data-tooltip]::before {
+  left: 100%;
+  right: auto;
+  transform: translateY(-50%) translateX(2px);
+  border-right-color: rgba(30, 30, 30, 0.95);
+  border-left-color: transparent;
+}
+
+.photo-nav.prev[data-tooltip]:hover::after {
+  transform: translateY(-50%) translateX(12px);
+}
+
+.photo-nav.prev[data-tooltip]:hover::before {
+  transform: translateY(-50%) translateX(6px);
+}
+
+.photo-nav.next[data-tooltip]::after {
+  left: auto;
+  right: 100%;
+  transform: translateY(-50%) translateX(-8px);
+}
+
+.photo-nav.next[data-tooltip]::before {
+  left: auto;
+  right: 100%;
+  transform: translateY(-50%) translateX(-2px);
+  border-left-color: rgba(30, 30, 30, 0.95);
+  border-right-color: transparent;
+}
+
+.photo-nav.next[data-tooltip]:hover::after {
+  transform: translateY(-50%) translateX(-12px);
+}
+
+.photo-nav.next[data-tooltip]:hover::before {
+  transform: translateY(-50%) translateX(-6px);
+}
+
+/* ========== 侧边工具栏：提示在左边 ========== */
+.photo-toolbar-side [data-tooltip]::after {
+  left: auto;
+  right: 100%;
+  top: 50%;
+  transform: translateY(-50%) translateX(-8px);
+}
+
+.photo-toolbar-side [data-tooltip]::before {
+  left: auto;
+  right: 100%;
+  top: 50%;
+  transform: translateY(-50%) translateX(-2px);
+  border-left-color: rgba(30, 30, 30, 0.95);
+  border-right-color: transparent;
+}
+
+.photo-toolbar-side [data-tooltip]:hover::after {
+  transform: translateY(-50%) translateX(-12px);
+}
+
+.photo-toolbar-side [data-tooltip]:hover::before {
+  transform: translateY(-50%) translateX(-6px);
+}
+
+/* ========== 底部按钮：提示在上方 ========== */
+.marker-count-btn[data-tooltip]::after,
+.measure-btn[data-tooltip]::after {
+  left: 50%;
+  right: auto;
+  top: auto;
+  bottom: 100%;
+  transform: translateX(-50%) translateY(-8px);
+}
+
+.marker-count-btn[data-tooltip]::before,
+.measure-btn[data-tooltip]::before {
+  left: 50%;
+  right: auto;
+  top: auto;
+  bottom: 100%;
+  transform: translateX(-50%) translateY(-2px);
+  border-top-color: rgba(30, 30, 30, 0.95);
+  border-bottom-color: transparent;
+  border-left-color: transparent;
+  border-right-color: transparent;
+}
+
+.marker-count-btn[data-tooltip]:hover::after,
+.measure-btn[data-tooltip]:hover::after {
+  transform: translateX(-50%) translateY(-12px);
+}
+
+.marker-count-btn[data-tooltip]:hover::before,
+.measure-btn[data-tooltip]:hover::before {
+  transform: translateX(-50%) translateY(-6px);
+}
+
+/* ========== 顶部按钮：提示在下方 ========== */
+.pv-btn[data-tooltip]::after {
+  left: 50%;
+  right: auto;
+  top: 100%;
+  bottom: auto;
+  transform: translateX(-50%) translateY(8px);
+}
+
+.pv-btn[data-tooltip]::before {
+  left: 50%;
+  right: auto;
+  top: 100%;
+  bottom: auto;
+  transform: translateX(-50%) translateY(2px);
+  border-bottom-color: rgba(30, 30, 30, 0.95);
+  border-top-color: transparent;
+  border-left-color: transparent;
+  border-right-color: transparent;
+}
+
+.pv-btn[data-tooltip]:hover::after {
+  transform: translateX(-50%) translateY(12px);
+}
+
+.pv-btn[data-tooltip]:hover::before {
+  transform: translateX(-50%) translateY(6px);
+}

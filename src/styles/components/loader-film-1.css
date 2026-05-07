@@ -1,0 +1,211 @@
+/* ========== 简单加载器 ========== */
+.simple-loader {
+  position: fixed;
+  inset: 0;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 3000;
+  animation: fadeIn 0.5s ease;
+}
+
+.loader-content {
+  text-align: center;
+  color: white;
+}
+
+.app-icon {
+  font-size: 64px;
+  margin-bottom: 16px;
+  animation: bounce 2s ease-in-out infinite;
+}
+
+.loader-content h1 {
+  font-size: 32px;
+  font-weight: 700;
+  margin: 0 0 32px 0;
+  text-shadow: 0 2px 4px rgba(0,0,0,0.3);
+}
+
+.progress-ring {
+  position: relative;
+  display: inline-block;
+}
+
+.progress-text {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  font-size: 18px;
+  font-weight: 600;
+  color: white;
+}
+
+/* 简单星空背景 */
+.starfield {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+
+.stars-layer::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background-image: 
+    radial-gradient(1px 1px at 15% 25%, rgba(255,255,255,0.9), transparent),
+    radial-gradient(1px 1px at 85% 15%, rgba(255,255,255,0.7), transparent),
+    radial-gradient(1px 1px at 45% 75%, rgba(255,255,255,0.8), transparent),
+    radial-gradient(1px 1px at 75% 85%, rgba(255,255,255,0.6), transparent),
+    radial-gradient(1px 1px at 25% 55%, rgba(255,255,255,0.5), transparent),
+    radial-gradient(1px 1px at 65% 35%, rgba(255,255,255,0.9), transparent);
+  background-repeat: repeat;
+  background-size: 300px 200px;
+  animation: starTwinkle 6s ease-in-out infinite;
+}
+
+@keyframes starTwinkle {
+  0%, 100% { 
+    opacity: 0.6; 
+    transform: scale(1);
+  }
+  50% { 
+    opacity: 1; 
+    transform: scale(1.1);
+  }
+}
+
+@keyframes filmSpin {
+  0% { 
+    transform: rotateY(0deg) rotateX(0deg); 
+  }
+  25% { 
+    transform: rotateY(90deg) rotateX(15deg); 
+  }
+  50% { 
+    transform: rotateY(180deg) rotateX(0deg); 
+  }
+  75% { 
+    transform: rotateY(270deg) rotateX(-15deg); 
+  }
+  100% { 
+    transform: rotateY(360deg) rotateX(0deg); 
+  }
+}
+
+/* 🎞️ 简单优雅的胶片进度条 */
+.film-progress-container {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 400px;
+  height: 40px;
+}
+
+.film-progress-bar {
+  height: 100%;
+  background: linear-gradient(
+    to right,
+    #e8e8e8 0%,
+    #d4d4d4 20%,
+    #c0c0c0 40%,
+    #a8a8a8 60%,
+    #909090 80%,
+    #787878 100%
+  );
+  border: 2px solid #505050;
+  border-radius: 6px;
+  position: relative;
+  box-shadow: 
+    0 4px 12px rgba(0, 0, 0, 0.3),
+    inset 0 2px 0 rgba(255, 255, 255, 0.4),
+    inset 0 -2px 0 rgba(0, 0, 0, 0.2);
+  transition: width 0.3s ease-out;
+  overflow: hidden;
+}
+
+.film-frames {
+  position: absolute;
+  inset: 4px;
+  background-image: 
+    /* 上排孔洞 */
+    radial-gradient(circle at 8px 4px, transparent 2px, #2a2a2a 2px, #2a2a2a 3px, transparent 3px),
+    radial-gradient(circle at 24px 4px, transparent 2px, #2a2a2a 2px, #2a2a2a 3px, transparent 3px),
+    radial-gradient(circle at 40px 4px, transparent 2px, #2a2a2a 2px, #2a2a2a 3px, transparent 3px),
+    /* 下排孔洞 */
+    radial-gradient(circle at 8px calc(100% - 4px), transparent 2px, #2a2a2a 2px, #2a2a2a 3px, transparent 3px),
+    radial-gradient(circle at 24px calc(100% - 4px), transparent 2px, #2a2a2a 2px, #2a2a2a 3px, transparent 3px),
+    radial-gradient(circle at 40px calc(100% - 4px), transparent 2px, #2a2a2a 2px, #2a2a2a 3px, transparent 3px),
+    /* 中间图像帧 */
+    repeating-linear-gradient(
+      to right,
+      #1a1a1a 0px,
+      #1a1a1a 1px,
+      #2a2a2a 1px,
+      #2a2a2a 15px,
+      #1a1a1a 15px,
+      #1a1a1a 16px
+    );
+  background-size: 16px 8px, 16px 8px, 16px 8px, 16px 8px, 16px 8px, 16px 8px, 16px 100%;
+  background-repeat: repeat-x;
+  border-radius: 2px;
+}
+
+.film-icons {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+
+.film-icon {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  font-size: 32px;
+  animation: filmIconFloat 2s ease-in-out infinite;
+}
+
+.film-icon.left {
+  left: -50px;
+  animation-delay: 0s;
+}
+
+.film-icon.right {
+  right: -50px;
+  animation-delay: 1s;
+}
+
+@keyframes filmIconFloat {
+  0%, 100% { transform: translateY(-50%) rotate(0deg); }
+  50% { transform: translateY(-60%) rotate(10deg); }
+}
+
+/* 🎞️ 胶卷主体样式 - 模仿emoji外观 */
+.film-ribbon {
+  background: 
+    /* 胶片的金属光泽 */
+    linear-gradient(
+      to bottom,
+      #e8e8e8 0%,
+      #d4d4d4 20%,
+      #c0c0c0 40%,
+      #a8a8a8 60%,
+      #909090 80%,
+      #787878 100%
+    );
+  border: 2px solid #505050;
+  border-radius: 3px;
+  position: relative;
+  /* 胶片的立体阴影 */
+  box-shadow: 
+    0 3px 8px rgba(0, 0, 0, 0.4),
+    0 1px 3px rgba(0, 0, 0, 0.2),
+    inset 0 1px 0 rgba(255, 255, 255, 0.5),
+    inset 0 -1px 0 rgba(0, 0, 0, 0.2);
+  /* 3D变换支持 */
+  transform-style: preserve-3d;
+}
+

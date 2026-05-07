@@ -1,0 +1,257 @@
+.merge-dialog-footer {
+  display: flex;
+  gap: 12px;
+  padding: 16px 20px;
+  border-top: 1px solid #e5e7eb;
+  justify-content: flex-end;
+}
+
+.merge-cancel-btn,
+.merge-confirm-btn {
+  padding: 10px 20px;
+  border: none;
+  border-radius: 6px;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.merge-cancel-btn {
+  background: #f3f4f6;
+  color: #374151;
+}
+
+.merge-cancel-btn:hover {
+  background: #e5e7eb;
+}
+
+.merge-confirm-btn {
+  background: #10b981;
+  color: white;
+}
+
+.merge-confirm-btn:hover:not(:disabled) {
+  background: #059669;
+}
+
+.merge-confirm-btn:disabled {
+  background: #d1d5db;
+  cursor: not-allowed;
+}
+
+@keyframes slideUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* ========== 照片查看器批量选择模式 ========== */
+.photo-viewer.batch-select-mode {
+  background: rgba(0, 0, 0, 0.95);
+}
+
+.batch-select-container {
+  width: 90%;
+  max-width: 1200px;
+  height: 90vh;
+  background: white;
+  border-radius: 12px;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.batch-select-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 20px;
+  border-bottom: 1px solid #e5e7eb;
+  background: white;
+}
+
+.batch-select-header h3 {
+  margin: 0;
+  font-size: 18px;
+  color: #111;
+}
+
+.batch-select-grid {
+  flex: 1;
+  overflow-y: auto;
+  padding: 20px;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+  gap: 16px;
+  align-content: start;
+}
+
+.batch-select-item {
+  position: relative;
+  aspect-ratio: 1;
+  border-radius: 8px;
+  overflow: hidden;
+  cursor: pointer;
+  border: 3px solid transparent;
+  transition: all 0.2s;
+  background: #f3f4f6;
+}
+
+.batch-select-item:hover {
+  transform: scale(1.05);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.batch-select-item.selected {
+  border-color: #3b82f6;
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.2);
+}
+
+.batch-select-item img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.batch-select-check {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  width: 28px;
+  height: 28px;
+  background: #3b82f6;
+  color: white;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 16px;
+  font-weight: bold;
+  box-shadow: 0 2px 8px rgba(59, 130, 246, 0.4);
+}
+
+.batch-select-note {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background: linear-gradient(to top, rgba(0, 0, 0, 0.8), transparent);
+  color: white;
+  padding: 8px;
+  font-size: 12px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* ===== 照片列表项新增功能样式 ===== */
+
+.photo-item-inner {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  cursor: pointer;
+  overflow: hidden;
+  border-radius: 6px;
+}
+
+.photo-cover-badge {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background: rgba(0, 0, 0, 0.6);
+  color: #fff;
+  font-size: 10px;
+  text-align: center;
+  padding: 2px 0;
+  pointer-events: none;
+}
+
+.photo-item-menu {
+  position: absolute;
+  top: -6px;
+  left: 50%;
+  transform: translate(-50%, -100%);
+  background: rgba(0, 0, 0, 0.85);
+  border-radius: 6px;
+  padding: 4px;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  z-index: 10;
+  min-width: 96px;
+  box-shadow: 0 -2px 12px rgba(0,0,0,0.3);
+  animation: menuFadeIn 0.15s ease-out;
+}
+
+.photo-item-menu::after {
+  content: '';
+  position: absolute;
+  top: 100%;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 0;
+  height: 0;
+  border-left: 6px solid transparent;
+  border-right: 6px solid transparent;
+  border-top: 6px solid rgba(0, 0, 0, 0.85);
+}
+
+@keyframes menuFadeIn {
+  from { opacity: 0; transform: translate(-50%, -100%) translateY(4px); }
+  to { opacity: 1; transform: translate(-50%, -100%) translateY(0); }
+}
+
+.photo-item-menu button {
+  background: none;
+  border: none;
+  color: #fff;
+  font-size: 11px;
+  padding: 5px 8px;
+  cursor: pointer;
+  text-align: left;
+  border-radius: 4px;
+  white-space: nowrap;
+}
+
+.photo-item-menu button:hover {
+  background: rgba(255,255,255,0.15);
+}
+
+.photo-item-menu button.danger {
+  color: #f87171;
+}
+
+.photo-item-menu button.danger:hover {
+  background: rgba(248, 113, 113, 0.2);
+}
+
+.photo-item-add {
+  border: 2px dashed #999 !important;
+  background: transparent !important;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  color: #999;
+  font-size: 24px;
+  transition: border-color 0.2s, color 0.2s;
+  min-height: 72px;
+}
+
+.photo-item-add:hover {
+  border-color: #333 !important;
+  color: #333;
+}
+
+.pv-btn-active {
+  opacity: 0.4;
+  cursor: default;
+}

@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/svg+xml" href="/vite.svg" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    
+    <!-- SEO 优化 -->
+    <title>地图相册 - 记录每一个值得纪念的地点</title>
+    <meta name="description" content="一个基于 React 的地图相册应用，让你在世界地图上标记旅行足迹并管理照片记忆。" />
+    <meta name="keywords" content="地图相册,照片管理,旅行足迹,Mapbox,React" />
+    
+    <!-- PWA 支持 -->
+    <link rel="manifest" href="/manifest.json" />
+    <meta name="theme-color" content="#0b0b19" />
+    
+    <!-- 预加载关键资源 -->
+    <link rel="preconnect" href="https://api.mapbox.com" />
+    
+    <!-- Mapbox GL JS -->
+    <link href="https://api.mapbox.com/mapbox-gl-js/v2.14.1/mapbox-gl.css" rel="stylesheet" />
+    <script src="https://api.mapbox.com/mapbox-gl-js/v2.14.1/mapbox-gl.js"></script>
+    
+    <style>
+      /* 初始背景色与地球加载器一致，避免白屏 */
+      html, body {
+        margin: 0;
+        padding: 0;
+        background: rgb(11, 11, 25);
+      }
+      #root {
+        min-height: 100vh;
+      }
+    </style>
+  </head>
+  <body>
+    <div id="root"></div>
+    <script type="module" src="/src-web/main-web.jsx"></script>
+  </body>
+</html>

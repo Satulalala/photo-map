@@ -1,0 +1,231 @@
+.village-feed-card {
+  background: #f5e3a3;
+  border: 1px solid #000;
+  border-radius: 14px;
+  padding: 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.village-feed-title {
+  font-size: 13px;
+  font-weight: 800;
+  color: #523b0d;
+}
+
+.village-feed-list {
+  max-height: 180px;
+  overflow: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+}
+
+.village-feed-item {
+  background: rgba(255,255,255,0.45);
+  border: 1px dashed #000;
+  border-radius: 10px;
+  padding: 8px;
+  display: flex;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.village-feed-main {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.village-feed-main strong { color: #433009; font-size: 12px; }
+.village-feed-main span { color: #5f4718; font-size: 11px; }
+.village-feed-item small { color: #7f6330; font-size: 10px; white-space: nowrap; }
+.village-feed-empty { color: #6d5423; font-size: 12px; }
+
+.village-main-btn {
+  border: none;
+  height: 40px;
+  border-radius: 12px;
+  background: linear-gradient(135deg, #4b8fff, #2ca8ff);
+  color: #fff;
+  font-weight: 800;
+  font-size: 13px;
+  cursor: pointer;
+  box-shadow: 0 10px 22px rgba(37, 120, 255, 0.35);
+  transition: transform 0.22s ease, box-shadow 0.22s ease, filter 0.22s ease;
+}
+
+.village-main-btn:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 14px 28px rgba(40, 128, 255, 0.42);
+  filter: brightness(1.03);
+}
+
+.village-main-btn.ghost {
+  background: rgba(255,255,255,0.16);
+  box-shadow: inset 0 0 0 1px rgba(255,255,255,0.22);
+}
+
+.village-empty-state {
+  min-height: 210px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  gap: 12px;
+  color: #d4e3ff;
+  background: linear-gradient(165deg, rgba(255,255,255,0.09), rgba(130,180,255,0.08));
+  border: 1px solid rgba(255,255,255,0.16);
+  border-radius: 16px;
+  padding: 22px 16px;
+  text-align: center;
+}
+
+.village-empty-badge {
+  padding: 4px 10px;
+  border-radius: 999px;
+  font-size: 11px;
+  color: #dff1ff;
+  background: rgba(80, 140, 255, 0.26);
+  border: 1px solid rgba(150, 200, 255, 0.32);
+}
+
+.village-empty-state h4 {
+  margin: 0;
+  font-size: 16px;
+  color: #fff;
+}
+
+.village-empty-state p {
+  margin: 0;
+  font-size: 12px;
+  line-height: 1.6;
+  color: #c5dbff;
+  max-width: 420px;
+}
+
+.village-empty-actions {
+  display: flex;
+  gap: 10px;
+}
+
+.village-modal-right h4 { margin: 0 0 10px; color: #fff; }
+
+.village-modal-right {
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+}
+
+.village-friend-tools {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-bottom: 10px;
+}
+
+.village-friend-add {
+  display: flex;
+  gap: 6px;
+}
+
+.village-friend-add input,
+.village-friend-search {
+  height: 32px;
+  border: 1px solid rgba(255,255,255,0.3);
+  border-radius: 8px;
+  background: rgba(4, 18, 46, 0.7);
+  color: #e6efff;
+  padding: 0 9px;
+  font-size: 12px;
+}
+
+.village-friend-add input { flex: 1; }
+
+.village-friend-add button {
+  border: none;
+  border-radius: 8px;
+  background: #2f6ef7;
+  color: #fff;
+  padding: 0 10px;
+  font-size: 12px;
+  cursor: pointer;
+}
+
+.village-friend-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  overflow-y: auto;
+  min-height: 0;
+  padding-right: 2px;
+}
+.village-friend-item-wrap { display: flex; flex-direction: column; gap: 6px; }
+
+.village-friend-item {
+  cursor: pointer;
+}
+
+.village-friend-actions {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 6px;
+}
+
+.village-friend-actions button {
+  border: 1px solid rgba(255,255,255,0.25);
+  border-radius: 7px;
+  height: 28px;
+  background: rgba(255,255,255,0.08);
+  color: #d8e6ff;
+  font-size: 11px;
+  cursor: pointer;
+}
+
+.village-friend-empty { color: #c3d7ff; font-size: 12px; }
+
+@media (max-width: 1180px) {
+  .village-modal-shell {
+    grid-template-columns: minmax(0, 1.3fr) minmax(260px, 0.95fr);
+    width: min(95vw, 920px) !important;
+    height: min(88vh, 700px) !important;
+  }
+
+  .village-stats-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 900px) {
+  .village-modal-shell {
+    grid-template-columns: 1fr;
+    width: min(96vw, 760px) !important;
+    height: min(90vh, 760px) !important;
+  }
+
+  .village-modal-right {
+    max-height: 36vh;
+  }
+
+  .village-empty-actions {
+    width: 100%;
+    flex-direction: column;
+  }
+}
+
+/* 统一悬浮窗主题风格（地球村除外） */
+.themed-floating-panel {
+  position: relative;
+}
+
+.themed-floating-panel::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  border-radius: inherit;
+  opacity: 0;
+  transition: opacity 0.25s ease;
+}
+

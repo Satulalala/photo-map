@@ -1,0 +1,390 @@
+/* 登录按钮容器 - 从顶部落下 */
+.login-buttons-container {
+  position: fixed;
+  top: 80px;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  gap: 16px;
+  z-index: 10000;
+  animation: dropDown 0.8s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+}
+
+@keyframes dropDown {
+  0% {
+    opacity: 0;
+    transform: translateX(-50%) translateY(-200px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateX(-50%) translateY(0);
+  }
+}
+
+/* 登录按钮 - 透明背景 */
+.login-drop-btn {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 14px 24px;
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  border-radius: 12px;
+  font-size: 15px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
+}
+
+.login-drop-btn:hover:not(:disabled) {
+  transform: translateY(-3px);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
+}
+
+.login-drop-btn:active:not(:disabled) {
+  transform: translateY(-1px);
+}
+
+.login-drop-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.login-drop-btn .btn-icon {
+  font-size: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.login-drop-btn .btn-text {
+  font-weight: 500;
+}
+
+/* 主按钮 - 邮箱登录 */
+.login-drop-btn.primary {
+  background: rgba(220, 220, 220, 0.3);
+  color: #fff;
+  border-color: rgba(255, 255, 255, 0.4);
+}
+
+.login-drop-btn.primary:hover:not(:disabled) {
+  background: rgba(240, 240, 240, 0.4);
+  border-color: rgba(255, 255, 255, 0.5);
+}
+
+/* 次按钮 - GitHub 登录 */
+.login-drop-btn.secondary {
+  background: rgba(200, 200, 200, 0.25);
+  color: #fff;
+  border-color: rgba(255, 255, 255, 0.3);
+}
+
+.login-drop-btn.secondary:hover:not(:disabled) {
+  background: rgba(220, 220, 220, 0.35);
+  border-color: rgba(255, 255, 255, 0.4);
+}
+
+/* 第三按钮 - 暂不登录 */
+.login-drop-btn.tertiary {
+  background: rgba(180, 180, 180, 0.2);
+  color: rgba(255, 255, 255, 0.9);
+  border-color: rgba(255, 255, 255, 0.25);
+  font-size: 14px;
+  padding: 12px 20px;
+}
+
+.login-drop-btn.tertiary:hover:not(:disabled) {
+  background: rgba(200, 200, 200, 0.3);
+  border-color: rgba(255, 255, 255, 0.35);
+}
+
+/* 退出按钮 - 右上角 */
+.logout-btn {
+  position: fixed;
+  top: 20px;
+  right: 20px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 18px;
+  background: rgba(220, 220, 220, 0.3);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  border-radius: 10px;
+  color: #fff;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
+  transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+  z-index: 10000;
+  animation: fadeIn 0.4s ease-out;
+}
+
+.logout-btn:hover {
+  background: rgba(240, 240, 240, 0.4);
+  border-color: rgba(255, 255, 255, 0.4);
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.15);
+}
+
+.logout-btn:active {
+  transform: translateY(0);
+}
+
+.logout-icon {
+  font-size: 18px;
+}
+
+.logout-text {
+  font-weight: 500;
+}
+
+/* 进入地图按钮 - 屏幕中央 */
+.enter-map-btn {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 18px 36px;
+  background: rgba(220, 220, 220, 0.3);
+  border: 2px solid rgba(255, 255, 255, 0.4);
+  border-radius: 16px;
+  color: #fff;
+  font-size: 18px;
+  font-weight: 600;
+  cursor: pointer;
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.15);
+  transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+  z-index: 10000;
+  animation: fadeIn 0.6s ease-out 0.3s backwards;
+}
+
+.enter-map-btn:hover:not(:disabled) {
+  background: rgba(240, 240, 240, 0.4);
+  border-color: rgba(255, 255, 255, 0.5);
+  transform: translate(-50%, -50%) translateY(-4px) scale(1.05);
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.2);
+}
+
+.enter-map-btn:active:not(:disabled) {
+  transform: translate(-50%, -50%) translateY(-2px) scale(1.02);
+}
+
+.enter-map-btn:disabled,
+.enter-map-btn--disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+  pointer-events: none;
+  background: rgba(120, 120, 120, 0.2);
+  border-color: rgba(255, 255, 255, 0.2);
+  color: rgba(255, 255, 255, 0.5);
+}
+  opacity: 0.4;
+  cursor: not-allowed;
+  background: rgba(120, 120, 120, 0.2);
+  border-color: rgba(255, 255, 255, 0.2);
+  color: rgba(255, 255, 255, 0.5);
+}
+
+.enter-icon {
+  font-size: 24px;
+}
+
+.enter-text {
+  font-weight: 600;
+}
+
+/* 邮箱登录表单弹窗 */
+.email-form-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.5);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 10001;
+  animation: fadeIn 0.3s ease-out;
+}
+
+.email-form-modal {
+  background: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(30px);
+  -webkit-backdrop-filter: blur(30px);
+  border-radius: 16px;
+  padding: 32px;
+  width: 380px;
+  max-width: 90vw;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+  animation: slideUp 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+@keyframes slideUp {
+  from {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+.email-form-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 24px;
+}
+
+.email-form-header h3 {
+  margin: 0;
+  font-size: 20px;
+  font-weight: 600;
+  color: #1a1a1a;
+}
+
+.close-btn {
+  width: 32px;
+  height: 32px;
+  border: none;
+  background: rgba(0, 0, 0, 0.05);
+  color: #666;
+  font-size: 18px;
+  cursor: pointer;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s;
+}
+
+.close-btn:hover {
+  background: rgba(239, 68, 68, 0.1);
+  color: #ef4444;
+  transform: rotate(90deg);
+}
+
+.form-error {
+  padding: 12px;
+  background: rgba(239, 68, 68, 0.1);
+  border: 1px solid rgba(239, 68, 68, 0.2);
+  border-radius: 8px;
+  color: #dc2626;
+  font-size: 14px;
+  margin-bottom: 16px;
+}
+
+.form-field {
+  margin-bottom: 16px;
+}
+
+.form-field label {
+  display: block;
+  font-size: 13px;
+  font-weight: 500;
+  color: #4b5563;
+  margin-bottom: 6px;
+}
+
+.form-field input {
+  width: 100%;
+  padding: 12px 16px;
+  border: 1px solid rgba(0, 0, 0, 0.1);
+  border-radius: 10px;
+  font-size: 15px;
+  background: rgba(255, 255, 255, 0.8);
+  color: #1a1a1a;
+  transition: all 0.2s;
+}
+
+.form-field input:focus {
+  outline: none;
+  border-color: rgba(0, 0, 0, 0.3);
+  background: rgba(255, 255, 255, 0.95);
+  box-shadow: 0 0 0 3px rgba(0, 0, 0, 0.05);
+}
+
+.form-field input::placeholder {
+  color: #9ca3af;
+}
+
+.form-field input:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.form-submit-btn {
+  width: 100%;
+  padding: 14px;
+  background: rgba(26, 26, 26, 0.9);
+  border: none;
+  border-radius: 10px;
+  color: white;
+  font-size: 15px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+  margin-top: 8px;
+}
+
+.form-submit-btn:hover:not(:disabled) {
+  background: rgba(0, 0, 0, 1);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+}
+
+.form-submit-btn:active:not(:disabled) {
+  transform: translateY(0);
+}
+
+.form-submit-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+/* 响应式 */
+@media (max-width: 768px) {
+  .login-buttons-container {
+    flex-direction: column;
+    gap: 12px;
+    top: 60px;
+  }
+  
+  .login-drop-btn {
+    padding: 12px 20px;
+    font-size: 14px;
+  }
+  
+  .logout-btn {
+    top: 16px;
+    right: 16px;
+    padding: 8px 14px;
+    font-size: 13px;
+  }
+  
+  .enter-map-btn {
+    padding: 16px 28px;
+    font-size: 16px;
+  }
+}

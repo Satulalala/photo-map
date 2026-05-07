@@ -1,0 +1,397 @@
+/* ========== 便签主题：方角、虚线分割、手账按钮 ========== */
+.ui-theme-note .themed-floating-panel.theme-note {
+  background: #fff;
+  border: 1px solid #000;
+  box-shadow: 0 18px 40px rgba(66, 49, 14, 0.24);
+}
+
+.ui-theme-note .themed-floating-panel.theme-note::after {
+  opacity: 1;
+  background-image: none;
+}
+
+.ui-theme-note .settings-nav,
+.ui-theme-note .settings-content,
+.ui-theme-note .marker-list-header,
+.ui-theme-note .marker-list-toolbar,
+.ui-theme-note .marker-list-content {
+  background: #fff;
+  color: #4b350e;
+}
+
+.ui-theme-note .settings-nav-items button,
+.ui-theme-note .toolbar-btn,
+.ui-theme-note .batch-toggle-btn {
+  color: #000;
+}
+
+.ui-theme-note .settings-nav-items button.active,
+.ui-theme-note .toolbar-btn.active,
+.ui-theme-note .batch-toggle-btn {
+  color: #000;
+  font-weight: 700;
+}
+
+.ui-theme-note .settings-nav-items button span,
+.ui-theme-note .result-group-title::before {
+  filter: saturate(0.4) sepia(0.45);
+}
+
+.ui-theme-note .setting-group,
+.ui-theme-note .marker-list-item,
+.ui-theme-note .result-group {
+  background: #fff;
+  border: 1px dashed #000;
+  box-shadow: none;
+}
+
+.ui-theme-note .setting-group h3,
+.ui-theme-note .result-group-title {
+  border-bottom: 1px dashed #000;
+  padding-bottom: 8px;
+  color: #6a4a12;
+}
+
+/* ========== 明信片主题：圆角、邮戳按钮、双线分割 ========== */
+.ui-theme-postcard .themed-floating-panel.theme-postcard {
+  background: #fff;
+  border: 1px solid #000;
+  box-shadow: 0 22px 52px rgba(96, 64, 18, 0.22);
+}
+
+.ui-theme-postcard .themed-floating-panel.theme-postcard::after {
+  opacity: 1;
+  background-image: none;
+}
+
+.ui-theme-postcard .settings-nav,
+.ui-theme-postcard .settings-content,
+.ui-theme-postcard .marker-list-header,
+.ui-theme-postcard .marker-list-toolbar,
+.ui-theme-postcard .marker-list-content {
+  background: #fff;
+  color: #4c3312;
+}
+
+.ui-theme-postcard .settings-nav-items button,
+.ui-theme-postcard .toolbar-btn,
+.ui-theme-postcard .batch-toggle-btn {
+  color: #65421a;
+}
+
+.ui-theme-postcard .settings-nav-items button.active,
+.ui-theme-postcard .toolbar-btn.active,
+.ui-theme-postcard .batch-toggle-btn {
+  color: #000;
+  font-weight: 700;
+}
+
+.ui-theme-postcard .panel-close,
+.ui-theme-postcard .settings-close {
+  border-radius: 10px;
+}
+
+.ui-theme-postcard .setting-group,
+.ui-theme-postcard .marker-list-item,
+.ui-theme-postcard .result-group {
+  background: #fff;
+  border: 2px double #000;
+}
+
+.ui-theme-postcard .setting-group h3,
+.ui-theme-postcard .result-group-title {
+  border-bottom: 2px double #000;
+  padding-bottom: 8px;
+  color: #6b4110;
+}
+
+/* ========== 胶卷主题：深色、方形按钮、霓虹分割 ========== */
+.ui-theme-film .themed-floating-panel.theme-film {
+  background: linear-gradient(150deg, #11141c 0%, #0b0f16 56%, #171d29 100%);
+  border: 1px solid rgba(188, 224, 255, 0.22);
+  box-shadow: 0 30px 78px rgba(0, 0, 0, 0.52);
+  color: #f4f8ff;
+}
+
+.ui-theme-film .themed-floating-panel.theme-film::after {
+  opacity: 1;
+  background-image:
+    linear-gradient(90deg, rgba(255,255,255,0.12) 0 4px, transparent 4px 12px),
+    linear-gradient(270deg, rgba(255,255,255,0.12) 0 4px, transparent 4px 12px);
+  background-size: 12px 100%, 12px 100%;
+  background-position: left top, right top;
+  background-repeat: repeat-y;
+}
+
+.ui-theme-film .settings-nav,
+.ui-theme-film .settings-content,
+.ui-theme-film .marker-list-header,
+.ui-theme-film .marker-list-toolbar,
+.ui-theme-film .marker-list-content {
+  background: rgba(255,255,255,0.055);
+  color: #f4f8ff;
+}
+
+.ui-theme-film .settings-page h2,
+.ui-theme-film .page-desc,
+.ui-theme-film .marker-list-header h3 {
+  color: #f6fbff;
+}
+
+.ui-theme-film .settings-nav-items button,
+.ui-theme-film .toolbar-btn,
+.ui-theme-film .batch-toggle-btn {
+  color: #e8f4ff;
+  border-bottom-color: rgba(175, 220, 255, 0.24);
+}
+
+.ui-theme-film .settings-nav-items button.active,
+.ui-theme-film .toolbar-btn.active,
+.ui-theme-film .batch-toggle-btn {
+  color: #69b9ff;
+  font-weight: 700;
+  background: rgba(20, 28, 44, 0.95);
+}
+
+.ui-theme-film .setting-group,
+.ui-theme-film .marker-list-item,
+.ui-theme-film .result-group {
+  background: rgba(255,255,255,0.06);
+  border: 1px solid rgba(155, 210, 255, 0.34);
+  color: #edf5ff;
+}
+
+.ui-theme-film .setting-group h3,
+.ui-theme-film .result-group-title {
+  border-bottom: 1px solid rgba(150, 210, 255, 0.38);
+  padding-bottom: 8px;
+  color: #b2dcff;
+}
+
+
+/* 暗色适配：保证便签/明信片在暗环境也清晰可读 */
+@media (prefers-color-scheme: dark) {
+  .ui-theme-note .settings-overlay,
+  .ui-theme-postcard .settings-overlay,
+  .ui-theme-note .marker-list-overlay,
+  .ui-theme-postcard .marker-list-overlay {
+    background: rgba(8, 10, 16, 0.66);
+  }
+
+  .ui-theme-note .settings-page h2,
+  .ui-theme-postcard .settings-page h2,
+  .ui-theme-note .marker-list-header h3,
+  .ui-theme-postcard .marker-list-header h3 {
+    color: #24180a;
+  }
+}
+
+.ui-theme-note .social-panel,
+.ui-theme-note .context-menu,
+.ui-theme-note .marker-menu {
+  background: #fff;
+  border-color: #000;
+}
+
+.ui-theme-postcard .social-panel,
+.ui-theme-postcard .context-menu,
+.ui-theme-postcard .marker-menu {
+  background: #fff;
+  border-color: #000;
+}
+
+.ui-theme-film .social-panel,
+.ui-theme-film .context-menu,
+.ui-theme-film .marker-menu {
+  background: #161b25;
+  color: #e8f0ff;
+  border-color: rgba(255,255,255,0.2);
+}
+
+.social-header {
+  display: flex;
+  align-items: center;
+  flex-shrink: 0;
+  background: #fff;
+  border-bottom: 1px solid #f0f0f0;
+  padding: 10px 12px 10px 16px;
+  gap: 10px;
+  justify-content: space-between;
+}
+
+.social-tabs {
+  display: flex;
+  gap: 0;
+  background: #f0f0f0;
+  border-radius: 10px;
+  padding: 3px;
+  flex: 1;
+  max-width: 280px;
+}
+
+.social-tabs button {
+  flex: 1;
+  padding: 7px 12px;
+  border: none;
+  background: transparent;
+  color: #888;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  border-radius: 8px;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+  white-space: nowrap;
+}
+
+.social-tabs button .stab-icon { font-size: 14px; line-height: 1; }
+.social-tabs button .stab-label { font-size: 13px; font-weight: 600; }
+
+.social-tabs button:hover {
+  color: #333;
+}
+
+.social-tabs button.active {
+  background: #fff;
+  color: #000;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.12);
+  font-weight: 700;
+}
+
+/* 内部关闭按钮 */
+.social-close-inner {
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  border: none;
+  background: #f0f0f0;
+  color: #666;
+  font-size: 12px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.18s;
+  flex-shrink: 0;
+}
+
+.social-close-inner:hover {
+  background: #000;
+  color: #fff;
+}
+
+/* 海外国家网格 */
+.overseas-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 8px;
+  margin-top: 4px;
+}
+
+.overseas-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 3px;
+  padding: 8px 4px;
+  border-radius: 8px;
+  border: 1px solid #d8d8d8;
+  transition: all 0.15s;
+}
+
+.overseas-item.visited {
+  background: #fff;
+  border-color: #000;
+  box-shadow: 0 1px 8px rgba(178, 126, 32, 0.22);
+}
+
+.overseas-item.visited:hover {
+  border-color: #000;
+  background: #f0f0f0;
+  transform: translateY(-1px);
+  box-shadow: 0 3px 10px rgba(142, 100, 26, 0.3);
+}
+
+.overseas-item.unvisited {
+  background: #f7f7f7;
+  border-color: #d9d9d9;
+  opacity: 0.62;
+}
+
+.overseas-flag { font-size: 20px; line-height: 1; }
+.overseas-name { font-size: 10px; color: #666; font-weight: 500; text-align: center; }
+.overseas-count {
+  font-size: 10px;
+  font-weight: 700;
+  color: #fff;
+  background: #000;
+  border-radius: 10px;
+  padding: 1px 5px;
+  line-height: 1.4;
+}
+
+/* social-overlay 需要 relative 容器来定位关闭按钮 */
+.social-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.45);
+  backdrop-filter: blur(6px);
+  z-index: 1200;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+  animation: overlayFadeIn 0.2s ease-out;
+}
+
+.social-panel {
+  background: #fff;
+  border-radius: 20px;
+  width: 100%;
+  max-width: 520px;
+  height: 72vh;
+  max-height: 600px;
+  min-height: 480px;
+  display: flex;
+  flex-direction: column;
+  box-shadow: 0 24px 64px rgba(0,0,0,0.2);
+  animation: scaleIn 0.28s cubic-bezier(0.34, 1.56, 0.64, 1);
+  overflow: hidden;
+  position: relative;
+}
+
+.social-tabs {
+  display: flex;
+  gap: 0;
+  background: #f5f5f5;
+  border-radius: 0;
+  padding: 0;
+  flex: 1;
+}
+
+.social-tabs button {
+  flex: 1;
+  padding: 14px 0;
+  border: none;
+  background: transparent;
+  color: #888;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  border-radius: 0;
+  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+  position: relative;
+  border-bottom: 2px solid transparent;
+}
+
+.social-tabs button.active {
+  background: #fff;
+  color: #000;
+  box-shadow: none;
+  border-bottom: 2px solid #000;
+  transition: all 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+

@@ -1,0 +1,42 @@
+#!/usr/bin/env sh
+. "$(dirname -- "$0")/_/husky.sh"
+
+# 检查提交信息格式（Conventional Commits）
+# 格式: type(scope): message
+# 例如: feat(map): 添加热力图功能
+
+commit_msg=$(cat "$1")
+
+# 允许的提交类型
+types="feat|fix|docs|style|refactor|perf|test|build|ci|chore|revert"
+
+# 正则表达式
+pattern="^($types)(\(.+\))?: .{1,100}$"
+
+if ! echo "$commit_msg" | grep -qE "$pattern"; then
+  echo "❌ 提交信息格式错误！"
+  echo ""
+  echo "正确格式: type(scope): message"
+  echo ""
+  echo "允许的类型:"
+  echo "  feat     - 新功能"
+  echo "  fix      - 修复 Bug"
+  echo "  docs     - 文档更新"
+  echo "  style    - 代码格式（不影响功能）"
+  echo "  refactor - 重构（不是新功能也不是修复）"
+  echo "  perf     - 性能优化"
+  echo "  test     - 测试相关"
+  echo "  build    - 构建系统或外部依赖"
+  echo "  ci       - CI 配置"
+  echo "  chore    - 其他杂项"
+  echo "  revert   - 回滚提交"
+  echo ""
+  echo "示例:"
+  echo "  feat(map): 添加热力图功能"
+  echo "  fix(photo): 修复照片加载失败问题"
+  echo "  docs: 更新 README"
+  echo ""
+  exit 1
+fi
+
+echo "✅ 提交信息格式正确"

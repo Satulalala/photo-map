@@ -1,0 +1,36 @@
+# 构建输出
+dist/
+build/
+dist-web/
+
+# 依赖
+node_modules/
+
+# 缓存
+.vite/
+.cache/
+
+# 日志
+*.log
+
+# 锁文件
+package-lock.json
+yarn.lock
+pnpm-lock.yaml
+
+# 压缩文件
+*.min.js
+*.min.css
+
+# 自动生成的文件
+public/sw.js
+coverage/
+
+# 数据库文件
+*.db
+*.sqlite
+
+# 环境变量
+.env
+.env.local
+.env.*.local

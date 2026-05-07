@@ -1,0 +1,294 @@
+/* ========== 菜单按钮：提示在右边 ========== */
+.menu-btn[data-tooltip]::after {
+  left: 100%;
+  right: auto;
+  top: 50%;
+  transform: translateY(-50%) translateX(8px);
+}
+
+.menu-btn[data-tooltip]::before {
+  left: 100%;
+  right: auto;
+  top: 50%;
+  transform: translateY(-50%) translateX(2px);
+  border-right-color: rgba(30, 30, 30, 0.95);
+  border-left-color: transparent;
+}
+
+.menu-btn[data-tooltip]:hover::after {
+  transform: translateY(-50%) translateX(12px);
+}
+
+.menu-btn[data-tooltip]:hover::before {
+  transform: translateY(-50%) translateX(6px);
+}
+
+/* 照片主包装器 - 移除独立动画，由容器控制 */
+.photo-container .photo-main-wrapper {
+  animation: none;
+}
+
+/* 照片查看器顶部工具栏 */
+.pv-toolbar {
+  position: fixed;
+  top: 20px;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 12px;
+  background: rgba(0, 0, 0, 0.6);
+  backdrop-filter: blur(12px);
+  border-radius: 12px;
+  z-index: 2200;
+}
+
+.pv-btn {
+  width: 40px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: transparent;
+  border: none;
+  border-radius: 10px;
+  color: rgba(255,255,255,0.8);
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.pv-btn svg {
+  width: 22px;
+  height: 22px;
+  fill: currentColor;
+}
+
+.pv-btn:hover {
+  background: rgba(255,255,255,0.15);
+  color: white;
+}
+
+.pv-btn:active {
+  transform: scale(0.92);
+}
+
+.pv-btn-danger:hover {
+  background: rgba(239, 68, 68, 0.25);
+  color: #fca5a5;
+}
+
+.pv-btn-accent:hover {
+  background: rgba(59, 130, 246, 0.25);
+  color: #93c5fd;
+}
+
+.pv-btn-close {
+  background: rgba(239, 68, 68, 0.2);
+  color: #fca5a5;
+}
+
+.pv-btn-close:hover {
+  background: #ef4444;
+  color: white;
+}
+
+.pv-divider {
+  width: 1px;
+  height: 24px;
+  background: rgba(255,255,255,0.2);
+  margin: 0 4px;
+}
+
+.photo-bottom-bar {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  padding: 16px 24px 20px;
+  background: linear-gradient(transparent, rgba(0,0,0,0.7));
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  z-index: 2100;
+}
+
+.photo-edit-hint {
+  font-size: 12px;
+  color: rgba(255,255,255,0.7);
+  background: rgba(59, 130, 246, 0.3);
+  padding: 4px 12px;
+  border-radius: 12px;
+}
+
+.crop-mode { cursor: crosshair; }
+
+.crop-hint {
+  position: fixed;
+  top: 80px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: rgba(0,0,0,0.7);
+  color: white;
+  padding: 8px 16px;
+  border-radius: 8px;
+  font-size: 13px;
+  z-index: 2300;
+}
+
+.crop-overlay {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 2150;
+}
+
+.crop-selection {
+  border: 2px dashed #3b82f6;
+  background: rgba(59, 130, 246, 0.15);
+  box-shadow: 0 0 0 9999px rgba(0,0,0,0.5);
+}
+
+.pv-btn-active {
+  background: rgba(59, 130, 246, 0.3) !important;
+  color: #60a5fa !important;
+}
+
+.photo-counter {
+  font-size: 14px;
+  font-weight: 600;
+  color: white;
+  letter-spacing: 2px;
+  background: rgba(255,255,255,0.15);
+  padding: 8px 18px;
+  border-radius: var(--radius-lg);
+  backdrop-filter: blur(10px);
+}
+
+.photo-note-bar {
+  font-size: 14px;
+  color: rgba(255,255,255,0.85);
+  max-width: 560px;
+  text-align: center;
+  line-height: 1.6;
+}
+
+/* ========== 照片信息面板 ========== */
+.photo-info-panel {
+  position: fixed;
+  right: 20px;
+  top: 80px;
+  bottom: 100px;
+  width: 280px;
+  background: rgba(30, 30, 30, 0.95);
+  backdrop-filter: blur(20px);
+  border-radius: var(--radius-xl);
+  z-index: 2200;
+  display: flex;
+  flex-direction: column;
+  animation: slideLeft 0.25s ease;
+  border: 1px solid rgba(255,255,255,0.1);
+  box-shadow: 0 8px 32px rgba(0,0,0,0.4);
+}
+
+.photo-info-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 14px 16px;
+  border-bottom: 1px solid rgba(255,255,255,0.1);
+}
+
+.photo-info-header h4 {
+  margin: 0;
+  font-size: 14px;
+  font-weight: 600;
+  color: white;
+}
+
+.panel-close-sm {
+  width: 24px;
+  height: 24px;
+  border: none;
+  background: rgba(255,255,255,0.1);
+  color: rgba(255,255,255,0.7);
+  font-size: 12px;
+  cursor: pointer;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s;
+}
+
+.panel-close-sm:hover {
+  background: rgba(255,100,100,0.8);
+  color: white;
+}
+
+.photo-info-content {
+  flex: 1;
+  overflow-y: auto;
+  padding: 12px;
+}
+
+.info-section {
+  margin-bottom: 16px;
+}
+
+.info-section:last-child {
+  margin-bottom: 0;
+}
+
+.info-title {
+  font-size: 11px;
+  font-weight: 600;
+  color: rgba(255,255,255,0.5);
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  margin-bottom: 8px;
+  padding-left: 2px;
+}
+
+.info-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 6px 8px;
+  background: rgba(255,255,255,0.05);
+  border-radius: var(--radius-sm);
+  margin-bottom: 4px;
+}
+
+.info-row:last-child {
+  margin-bottom: 0;
+}
+
+.info-label {
+  font-size: 12px;
+  color: rgba(255,255,255,0.6);
+}
+
+.info-value {
+  font-size: 12px;
+  color: white;
+  font-weight: 500;
+  text-align: right;
+  max-width: 160px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.info-loading {
+  text-align: center;
+  color: rgba(255,255,255,0.5);
+  padding: 40px 20px;
+  font-size: 13px;
+}
+
+.toolbar-btn.active {
+  background: var(--accent);
+  color: white;
+}

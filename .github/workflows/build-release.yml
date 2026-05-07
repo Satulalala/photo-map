@@ -1,0 +1,263 @@
+# GitHub Actions 多平台构建和发布工作流
+# 
+# 触发条件：
+# - 推送带有 v* 标签时自动构建发布
+# - 手动触发工作流
+#
+# 构建平台：
+# - Windows (x64)
+# - macOS (x64, arm64)
+# - Linux (x64)
+
+name: Build and Release
+
+on:
+  push:
+    tags:
+      - 'v*'
+  workflow_dispatch:
+    inputs:
+      version:
+        description: '版本号 (例如: 1.0.0)'
+        required: false
+        default: ''
+
+# 设置权限
+permissions:
+  contents: write
+
+jobs:
+  # ========== 构建 Windows 版本 ==========
+  build-windows:
+    runs-on: windows-latest
+    
+    steps:
+      - name: 检出代码
+        uses: actions/checkout@v4
+        
+      - name: 设置 Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+          cache: 'npm'
+          
+      - name: 安装依赖
+        run: npm ci
+        
+      - name: 重建原生模块
+        run: npm run rebuild
+        
+      - name: 构建前端
+        run: npm run build
+        
+      - name: 构建 Windows 安装包
+        run: npm run dist -- --win
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          
+      - name: 上传 Windows 构建产物
+        uses: actions/upload-artifact@v4
+        with:
+          name: windows-build
+          path: |
+            dist/*.exe
+            dist/*.zip
+            dist/latest.yml
+          retention-days: 5
+
+  # ========== 构建 macOS 版本 ==========
+  build-macos:
+    runs-on: macos-latest
+    
+    steps:
+      - name: 检出代码
+        uses: actions/checkout@v4
+        
+      - name: 设置 Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+          cache: 'npm'
+          
+      - name: 安装依赖
+        run: npm ci
+        
+      - name: 重建原生模块
+        run: npm run rebuild
+        
+      - name: 构建前端
+        run: npm run build
+        
+      # 代码签名（需要配置证书）
+      - name: 导入代码签名证书
+        if: env.CSC_LINK != ''
+        env:
+          CSC_LINK: ${{ secrets.MAC_CERTS }}
+          CSC_KEY_PASSWORD: ${{ secrets.MAC_CERTS_PASSWORD }}
+        run: |
+          echo "代码签名证书已配置"
+          
+      - name: 构建 macOS 安装包
+        run: npm run dist -- --mac
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          CSC_LINK: ${{ secrets.MAC_CERTS }}
+          CSC_KEY_PASSWORD: ${{ secrets.MAC_CERTS_PASSWORD }}
+          APPLE_ID: ${{ secrets.APPLE_ID }}
+          APPLE_ID_PASSWORD: ${{ secrets.APPLE_ID_PASSWORD }}
+          APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
+          
+      - name: 上传 macOS 构建产物
+        uses: actions/upload-artifact@v4
+        with:
+          name: macos-build
+          path: |
+            dist/*.dmg
+            dist/*.zip
+            dist/latest-mac.yml
+          retention-days: 5
+
+  # ========== 构建 Linux 版本 ==========
+  build-linux:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: 检出代码
+        uses: actions/checkout@v4
+        
+      - name: 设置 Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+          cache: 'npm'
+          
+      - name: 安装系统依赖
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y libarchive-tools rpm
+          
+      - name: 安装依赖
+        run: npm ci
+        
+      - name: 重建原生模块
+        run: npm run rebuild
+        
+      - name: 构建前端
+        run: npm run build
+        
+      - name: 构建 Linux 安装包
+        run: npm run dist -- --linux
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          
+      - name: 上传 Linux 构建产物
+        uses: actions/upload-artifact@v4
+        with:
+          name: linux-build
+          path: |
+            dist/*.AppImage
+            dist/*.deb
+            dist/*.rpm
+            dist/latest-linux.yml
+          retention-days: 5
+
+  # ========== 创建 GitHub Release ==========
+  create-release:
+    needs: [build-windows, build-macos, build-linux]
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: 检出代码
+        uses: actions/checkout@v4
+        
+      - name: 下载所有构建产物
+        uses: actions/download-artifact@v4
+        with:
+          path: dist
+          
+      - name: 整理构建产物
+        run: |
+          mkdir -p release
+          find dist -type f \( -name "*.exe" -o -name "*.dmg" -o -name "*.zip" -o -name "*.AppImage" -o -name "*.deb" -o -name "*.rpm" -o -name "*.yml" \) -exec cp {} release/ \;
+          ls -la release/
+          
+      - name: 获取版本号
+        id: get_version
+        run: |
+          if [ -n "${{ github.event.inputs.version }}" ]; then
+            echo "version=${{ github.event.inputs.version }}" >> $GITHUB_OUTPUT
+          else
+            echo "version=${GITHUB_REF#refs/tags/v}" >> $GITHUB_OUTPUT
+          fi
+          
+      - name: 生成更新日志
+        id: changelog
+        run: |
+          echo "## 🎉 地图相册 v${{ steps.get_version.outputs.version }}" > CHANGELOG.md
+          echo "" >> CHANGELOG.md
+          echo "### 📦 下载" >> CHANGELOG.md
+          echo "" >> CHANGELOG.md
+          echo "| 平台 | 下载链接 |" >> CHANGELOG.md
+          echo "|------|----------|" >> CHANGELOG.md
+          echo "| Windows | [安装包 (.exe)](https://github.com/${{ github.repository }}/releases/download/v${{ steps.get_version.outputs.version }}/地图相册-${{ steps.get_version.outputs.version }}-win-x64.exe) |" >> CHANGELOG.md
+          echo "| macOS | [安装包 (.dmg)](https://github.com/${{ github.repository }}/releases/download/v${{ steps.get_version.outputs.version }}/地图相册-${{ steps.get_version.outputs.version }}-mac-x64.dmg) |" >> CHANGELOG.md
+          echo "| Linux | [AppImage](https://github.com/${{ github.repository }}/releases/download/v${{ steps.get_version.outputs.version }}/地图相册-${{ steps.get_version.outputs.version }}-x64.AppImage) |" >> CHANGELOG.md
+          echo "" >> CHANGELOG.md
+          echo "### ✨ 更新内容" >> CHANGELOG.md
+          echo "" >> CHANGELOG.md
+          echo "- 请查看 [完整更新日志](https://github.com/${{ github.repository }}/blob/main/CHANGELOG.md)" >> CHANGELOG.md
+          echo "" >> CHANGELOG.md
+          echo "### 📋 系统要求" >> CHANGELOG.md
+          echo "" >> CHANGELOG.md
+          echo "- **Windows**: Windows 10 或更高版本" >> CHANGELOG.md
+          echo "- **macOS**: macOS 10.15 或更高版本" >> CHANGELOG.md
+          echo "- **Linux**: Ubuntu 18.04+ 或同等版本" >> CHANGELOG.md
+          
+      - name: 创建 GitHub Release
+        uses: softprops/action-gh-release@v1
+        with:
+          name: 地图相册 v${{ steps.get_version.outputs.version }}
+          body_path: CHANGELOG.md
+          draft: false
+          prerelease: ${{ contains(steps.get_version.outputs.version, 'beta') || contains(steps.get_version.outputs.version, 'alpha') }}
+          files: release/*
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+  # ========== 构建 Web 版本并部署 ==========
+  build-web:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: 检出代码
+        uses: actions/checkout@v4
+        
+      - name: 设置 Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+          cache: 'npm'
+          
+      - name: 安装依赖
+        run: npm ci
+        
+      - name: 构建 Web 版本
+        run: npm run web:build
+        env:
+          VITE_MAPBOX_TOKEN: ${{ secrets.MAPBOX_TOKEN }}
+          
+      - name: 上传 Web 构建产物
+        uses: actions/upload-artifact@v4
+        with:
+          name: web-build
+          path: dist-web
+          retention-days: 5
+          
+      # 部署到 GitHub Pages（可选）
+      - name: 部署到 GitHub Pages
+        if: github.ref == 'refs/heads/main' || startsWith(github.ref, 'refs/tags/v')
+        uses: peaceiris/actions-gh-pages@v3
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: ./dist-web
+          cname: photo-map.example.com  # 自定义域名（可选）

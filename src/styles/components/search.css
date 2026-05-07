@@ -1,0 +1,268 @@
+/* ========== 搜索栏 ========== */
+.search-bar-container {
+  position: fixed;
+  top: 14px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 600;
+  width: 440px;
+  max-width: calc(100vw - 180px);
+  animation: searchBarEnter 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+}
+
+@keyframes searchBarEnter {
+  0% { opacity: 0; transform: translateX(-50%) translateY(-20px) scale(0.95); }
+  100% { opacity: 1; transform: translateX(-50%) translateY(0) scale(1); }
+}
+
+.search-bar-wrapper {
+  flex: 1;
+  min-width: 0;
+  position: relative;
+}
+
+.search-bar {
+  display: flex;
+  align-items: center;
+  background: white;
+  border: 2px solid var(--border);
+  padding: 14px 20px;
+  min-height: 54px;
+  gap: 12px;
+  border-radius: 27px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08), 0 2px 6px rgba(0, 0, 0, 0.05);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  cursor: text;
+  position: relative;
+  width: 100%;
+}
+
+/* 确保整个label区域都可以点击 */
+.search-bar * {
+  cursor: text;
+}
+
+.search-bar button {
+  cursor: pointer;
+}
+
+.search-bar:hover {
+  border-color: var(--accent);
+  box-shadow: 0 6px 28px rgba(0, 0, 0, 0.12), 0 3px 8px rgba(0, 0, 0, 0.06);
+  transform: translateY(-1px);
+}
+
+.search-bar:focus-within {
+  border-color: var(--accent);
+  box-shadow: 0 8px 36px rgba(59, 130, 246, 0.18), 0 0 0 3px rgba(59, 130, 246, 0.1);
+  transform: translateY(-2px);
+}
+
+.search-icon {
+  font-size: 18px;
+  color: var(--text-muted);
+  transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+  flex-shrink: 0;
+  user-select: none;
+  line-height: 1;
+  display: flex;
+  align-items: center;
+  pointer-events: none;
+  cursor: text;
+}
+
+.search-bar:focus-within .search-icon {
+  color: var(--accent);
+  transform: scale(1.1) rotate(-8deg);
+}
+
+.search-bar input {
+  flex: 1;
+  border: none;
+  outline: none;
+  font-size: 15px;
+  background: transparent;
+  color: var(--text-primary);
+  font-weight: 500;
+  cursor: text;
+  min-width: 0;
+  padding: 0;
+  line-height: 1.5;
+}
+
+.search-bar input::placeholder {
+  color: var(--text-muted);
+  font-weight: 400;
+  transition: opacity 0.2s;
+}
+
+.search-bar:focus-within input::placeholder {
+  opacity: 0.5;
+}
+
+.search-clear {
+  width: 28px;
+  height: 28px;
+  border: none;
+  background: var(--bg-tertiary);
+  color: var(--text-muted);
+  font-size: 12px;
+  cursor: pointer;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
+  animation: fadeIn 0.2s ease;
+  flex-shrink: 0;
+}
+
+.search-clear:hover {
+  background: var(--danger);
+  color: white;
+  transform: scale(1.15);
+}
+
+.search-clear:active {
+  transform: rotate(90deg) scale(0.9);
+}
+
+/* Web版下载按钮 - 固定在搜索框右侧 */
+.web-download-beside-search {
+  flex-shrink: 0;
+  align-self: flex-start;
+}
+
+.search-results {
+  position: absolute;
+  top: calc(100% + 10px);
+  left: 0;
+  right: 0;
+  margin-top: 0;
+  background: white;
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  box-shadow: 0 8px 40px rgba(0, 0, 0, 0.12), 0 2px 8px rgba(0, 0, 0, 0.06);
+  max-height: 340px;
+  overflow-y: auto;
+  overflow-x: hidden;
+  animation: searchResultsEnter 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
+  z-index: 10;
+}
+
+@keyframes searchResultsEnter {
+  0% { opacity: 0; transform: translateY(-10px) scale(0.98); }
+  100% { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+.search-result-item {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 14px 16px;
+  cursor: pointer;
+  border-bottom: 1px solid var(--border-light);
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  position: relative;
+  contain: layout style;
+}
+
+.search-result-item:last-child { border-bottom: none; }
+
+.search-result-item::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: 3px;
+  background: linear-gradient(180deg, var(--accent), #818cf8);
+  transform: scaleY(0);
+  transition: transform 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
+  border-radius: 0 2px 2px 0;
+}
+
+.search-result-item:hover,
+.search-result-item.selected {
+  background: linear-gradient(90deg, var(--accent-light), transparent);
+  padding-left: 20px;
+}
+
+.search-result-item:hover::before,
+.search-result-item.selected::before {
+  transform: scaleY(1);
+}
+
+.search-result-item:hover .result-icon {
+  animation: bounce 0.4s ease;
+}
+
+.result-icon { font-size: 18px; flex-shrink: 0; }
+.result-info { flex: 1; min-width: 0; }
+.result-name { font-size: 14px; font-weight: 500; color: var(--text-primary); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.result-address { font-size: 12px; color: var(--text-muted); margin-top: 2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.result-distance { font-size: 12px; color: var(--text-muted); flex-shrink: 0; margin-left: 8px; }
+
+/* 搜索历史 */
+.search-history-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px 14px;
+  font-size: 12px;
+  color: var(--text-muted);
+  border-bottom: 1px solid var(--border-light);
+}
+
+.search-history-header button {
+  background: none;
+  border: none;
+  color: var(--accent);
+  cursor: pointer;
+  font-size: 12px;
+  padding: 2px 6px;
+  border-radius: 4px;
+}
+
+.search-history-header button:hover {
+  background: var(--accent-light);
+}
+
+.history-item .result-icon {
+  color: var(--text-muted);
+}
+
+.search-tip {
+  padding: 20px;
+  text-align: center;
+  color: var(--text-muted);
+  font-size: 13px;
+}
+
+.search-loading, .search-empty {
+  padding: 28px;
+  text-align: center;
+  color: var(--text-muted);
+  font-size: 13px;
+}
+
+.search-loading {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+
+.loading-spinner {
+  width: 16px;
+  height: 16px;
+  border: 2px solid var(--border);
+  border-top-color: var(--accent);
+  border-radius: 50%;
+  animation: spin 0.7s linear infinite;
+}
+
+.search-overlay { position: fixed; inset: 0; z-index: 550; }

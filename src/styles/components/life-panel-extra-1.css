@@ -1,0 +1,396 @@
+/* ========== 生活悬浮窗 ========== */
+.life-panel-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.45);
+  backdrop-filter: blur(6px);
+  z-index: 1100;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+  animation: overlayFadeIn 0.2s ease-out;
+}
+
+.life-panel {
+  background: #fff;
+  background-image: none;
+  background-size: 100% 28px, 100% 100%;
+  border-radius: 16px;
+  border: 1px solid #000;
+  width: 100%;
+  max-width: 620px;
+  height: 72vh;
+  max-height: 640px;
+  min-height: 500px;
+  display: flex;
+  flex-direction: column;
+  box-shadow: 0 26px 70px rgba(49, 34, 8, 0.26), 0 8px 0 rgba(130, 91, 26, 0.2);
+  animation: scaleIn 0.28s cubic-bezier(0.34, 1.56, 0.64, 1);
+  overflow: hidden;
+}
+
+.life-panel-inner {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+
+.life-panel-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 14px 16px;
+  border-bottom: 1px dashed #000;
+  flex-shrink: 0;
+  background: #fff;
+}
+
+.life-panel-header h3 {
+  margin: 0;
+  font-size: 21px;
+  font-weight: 800;
+  color: #3c2a09;
+  letter-spacing: 0.4px;
+  flex: 1;
+  text-align: center;
+}
+
+.life-back-btn {
+  padding: 6px 12px;
+  border: 1px solid #e0e0e0;
+  background: #fff;
+  border-radius: 8px;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+  color: #555;
+}
+.life-back-btn:hover { background: #000; color: #fff; border-color: #000; }
+
+.life-close-btn {
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  border: none;
+  background: #f0f0f0;
+  color: #666;
+  font-size: 12px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.18s;
+}
+.life-close-btn:hover { background: #000; color: #fff; }
+
+.life-panel-content {
+  flex: 1;
+  overflow-y: auto;
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.poster-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.58);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 3000;
+  padding: 8px;
+}
+
+.poster-card {
+  width: min(96vw, 1240px);
+  max-height: 96vh;
+  overflow: auto;
+  background: #fff;
+  border-radius: 16px;
+  border: 1px solid #000;
+  padding: 14px;
+}
+
+.poster-toolbar {
+  display: flex;
+  justify-content: space-between;
+  gap: 10px;
+  margin-bottom: 10px;
+  flex-wrap: wrap;
+}
+
+.poster-style-tabs { display: flex; gap: 8px; }
+.poster-style-tabs button {
+  border: 1px solid #000;
+  background: #fff;
+  color: #573d0f;
+  border-radius: 999px;
+  height: 32px;
+  padding: 0 14px;
+  font-weight: 700;
+  cursor: pointer;
+}
+.poster-style-tabs button.active {
+  background: #4d3308;
+  color: #fff;
+}
+
+.poster-toolbar-actions { display: flex; gap: 8px; }
+.poster-action {
+  border: 1px solid #000;
+  background: #fff;
+  height: 32px;
+  border-radius: 8px;
+  padding: 0 12px;
+  cursor: pointer;
+  font-weight: 600;
+}
+.poster-action.primary { background: #3d2808; color: #fff; border-color: #3d2808; }
+
+.poster-photo-strip {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(84px, 1fr));
+  gap: 8px;
+  margin-bottom: 12px;
+  max-height: 130px;
+  overflow-y: auto;
+}
+
+.poster-photo-thumb {
+  border: 1px solid #000;
+  border-radius: 8px;
+  overflow: hidden;
+  padding: 0;
+  background: #fff;
+  cursor: pointer;
+  height: 76px;
+}
+.poster-photo-thumb img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+.poster-photo-thumb.active { border: 2px solid #332106; }
+.poster-photo-empty { color: #8f6e34; font-size: 12px; padding: 8px; }
+
+.poster-preview {
+  border-radius: 14px;
+  border: 1px solid #000;
+  height: min(68vh, 700px);
+  min-height: 520px;
+  background-size: cover;
+  background-position: center;
+  overflow: hidden;
+}
+
+.poster-mask {
+  height: 100%;
+  padding: 20px;
+  background: linear-gradient(to top, rgba(17, 10, 0, 0.56), rgba(17, 10, 0, 0.1) 35%, rgba(17, 10, 0, 0.3));
+  color: #fff;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+}
+
+.poster-mask h2 { margin: 0; font-size: 34px; font-weight: 900; text-shadow: 0 2px 8px rgba(0,0,0,0.5); }
+
+.poster-stats-row-top {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+.poster-stats-row-top span {
+  background: rgba(255,255,255,0.2);
+  border: 1px solid rgba(255,255,255,0.35);
+  border-radius: 999px;
+  padding: 5px 10px;
+  font-size: 12px;
+}
+
+.poster-stats-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 12px;
+}
+.poster-stats-grid div {
+  background: rgba(255,255,255,0.14);
+  border: 1px solid rgba(255,255,255,0.28);
+  border-radius: 12px;
+  padding: 12px;
+  text-align: center;
+  backdrop-filter: blur(2px);
+}
+.poster-stats-grid strong { display: block; font-size: 34px; line-height: 1.1; }
+.poster-stats-grid span { font-size: 13px; }
+
+.poster-style-film .poster-preview {
+  border-radius: 2px;
+  box-shadow: inset 0 0 0 16px #111, inset 0 0 0 26px #2a2a2a;
+}
+.poster-style-film .poster-mask { background: linear-gradient(to top, rgba(0,0,0,0.7), rgba(0,0,0,0.12)); }
+
+.poster-style-postcard .poster-preview {
+  border-radius: 4px;
+  border: 14px solid #fff;
+  box-shadow: 0 14px 28px rgba(0,0,0,0.24);
+}
+.poster-style-postcard .poster-mask { background: linear-gradient(to top, rgba(26, 18, 10, 0.32), rgba(26, 18, 10, 0.08)); }
+
+.poster-style-note .poster-preview {
+  border-radius: 10px;
+  background-blend-mode: multiply;
+}
+
+.poster-close {
+  margin-top: 10px;
+  width: 100%;
+  border: none;
+  height: 38px;
+  border-radius: 8px;
+  background: #2f1e04;
+  color: #fff;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.overseas-count-wrap {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.overseas-count-tip {
+  font-size: 11px;
+  color: #7a5a21;
+  white-space: nowrap;
+}
+
+.poster-preview {
+  width: 100%;
+  height: auto;
+  max-height: 82vh;
+  min-height: 560px;
+  aspect-ratio: 4 / 3;
+  position: relative;
+  overflow: hidden;
+}
+
+.poster-mask {
+  background: linear-gradient(to top, rgba(17, 10, 0, 0.45), rgba(17, 10, 0, 0.05) 40%, rgba(17, 10, 0, 0.16));
+  position: relative;
+  z-index: 2;
+}
+
+.poster-template-note {
+  background: #fff;
+}
+
+.poster-template-film {
+  background:
+    repeating-linear-gradient(90deg, rgba(255,255,255,0.04) 0 4px, transparent 4px 10px),
+    linear-gradient(160deg, #161616 0%, #2b2b2b 45%, #4e4e4e 100%);
+}
+
+.poster-template-postcard {
+  background:
+    radial-gradient(circle at 80% 22%, rgba(255,255,255,0.45), transparent 28%),
+    linear-gradient(135deg, #7ec2ff 0%, #dff3ff 52%, #fff 100%);
+}
+
+.poster-frames-layer {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+}
+
+.poster-frame-slot {
+  position: absolute;
+  border: 6px solid #fff;
+  box-shadow: 0 8px 20px rgba(0,0,0,0.22);
+  background: rgba(255,255,255,0.2);
+  overflow: hidden;
+  transition: all 0.2s;
+}
+
+.poster-frame-slot.drag-over {
+  border-color: #000;
+  box-shadow: 0 0 0 3px rgba(255, 214, 96, 0.5), 0 8px 20px rgba(0,0,0,0.22);
+}
+
+.poster-frame-slot img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.poster-frame-placeholder {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: rgba(255,255,255,0.85);
+  font-size: 28px;
+  font-weight: 700;
+}
+
+.poster-page {
+  width: min(92vw, 1240px);
+  height: min(88vh, 880px);
+  display: grid;
+  grid-template-columns: 290px 1fr;
+  gap: 12px;
+  background: #fff;
+  border: 1px solid #000;
+  border-radius: 16px;
+  padding: 12px;
+  overflow: hidden;
+}
+
+.poster-sidebar {
+  background: #fff;
+  border: 1px solid #000;
+  border-radius: 12px;
+  padding: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  overflow: auto;
+}
+
+.poster-sidebar h4 {
+  margin: 0;
+  font-size: 15px;
+  color: #4c340e;
+}
+
+.poster-side-group {
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+}
+
+.poster-side-group label {
+  font-size: 12px;
+  color: #7a5a21;
+  font-weight: 700;
+}
+
+.poster-side-group small {
+  font-size: 11px;
+  color: #96723a;
+}
+
+.poster-pills {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 7px;
+}
+

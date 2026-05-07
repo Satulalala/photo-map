@@ -1,0 +1,30 @@
+/* ========== 地图 ========== */
+.map-container {
+  flex: 1;
+  height: 100vh;
+  position: relative;
+}
+
+.mapboxgl-canvas { cursor: crosshair; }
+.mapboxgl-ctrl-logo, .mapboxgl-ctrl-attrib { opacity: 0.5; }
+
+/* ========== 点击涟漪 ========== */
+.click-ripple {
+  position: fixed;
+  pointer-events: none;
+  z-index: 9999;
+  transform: translate(-50%, -50%);
+}
+
+.click-ripple::before, .click-ripple::after {
+  content: "";
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  border-radius: 50%;
+  border: 2px solid var(--accent);
+  animation: rippleOut 0.5s ease-out forwards;
+}
+
+.click-ripple::after { animation-delay: 0.1s; }

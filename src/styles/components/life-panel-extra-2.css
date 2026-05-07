@@ -1,0 +1,129 @@
+.poster-pills button {
+  border: 1px solid #000;
+  background: #fff;
+  color: #000;
+  border-radius: 999px;
+  height: 30px;
+  padding: 0 11px;
+  font-weight: 700;
+  cursor: pointer;
+  font-size: 12px;
+}
+
+.poster-pills button.active {
+  background: #4d3308;
+  color: #fff;
+}
+
+.poster-photo-list-panel {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 7px;
+  max-height: 210px;
+  overflow: auto;
+  border: 1px solid #000;
+  border-radius: 10px;
+  padding: 7px;
+  background: #fff;
+}
+
+.poster-side-actions {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+  margin-top: auto;
+}
+
+.poster-canvas-wrap {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: auto;
+  padding: 8px;
+  background: #f7edd0;
+  border-radius: 12px;
+  border: 1px solid #000;
+}
+
+.poster-preview {
+  width: min(100%, 900px);
+  min-height: 0;
+  max-height: 100%;
+}
+
+.poster-portrait { aspect-ratio: 9 / 16; height: min(100%, 760px); }
+.poster-landscape { aspect-ratio: 16 / 9; height: min(100%, 520px); }
+
+.poster-mask {
+  justify-content: flex-end;
+  gap: 10px;
+  padding: 16px;
+  pointer-events: none;
+}
+
+.poster-mask h2 { font-size: 24px; }
+
+.postcard-dropzone {
+  position: absolute;
+  inset: 8% 8% 24% 8%;
+  border: 3px dashed rgba(255,255,255,0.8);
+  border-radius: 14px;
+  background: rgba(255,255,255,0.08);
+  z-index: 1;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s;
+}
+
+.postcard-dropzone.drag-over {
+  border-color: #fff;
+  background: rgba(255,255,255,0.2);
+  transform: scale(1.01);
+}
+
+.postcard-main-photo {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  background: rgba(0,0,0,0.22);
+}
+
+.postcard-drop-hint {
+  color: #fff;
+  font-size: 16px;
+  font-weight: 700;
+  text-shadow: 0 2px 6px rgba(0,0,0,0.35);
+}
+
+.poster-link-btn {
+  border: none;
+  background: transparent;
+  color: #8e6521;
+  font-size: 12px;
+  text-align: left;
+  cursor: pointer;
+  padding: 0;
+}
+
+.poster-link-btn:hover {
+  color: #5b3d0f;
+  text-decoration: underline;
+}
+
+@media (max-width: 1200px) {
+  .poster-page {
+    grid-template-columns: 1fr;
+    height: min(92vh, 920px);
+    overflow: auto;
+  }
+
+  .poster-sidebar {
+    max-height: 34vh;
+  }
+
+  .poster-canvas-wrap {
+    min-height: 50vh;
+  }
+}

@@ -1,0 +1,199 @@
+/* ========================================
+   地图相册 - 扁平化黑白主题
+   设计风格：简洁、扁平、黑白配色
+   更新时间：2024-03-06 v3-FINAL
+   注意：所有圆角已移除，使用纯黑白配色
+======================================== */
+
+/* 导入组件样式 */
+@import './styles/components/error-boundary.css';
+@import './styles/components/loader.css';
+
+/* 防止 Mapbox 自定义标记初始闪现在左上角 */
+.mapboxgl-marker {
+  will-change: transform;
+}
+.marker-pin-hidden {
+  opacity: 0 !important;
+  pointer-events: none !important;
+  transition: none !important;
+}
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+/* ========== GPU 加速优化 ========== */
+/* 对频繁动画的元素启用硬件加速 */
+/* 注意：不要对 .marker-pin 使用 transform，会影响 Mapbox 定位 */
+.toolbar button,
+.menu-btn,
+.search-bar,
+.search-result-item,
+.photo-nav,
+.photo-main-wrapper img,
+.login-card,
+.login-circle,
+.context-menu,
+.settings-panel,
+.photo-viewer,
+.notes-panel,
+.photo-search-panel,
+.photo-editor,
+.feedback-toast {
+  will-change: transform, opacity;
+  transform: translateZ(0); /* 强制创建合成层 */
+  backface-visibility: hidden; /* 防止闪烁 */
+}
+
+:root {
+  --bg-primary: #f8fafc;
+  --bg-secondary: #ffffff;
+  --bg-tertiary: #f1f5f9;
+  --bg-hover: #e2e8f0;
+  --border: #e2e8f0;
+  --border-light: #f1f5f9;
+  --text-primary: #1e293b;
+  --text-secondary: #475569;
+  --text-muted: #94a3b8;
+  --accent: #3b82f6;
+  --accent-hover: #2563eb;
+  --accent-light: #dbeafe;
+  --danger: #ef4444;
+  --danger-light: #fee2e2;
+  --success: #22c55e;
+  --success-light: #dcfce7;
+  --warning: #f59e0b;
+  --shadow-sm: 0 1px 2px rgba(0,0,0,0.05);
+  --shadow-md: 0 4px 6px -1px rgba(0,0,0,0.1), 0 2px 4px -2px rgba(0,0,0,0.1);
+  --shadow-lg: 0 10px 15px -3px rgba(0,0,0,0.1), 0 4px 6px -4px rgba(0,0,0,0.1);
+  --shadow-xl: 0 20px 25px -5px rgba(0,0,0,0.1), 0 8px 10px -6px rgba(0,0,0,0.1);
+  --radius-sm: 6px;
+  --radius-md: 10px;
+  --radius-lg: 14px;
+  --radius-xl: 20px;
+  --mouse-x: 0px;
+  --mouse-y: 0px;
+}
+
+body {
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "PingFang SC", "Microsoft YaHei", sans-serif;
+  background: var(--bg-primary);
+  color: var(--text-primary);
+  overflow: hidden;
+  user-select: none;
+  font-size: 14px;
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+}
+
+.app {
+  display: flex;
+  height: 100vh;
+  width: 100vw;
+}
+
+/* ========== 无边框窗口拖拽区域 ========== */
+.window-drag-region {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 140px; /* 给窗口控制按钮留空间 */
+  height: 36px;
+  -webkit-app-region: drag;
+  z-index: 9999;
+  pointer-events: none; /* 默认不拦截点击，让下层元素可以接收事件 */
+}
+
+/* 搜索栏不可拖拽 */
+.search-bar-container {
+  -webkit-app-region: no-drag;
+}
+
+/* 工具栏按钮不可拖拽 */
+.toolbar, .toolbar button {
+  -webkit-app-region: no-drag;
+}
+
+/* ========== 动画关键帧 ========== */
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes slideUp {
+  from { opacity: 0; transform: translateY(16px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes slideDown {
+  from { opacity: 0; transform: translateY(-16px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes slideLeft {
+  from { opacity: 0; transform: translateX(16px); }
+  to { opacity: 1; transform: translateX(0); }
+}
+
+@keyframes slideRight {
+  from { opacity: 0; transform: translateX(-16px); }
+  to { opacity: 1; transform: translateX(0); }
+}
+
+@keyframes scaleIn {
+  from { opacity: 0; transform: scale(0.95); }
+  to { opacity: 1; transform: scale(1); }
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.5; }
+}
+
+@keyframes bounce {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-4px); }
+}
+
+@keyframes shake {
+  0%, 100% { transform: translateX(0); }
+  25% { transform: translateX(-2px); }
+  75% { transform: translateX(2px); }
+}
+
+@keyframes rippleOut {
+  0% { width: 0; height: 0; opacity: 0.5; }
+  100% { width: 60px; height: 60px; opacity: 0; }
+}
+
+@keyframes markerDrop {
+  0% {
+    opacity: 0;
+    transform: scale(0.3);
+  }
+  60% {
+    opacity: 1;
+    transform: scale(1.15);
+  }
+  80% {
+    transform: scale(0.95);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+/* ========== 地图 ========== */
+.map-container {
+  flex: 1;
+  height: 100vh;
+  position: relative;
+}
