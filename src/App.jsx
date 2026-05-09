@@ -83,8 +83,7 @@ function App() {
   const [markerListRect, setMarkerListRect] = useState(null);
   const [markerListTransitioning, setMarkerListTransitioning] = useState(false);
   const [markerListContentHidden, setMarkerListContentHidden] = useState(false);
-  const [markerListMorphDone, setMarkerListMorphDone] = useState(false);
-  const [markerBtnReveal, setMarkerBtnReveal] = useState(false);
+    const [markerBtnReveal, setMarkerBtnReveal] = useState(false);
   const [friendSearchQuery, setFriendSearchQuery] = useState('');
   const [pendingFriendId, setPendingFriendId] = useState('');
   const [manualFriends, setManualFriends] = useState([]);
@@ -189,14 +188,30 @@ function App() {
 
   // 监听语义搜索模型下载进度
   useEffect(() => {
+    // 先检查模型是否已加载（之前会话已下载过）
+    api.photos.getEmbeddingStatus?.().then(status => {
+      if (status?.isLoaded) {
+        setEmbeddingProgress(null);
+        return;
+      }
+    }).catch(() => {});
+
+    let hideTimer = null;
     const unsubscribe = api.photos.onEmbeddingProgress?.((data) => {
-      setEmbeddingProgress(data);
-      // 下载完成后清除进度条
       if (data.percent >= 100) {
-        setTimeout(() => setEmbeddingProgress(null), 2000);
+        // 下载完成，2秒后隐藏
+        clearTimeout(hideTimer);
+        hideTimer = setTimeout(() => setEmbeddingProgress(null), 2000);
+        return;
+      }
+      if (typeof data.percent === 'number' && Number.isFinite(data.percent)) {
+        setEmbeddingProgress(data);
       }
     });
-    return () => unsubscribe?.();
+    return () => {
+      unsubscribe?.();
+      clearTimeout(hideTimer);
+    };
   }, []);
 
   // 获取照片URL（支持新旧格式，使用 LRU 缓存）
@@ -474,11 +489,15 @@ function App() {
     const btn = markerManageBtnRef.current;
     const rect = btn?.getBoundingClientRect();
     if (rect && btn) {
+      const vw = window.innerWidth;
+      const vh = window.innerHeight;
       setMarkerListRect(prev => ({
         ...(prev || {}),
         x: rect.left + rect.width / 2,
         y: rect.top + rect.height / 2,
         size: Math.max(btn.offsetWidth, btn.offsetHeight),
+        dx: (rect.left + rect.width / 2) - vw / 2,
+        dy: (rect.top + rect.height / 2) - vh / 2,
       }));
     }
 
@@ -486,7 +505,6 @@ function App() {
     setMarkerListClosing(true);
     setMarkerListContentHidden(true);
     setMarkerListReady(false);
-    setMarkerListMorphDone(false);
     setShowSortMenu(false);
     setShowLayoutMenu(false);
 
@@ -1168,7 +1186,14 @@ function App() {
       return () => { map.remove(); mapRef.current = null; };
     } catch (error) {
       console.error('地图初始化失败:', error);
-      // 可以在这里显示错误提示给用户
+      if (mapContainerRef.current) {
+        mapContainerRef.current.textContent = '地图初始化失败: ' + (error.message || 'WebGL 不可用');
+        mapContainerRef.current.style.display = 'flex';
+        mapContainerRef.current.style.alignItems = 'center';
+        mapContainerRef.current.style.justifyContent = 'center';
+        mapContainerRef.current.style.color = '#94a3b8';
+        mapContainerRef.current.style.fontSize = '14px';
+      }
     }
   }, [mapEntered, mapboxReady]);
 
@@ -2033,13 +2058,17 @@ function App() {
       size: Math.max(btn.offsetWidth, btn.offsetHeight),
       targetW,
       targetH,
+      dx: (rect.left + rect.width / 2) - vw / 2,
+      dy: (rect.top + rect.height / 2) - vh / 2,
+      startScale: Math.max(targetW, targetH) > 0
+        ? Math.max(btn.offsetWidth, btn.offsetHeight) / Math.max(targetW, targetH)
+        : 0.05,
     });
 
     setMarkerListClosing(false);
     setMarkerListTransitioning(true);
     setMarkerListContentHidden(true);
     setMarkerListReady(false);
-    setMarkerListMorphDone(false);
     setShowMarkerList(true);
 
     requestAnimationFrame(() => {
@@ -2047,11 +2076,9 @@ function App() {
         setMarkerListReady(true);
         setMarkerListContentHidden(false);
         setMarkerListTransitioning(false);
-        // 变形动画结束后移除 transform，恢复文字清晰度
-        setTimeout(() => setMarkerListMorphDone(true), 720);
-      });
-    });
-  }, [markerListTransitioning]);
+	      });
+	    });
+	  }, [markerListTransitioning]);
 
   const handleCloseMarkerList = () => {
     closeMarkerListWithAnimation();
@@ -2394,13 +2421,16 @@ function App() {
       {showMarkerList && (
         <div className={`marker-list-overlay ${markerListReady ? 'open' : ''} ${markerListClosing ? 'closing' : ''}`} onClick={handleCloseMarkerList}>
           <div
-            className={`marker-list-panel themed-floating-panel theme-${uiThemeStyle} ${markerListReady ? 'open' : ''} ${markerListClosing ? 'closing' : ''} ${markerListContentHidden ? 'content-hidden' : ''} ${markerListMorphDone ? 'morph-done' : ''}`}
+            className={`marker-list-panel themed-floating-panel theme-${uiThemeStyle} ${markerListReady ? 'open' : ''} ${markerListClosing ? 'closing' : ''} ${markerListContentHidden ? 'content-hidden' : ''}`}
             style={markerListRect ? {
               '--origin-x': `${markerListRect.x}px`,
               '--origin-y': `${markerListRect.y}px`,
               '--origin-size': `${markerListRect.size}px`,
               '--target-w': `${markerListRect.targetW}px`,
               '--target-h': `${markerListRect.targetH}px`,
+              '--dx': `${markerListRect.dx}px`,
+              '--dy': `${markerListRect.dy}px`,
+              '--start-scale': markerListRect.startScale,
             } : undefined}
             onClick={e => {
               e.stopPropagation();
@@ -2409,6 +2439,7 @@ function App() {
               setShowTimeFilterMenu(false);
             }}
           >
+            <div className="marker-list-panel-inner">
             <div className="marker-list-header">
               <h3>📍 所有标记</h3>
               <div className="header-actions">
@@ -3084,6 +3115,7 @@ function App() {
                 </div>
               </div>
             )}
+          </div>
           </div>
         </div>
       )}

@@ -65,6 +65,7 @@ app.commandLine.appendSwitch('enable-webgl');
 app.commandLine.appendSwitch('ignore-gpu-blocklist');
 app.commandLine.appendSwitch('enable-gpu-rasterization');
 app.commandLine.appendSwitch('high-dpi-support', '1');
+app.commandLine.appendSwitch('disable-gpu-process-crash-limit');
 
 // 开发模式热更新
 const isDev = !app.isPackaged;
@@ -336,6 +337,11 @@ app.whenReady().then(async () => {
 
       const embedding = getEmbedding();
       embedding.setProgressCallback((progressData) => {
+        // Transformers.js 的 progress_callback 会发送多种事件类型
+        // 只有含有效 progress 字段的才是实际下载/加载进度
+        if (progressData == null || typeof progressData.progress !== 'number') return;
+        if (!Number.isFinite(progressData.progress)) return;
+
         const { progress, loaded, total } = progressData;
         const pct = Math.round(progress * 100);
         const loadedMb = (loaded / 1024 / 1024).toFixed(1);
@@ -353,6 +359,11 @@ app.whenReady().then(async () => {
 
       await embedding.warmup();
       log.info(`[Embedding] 模型预加载完成: ${Date.now() - start}ms`);
+
+      // 通知前端模型已加载完毕
+      if (mainWindow && !mainWindow.isDestroyed()) {
+        mainWindow.webContents.send('embedding-progress', { percent: 100, loaded: '0', total: '0' });
+      }
     } catch (e) {
       log.warn('[Embedding] 模型预加载跳过:', e.message);
     }

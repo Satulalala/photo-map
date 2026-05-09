@@ -75,6 +75,9 @@ coverage/
 # Claude Code 本地设置
 .claude/settings.json
 
+# 模型缓存（应用首次启动时自动下载，~1.6GB）
+.model-cache/
+
 # 其他
 .cache/
 # Local Netlify folder

@@ -6,8 +6,8 @@
 ======================================== */
 
 /* 导入组件样式 */
-@import './styles/components/error-boundary.css';
-@import './styles/components/loader.css';
+@import './components/error-boundary.css';
+@import './components/loader.css';
 
 /* 防止 Mapbox 自定义标记初始闪现在左上角 */
 .mapboxgl-marker {
@@ -25,27 +25,13 @@
   box-sizing: border-box;
 }
 
-/* ========== GPU 加速优化 ========== */
-/* 对频繁动画的元素启用硬件加速 */
-/* 注意：不要对 .marker-pin 使用 transform，会影响 Mapbox 定位 */
-.toolbar button,
-.menu-btn,
-.search-bar,
-.search-result-item,
-.photo-nav,
-.photo-main-wrapper img,
-.login-card,
-.login-circle,
-.context-menu,
-.settings-panel,
-.photo-viewer,
-.notes-panel,
-.photo-search-panel,
-.photo-editor,
+/* ========== 小心使用 GPU 加速 ========== */
+/* 仅在真正需要动画的元素上使用，滥用 will-change 会导致 GPU 内存暴增和卡顿 */
+.toolbar button:active,
+.menu-btn:active,
+.photo-nav:active,
 .feedback-toast {
   will-change: transform, opacity;
-  transform: translateZ(0); /* 强制创建合成层 */
-  backface-visibility: hidden; /* 防止闪烁 */
 }
 
 :root {

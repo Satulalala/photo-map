@@ -1,13 +1,12 @@
-import { useState, memo } from 'react';
+import { useState, memo, useCallback } from 'react';
 import LazyPhoto from './LazyPhoto.jsx';
 import { getMatchRanges } from '../utils/searchUtils.js';
 
-// 搜索高亮：将匹配文本用 <mark> 包裹，支持拼音和容错匹配
+// 搜索高亮
 function highlightText(text, query) {
   if (!query || text == null) return text;
   text = String(text);
 
-  // 1. 直接字符匹配（处理所有出现位置）
   const escaped = query.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
   const regex = new RegExp(`(${escaped})`, 'gi');
   if (regex.test(text)) {
@@ -17,7 +16,6 @@ function highlightText(text, query) {
     );
   }
 
-  // 2. 拼音/容错匹配（用 getMatchRanges 定位字符范围）
   const ranges = getMatchRanges(query, text);
   if (ranges.length === 0) return text;
 
@@ -37,14 +35,14 @@ export { highlightText };
 const MarkerListItem = memo(function MarkerListItem({ marker, onClick, batchMode, selectedPhotos, onPhotoSelect, allMarkers, onDeletePhoto, onSetCover, onAddPhoto, highlight, focused, dataIndex }) {
   const [expanded, setExpanded] = useState(false);
   const [photoMenu, setPhotoMenu] = useState(null);
+  const [loadedPhotos, setLoadedPhotos] = useState(null);
+  const [loadingPhotos, setLoadingPhotos] = useState(false);
 
-  // 检查第一张照片是否被选中
   const firstPhoto = marker.firstPhoto || marker.photos?.[0];
   const isFirstPhotoSelected = firstPhoto && selectedPhotos.some(
     p => p.markerId === marker.id && p.photoId === firstPhoto.id
   );
 
-  // 批量模式下点击标记项，选择/取消选择第一张照片
   const handleMarkerClick = () => {
     if (batchMode && firstPhoto) {
       onPhotoSelect(marker.id, firstPhoto.id, 0);
@@ -54,11 +52,45 @@ const MarkerListItem = memo(function MarkerListItem({ marker, onClick, batchMode
   };
 
   const photoCount = marker.photoCount ?? marker.photos?.length ?? 0;
-  const hasMultiplePhotos = photoCount > 1;
+  const hasMultiplePhotos = photoCount > 0;
 
-  // 从 allMarkers 中找到完整数据（如果有的话）
-  const fullMarker = allMarkers?.find(m => m.id === marker.id);
-  const displayPhotos = fullMarker?.photos || marker.photos || [];
+  // 展开时加载照片
+  const handleToggleExpand = useCallback(async (e) => {
+    e.stopPropagation();
+    if (expanded) {
+      setExpanded(false);
+      return;
+    }
+    // 优先用已加载的
+    if (loadedPhotos) {
+      setExpanded(true);
+      return;
+    }
+    setLoadingPhotos(true);
+    try {
+      let photos = marker.photos;
+      if (!photos || photos.length === 0) {
+        const apiModule = await import('../api/index.js');
+        const api = apiModule.default;
+        photos = await api.photos.getByMarkerId(marker.id);
+        const sorted = [...photos].sort((a, b) => (a.order ?? 9999) - (b.order ?? 9999));
+        setLoadedPhotos(sorted);
+      } else {
+        setLoadedPhotos(photos);
+      }
+      setExpanded(true);
+    } catch {
+      // 加载失败仍尝试展开
+      setLoadedPhotos([]);
+      setExpanded(true);
+    } finally {
+      setLoadingPhotos(false);
+    }
+  }, [expanded, loadedPhotos, marker.id, marker.photos]);
+
+  // 照片级别的备注 — 取第一张照片的备注作为标记卡片的备注预览
+  const displayPhotos = loadedPhotos || marker.photos || [];
+  const firstNote = displayPhotos.find(p => p && p.note)?.note || marker.firstPhoto?.note || '';
 
   return (
     <div className="marker-list-item-wrapper">
@@ -83,17 +115,14 @@ const MarkerListItem = memo(function MarkerListItem({ marker, onClick, batchMode
           </div>
           <div className="marker-meta">
             📷 {photoCount}
-            {marker.note && <span className="marker-note-preview"> · {marker.note}</span>}
-            {(hasMultiplePhotos || photoCount > 0) && (
+            {firstNote && <span className="marker-note-preview"> · {firstNote}</span>}
+            {hasMultiplePhotos && (
               <button
                 className="expand-btn"
-                onClick={(e) => {
-                  e.stopPropagation();
-                  setExpanded(!expanded);
-                }}
+                onClick={handleToggleExpand}
                 title={expanded ? '收起' : '展开'}
               >
-                {expanded ? '▲' : '▼'}
+                {loadingPhotos ? '⋯' : (expanded ? '▲' : '▼')}
               </button>
             )}
           </div>
@@ -101,13 +130,9 @@ const MarkerListItem = memo(function MarkerListItem({ marker, onClick, batchMode
       </div>
 
       {/* 展开显示所有照片 */}
-      {expanded && (
+      {expanded && loadedPhotos && (
         <div className="photo-grid-expanded">
-          {displayPhotos.map((photo, photoIndex) => {
-            const notes = displayPhotos.filter(p => p && p.note).map(p => p.note);
-            const displayNote = notes[0];
-            const more = notes.length - 1;
-
+          {loadedPhotos.map((photo, photoIndex) => {
             const isSelected = batchMode && selectedPhotos.some(
               p => p.markerId === marker.id && p.photoId === photo.id
             );
@@ -134,6 +159,9 @@ const MarkerListItem = memo(function MarkerListItem({ marker, onClick, batchMode
                   {batchMode && isSelected && <div className="photo-check-expanded">✓</div>}
                   {isCover && !batchMode && <div className="photo-cover-badge">封面</div>}
                 </div>
+                {photo.note && !batchMode && (
+                  <div className="photo-note-label">{photo.note}</div>
+                )}
                 {isMenuOpen && !batchMode && (
                   <div className="photo-item-menu" onClick={e => e.stopPropagation()}>
                     {!isCover && (
@@ -141,6 +169,9 @@ const MarkerListItem = memo(function MarkerListItem({ marker, onClick, batchMode
                         ⭐ 设为封面
                       </button>
                     )}
+                    <button onClick={() => { onClick(); setPhotoMenu(null); }}>
+                      👁️ 查看
+                    </button>
                     <button className="danger" onClick={() => { onDeletePhoto && onDeletePhoto(marker.id, photo.id, photoIndex); setPhotoMenu(null); }}>
                       🗑️ 删除
                     </button>

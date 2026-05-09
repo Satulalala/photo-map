@@ -233,6 +233,23 @@
   background: rgba(248, 113, 113, 0.2);
 }
 
+.photo-note-label {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background: linear-gradient(to top, rgba(0,0,0,0.7), transparent 60%);
+  color: #fff;
+  font-size: 10px;
+  padding: 16px 6px 4px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  pointer-events: none;
+  line-height: 1.2;
+  border-radius: 0 0 6px 6px;
+}
+
 .photo-item-add {
   border: 2px dashed #999 !important;
   background: transparent !important;

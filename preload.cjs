@@ -20,6 +20,7 @@ contextBridge.exposeInMainWorld('electronAPI', {
   
   // 数据库操作 - 照片
   addPhotosToMarker: (markerId, photos) => ipcRenderer.invoke('add-photos-to-marker', { markerId, photos }),
+  getPhotos: (markerId) => ipcRenderer.invoke('get-photos', markerId),
   updatePhotoNote: (markerId, photoIndex, note) => ipcRenderer.invoke('update-photo-note', { markerId, photoIndex, note }),
   batchUpdatePhotoNotes: (markerId, notes) => ipcRenderer.invoke('batch-update-photo-notes', { markerId, notes }),
   deletePhoto: (markerId, photoIndex, fileId) => ipcRenderer.invoke('delete-photo', { markerId, photoIndex, fileId }),

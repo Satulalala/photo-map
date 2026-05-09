@@ -60,131 +60,95 @@
 .marker-list-overlay {
   position: fixed;
   inset: 0;
-  background: rgba(0,0,0,0.52);
   z-index: 1500;
   display: flex;
   align-items: center;
   justify-content: center;
   padding: 24px;
-  animation: overlayFadeIn 0.3s ease-out forwards;
-  transition: background 0.26s ease;
+  background: rgba(0,0,0,0);
+  pointer-events: none;
+  transition: background 0.35s ease;
 }
 
 .marker-list-overlay.open {
-  background: rgba(0,0,0,0.58);
+  background: rgba(0,0,0,0.52);
+  pointer-events: auto;
 }
 
 .marker-list-overlay.closing {
-  background: rgba(0,0,0,0.50);
+  background: rgba(0,0,0,0);
+  pointer-events: none;
 }
 
 .marker-list-panel {
   position: fixed;
-  left: var(--origin-x, 50%);
-  top: var(--origin-y, 50%);
-  width: var(--origin-size, 46px);
-  height: var(--origin-size, 46px);
-  transform: translate(-50%, -50%);
-  border-radius: 14px;
-  background: #ffffff;
-  max-width: min(90vw, var(--target-w, 600px));
-  max-height: min(85vh, var(--target-h, 800px));
-  display: flex;
-  flex-direction: column;
-  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
-  overflow: hidden;
-  -webkit-font-smoothing: antialiased;
-  text-rendering: optimizeLegibility;
-}
-
-/* 动画结束后移除 transform，让文字恢复 ClearType 渲染，并允许下拉菜单溢出 */
-.marker-list-panel.morph-done {
-  position: relative !important;
-  left: auto !important;
-  top: auto !important;
-  width: min(90vw, 600px) !important;
-  height: min(85vh, 800px) !important;
-  transform: none !important;
-  overflow: visible !important;
-}
-
-.marker-list-panel.open {
-  left: 50% !important;
-  top: 50% !important;
-  transform: translate(-50%, -50%) !important;
-  animation: markerListMorphIn 0.72s cubic-bezier(0.16, 0.82, 0.16, 1) forwards;
-}
-
-.marker-list-panel.closing {
   left: 50%;
   top: 50%;
   width: var(--target-w, min(90vw, 600px));
   height: var(--target-h, min(85vh, 800px));
   border-radius: 16px;
-  animation: markerListMorphOut 0.56s cubic-bezier(0.34, 0.06, 0.2, 1) 0.12s forwards;
+  background: #ffffff;
+  display: flex;
+  flex-direction: column;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+  will-change: transform, opacity;
 }
 
-@keyframes markerListMorphIn {
-  0% {
-    left: var(--origin-x);
-    top: var(--origin-y);
-    width: var(--origin-size);
-    height: var(--origin-size);
-    border-radius: 14px;
-    opacity: 1;
-  }
-  100% {
-    left: 50%;
-    top: 50%;
-    width: var(--target-w);
-    height: var(--target-h);
-    border-radius: 16px;
-    opacity: 1;
-  }
+/* 关闭状态：缩在按钮位置 */
+.marker-list-panel {
+  transform: translate(calc(-50% + var(--dx, 0px)), calc(-50% + var(--dy, 0px))) scale(var(--start-scale, 0));
+  opacity: 0;
+  transition: transform 0.45s cubic-bezier(0.16, 0.82, 0.16, 1), opacity 0.3s ease;
 }
 
-@keyframes markerListMorphOut {
-  0% {
-    left: 50%;
-    top: 50%;
-    width: var(--target-w);
-    height: var(--target-h);
-    border-radius: 16px;
-    opacity: 1;
-  }
-  100% {
-    left: var(--origin-x);
-    top: var(--origin-y);
-    width: var(--origin-size);
-    height: var(--origin-size);
-    border-radius: 14px;
-    opacity: 1;
-  }
+/* 打开状态：居中全尺寸 */
+.marker-list-panel.open {
+  transform: translate(-50%, -50%) scale(1);
+  opacity: 1;
+  transition: transform 0.45s cubic-bezier(0.16, 0.82, 0.16, 1), opacity 0.25s ease;
 }
 
-.marker-list-panel > * {
+/* 关闭动画 — 缩回按钮位置，末尾淡出 */
+.marker-list-panel.closing {
+  transform: translate(calc(-50% + var(--dx, 0px)), calc(-50% + var(--dy, 0px))) scale(var(--start-scale, 0));
+  opacity: 0;
+  transition: transform 0.4s cubic-bezier(0.65, 0, 0.75, 0.3), opacity 0.12s ease 0.28s;
+}
+
+.marker-list-panel-inner {
+  border-radius: 16px;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-height: 0;
+}
+
+.marker-list-panel-inner > * {
   opacity: 0;
   transform: translateY(6px);
   transition: opacity 0.18s ease, transform 0.18s ease;
 }
 
-.marker-list-panel.content-hidden > * {
+.marker-list-panel.content-hidden .marker-list-panel-inner > * {
   opacity: 0;
   transform: translateY(10px);
   transition-duration: 0.14s;
   transition-delay: 0s;
 }
 
-.marker-list-panel.open > * {
+.marker-list-panel.open .marker-list-panel-inner > * {
   opacity: 1;
   transform: translateY(0);
   transition-delay: 0.34s;
 }
 
-.marker-list-panel.closing > * {
+.marker-list-panel.closing .marker-list-panel-inner > * {
   opacity: 0;
   transform: translateY(8px);
-  transition-duration: 0.14s;
+  transition-duration: 0.15s;
   transition-delay: 0s;
 }
 

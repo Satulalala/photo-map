@@ -20,6 +20,11 @@ let loadError = null;
 const { env, Tensor } = require('@huggingface/transformers');
 env.remoteHost = 'https://hf-mirror.com/';
 
+// 使用项目内的缓存目录，方便管理
+const path = require('path');
+const CACHE_DIR = path.join(__dirname, '.model-cache');
+env.cacheDir = CACHE_DIR;
+
 // 加载进度回调
 let onProgress = null;
 
@@ -30,7 +35,7 @@ function setProgressCallback(cb) {
 /**
  * 加载 CLIP 模型（首次调用时下载，后续复用）
  */
-async function loadModel() {
+async function loadModel(retries = 3) {
   if (isLoaded) return true;
   if (loadError) throw loadError;
   if (loadingPromise) return loadingPromise;
@@ -41,36 +46,55 @@ async function loadModel() {
     setTimeout(() => reject(new Error(`模型加载超时 (${TIMEOUT_MS / 1000}s)`)), TIMEOUT_MS)
   );
 
-  loadingPromise = Promise.race([
-    (async () => {
-      try {
-        log.info('[Embedding] 开始加载 Chinese CLIP 模型:', MODEL_NAME);
+  const loadAttempt = async (attempt = 1) => {
+    try {
+      log.info(`[Embedding] 开始加载模型 (第${attempt}次):`, MODEL_NAME);
 
-        const { ChineseCLIPModel, BertTokenizer, ChineseCLIPFeatureExtractor } = require('@huggingface/transformers');
+      const { ChineseCLIPModel, BertTokenizer, ChineseCLIPFeatureExtractor } = require('@huggingface/transformers');
 
-        const config = {};
-        if (onProgress) {
-          config.progress_callback = onProgress;
-        }
-
-        const [tok, imgProc, mdl] = await Promise.all([
-          BertTokenizer.from_pretrained(MODEL_NAME, config),
-          ChineseCLIPFeatureExtractor.from_pretrained(MODEL_NAME, config),
-          ChineseCLIPModel.from_pretrained(MODEL_NAME, config),
-        ]);
-        tokenizer = tok;
-        imageProcessor = imgProc;
-        model = mdl;
-
-        isLoaded = true;
-        log.info('[Embedding] CLIP 模型加载完成');
-        return true;
-      } catch (err) {
-        loadError = err;
-        log.error('[Embedding] 模型加载失败:', err.message);
-        throw err;
+      const config = {};
+      if (onProgress) {
+        config.progress_callback = onProgress;
       }
-    })(),
+
+      const [tok, imgProc, mdl] = await Promise.all([
+        BertTokenizer.from_pretrained(MODEL_NAME, config),
+        ChineseCLIPFeatureExtractor.from_pretrained(MODEL_NAME, config),
+        ChineseCLIPModel.from_pretrained(MODEL_NAME, config),
+      ]);
+      tokenizer = tok;
+      imageProcessor = imgProc;
+      model = mdl;
+
+      isLoaded = true;
+      log.info('[Embedding] CLIP 模型加载完成');
+      return true;
+    } catch (err) {
+      log.warn(`[Embedding] 模型加载失败 (第${attempt}次):`, err.message);
+      // 如果是缓存错误，尝试清理
+      if (err.message?.includes('cache') || err.code === 'ENOENT') {
+        try {
+          const cachePath = path.join(CACHE_DIR, 'models--Xenova--chinese-clip-vit-base-patch16');
+          if (fs.existsSync(cachePath)) {
+            fs.rmSync(cachePath, { recursive: true, force: true });
+            log.info('[Embedding] 已清理损坏的模型缓存');
+          }
+        } catch (cleanErr) {
+          log.warn('[Embedding] 清理缓存失败:', cleanErr.message);
+        }
+      }
+      if (attempt < retries) {
+        log.info('[Embedding] 3秒后重试...');
+        await new Promise(r => setTimeout(r, 3000));
+        return loadAttempt(attempt + 1);
+      }
+      loadError = err;
+      throw err;
+    }
+  };
+
+  loadingPromise = Promise.race([
+    (async () => loadAttempt())(),
     timeoutPromise,
   ]);
 

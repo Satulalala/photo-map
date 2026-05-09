@@ -25,6 +25,11 @@ module.exports = function registerDatabaseHandlers(ctx) {
     return true;
   });
 
+  ipcMain.handle('get-photos', (_, markerId) => {
+    const detail = getDb().getMarkerById(markerId);
+    return detail?.photos || [];
+  });
+
   ipcMain.handle('update-marker', (_, marker) => {
     getDb().updateMarker(marker);
     return true;

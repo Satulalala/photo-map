@@ -337,6 +337,108 @@
   transform: translateY(-50%) translateX(-6px);
 }
 
+/* ========== 标记管理按钮（右下角浮动小徽章） ========== */
+.marker-count-btn {
+  position: fixed;
+  bottom: 24px;
+  right: 24px;
+  z-index: 500;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 12px 22px 12px 18px;
+  border: 1px solid rgba(255, 255, 255, 0.85);
+  background: linear-gradient(135deg, rgba(255,255,255,0.95), rgba(245, 248, 255, 0.95));
+  backdrop-filter: blur(12px);
+  color: #1a2a4a;
+  cursor: pointer;
+  border-radius: 24px;
+  box-shadow: 0 6px 20px rgba(12, 20, 34, 0.18), 0 0 0 1px rgba(167, 198, 255, 0.2);
+  transition: all 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
+  line-height: 1;
+  min-width: auto;
+  min-height: auto;
+  width: auto;
+  height: auto;
+  font-family: inherit;
+}
+
+.marker-count-btn:hover {
+  background: linear-gradient(135deg, #ffffff, #f0f5ff);
+  transform: translateY(-3px) scale(1.04);
+  box-shadow: 0 12px 28px rgba(42, 93, 181, 0.2), 0 0 0 1px rgba(100, 155, 255, 0.35);
+  border-color: rgba(167, 198, 255, 0.9);
+}
+
+.marker-count-btn:active {
+  transform: translateY(0) scale(0.97);
+  transition-duration: 0.1s;
+  box-shadow: 0 3px 10px rgba(12, 20, 34, 0.12);
+}
+
+.marker-count-btn.active {
+  background: linear-gradient(135deg, #edf3ff, #e0ebff);
+  color: #2f5fb3;
+  box-shadow: 0 7px 20px rgba(42, 93, 181, 0.22), 0 0 0 1px rgba(100, 155, 255, 0.3);
+  border-color: rgba(125, 171, 245, 0.6);
+}
+
+.marker-stats {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 10px;
+}
+
+.stat-item {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 14px;
+  white-space: nowrap;
+}
+
+.stat-icon {
+  font-size: 15px;
+  line-height: 1;
+}
+
+.stat-num {
+  font-weight: 700;
+  font-size: 13px;
+  line-height: 1;
+  color: inherit;
+}
+
+/* 按钮和面板之间的装饰性竖线 */
+.marker-stats .stat-item + .stat-item {
+  position: relative;
+  padding-left: 2px;
+}
+.marker-stats .stat-item + .stat-item::before {
+  content: '';
+  position: absolute;
+  left: -6px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 1px;
+  height: 14px;
+  background: rgba(0, 0, 0, 0.08);
+}
+
+.marker-count-btn.origin-hidden {
+  opacity: 0;
+  transform: scale(0.8) translateY(10px);
+  pointer-events: none;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.marker-count-btn.reveal-on-close {
+  opacity: 1;
+  transform: scale(1) translateY(0);
+  pointer-events: auto;
+}
+
 /* ========== 底部按钮：提示在上方 ========== */
 .marker-count-btn[data-tooltip]::after,
 .measure-btn[data-tooltip]::after {
