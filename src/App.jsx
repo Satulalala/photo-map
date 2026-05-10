@@ -22,6 +22,7 @@ import { useMarkers } from './hooks/useMarkers.js';
 import { usePhotos } from './hooks/usePhotos.js';
 import { useSearch } from './hooks/useSearch.js';
 import SearchBar from './components/map/SearchBar.jsx';
+import Toolbar from './components/map/Toolbar.jsx';
 
 // 如果是Web版本，导入Web样式
 if (!window.electronAPI) {
@@ -2011,56 +2012,29 @@ function App() {
         <div className="search-overlay" onClick={() => setShowSearchResults(false)} />
       )}
 
-      {/* 左上角工具栏 */}
-      {!measureMode && (
-        <div className="toolbar toolbar-left">
-          <button onClick={goToMyLocation} data-tooltip="定位">
-            <span className="main-tool-icon">🧭</span>
-          </button>
-          <button onClick={() => window.location.reload()} data-tooltip="刷新">
-            <span className="main-tool-icon">🔄</span>
-          </button>
-        </div>
-      )}
-
-      {/* 右上角工具栏 */}
-      {!measureMode && (
-        <div className="toolbar toolbar-right">
-          <button onClick={zoomIn} data-tooltip="放大">
-            <span className="main-tool-icon">➕</span>
-          </button>
-          <button onClick={zoomOut} data-tooltip="缩小">
-            <span className="main-tool-icon">➖</span>
-          </button>
-          <button 
-            onClick={() => {
-              console.log('热力图按钮被点击，当前状态:', heatmapMode);
-              setHeatmapMode(!heatmapMode);
-            }} 
-            className={heatmapMode ? 'active' : ''}
-            data-tooltip="热力图"
-          >
-            <span className="main-tool-icon">🔥</span>
-          </button>
-          <button
-            onClick={() => setShowLife(true)}
-            className={showLife ? 'active' : ''}
-            data-tooltip="生活"
-          >
-            <span className="main-tool-icon">🌟</span>
-          </button>
-          <button onClick={async () => { 
-            setTempSettings(mapSettings); 
-            setShowSettings(true);
-            if (window.electronAPI) {
-              const stats = await window.electronAPI.getCacheStats();
-              setCacheStats(stats);
-            }
-          }} className="settings-btn" data-tooltip="设置">
-            <span className="main-tool-icon">⚙️</span>
-          </button>
-        </div>
-      )}
+      {/* 工具栏 */}
+      <Toolbar
+        measureMode={measureMode}
+        heatmapMode={heatmapMode}
+        showLife={showLife}
+        onLocate={goToMyLocation}
+        onRefresh={() => window.location.reload()}
+        onZoomIn={zoomIn}
+        onZoomOut={zoomOut}
+        onToggleHeatmap={() => {
+          console.log('热力图按钮被点击，当前状态:', heatmapMode);
+          setHeatmapMode(!heatmapMode);
+        }}
+        onOpenLife={() => setShowLife(true)}
+        onOpenSettings={async () => {
+          setTempSettings(mapSettings);
+          setShowSettings(true);
+          if (window.electronAPI) {
+            const stats = await window.electronAPI.getCacheStats();
+            setCacheStats(stats);
+          }
+        }}
+      />
 
       {/* 右下角标记管理按钮 */}
       {!measureMode && (
