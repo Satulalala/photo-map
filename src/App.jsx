@@ -18,6 +18,7 @@ import MarkerListItem, { highlightText } from './components/MarkerListItem.jsx';
 import MarkerGridItem from './components/MarkerGridItem.jsx';
 import { initMapbox, gcj02ToWgs84, formatLastSeen } from './utils/mapUtils.js';
 import { getCurrentUser, logout as authLogout } from './api/auth.js';
+import { useMarkers } from './hooks/useMarkers.js';
 
 // 如果是Web版本，导入Web样式
 if (!window.electronAPI) {
@@ -43,6 +44,12 @@ function App() {
   const analytics = useAnalytics();
   const pwa = usePWA();
 
+  // 标记管理 Hook
+  const {
+    markers, markersLoading, newMarkerIds, markersStateRef,
+    setMarkers, setMarkersLoading, setNewMarkerIds, refreshMarkers, deleteMarkerById: deleteMarkerByIdBase
+  } = useMarkers();
+
   // Mapbox 加载检查
   const [mapboxReady, setMapboxReady] = useState(false);
   
@@ -64,7 +71,6 @@ function App() {
   const [user, setUser] = useState(() => getCurrentUser());
   const [mapEntered, setMapEntered] = useState(false); // 用户点击进入地图（触发器）
   const [offlinePrompted, setOfflinePrompted] = useState(false);
-  const [markers, setMarkers] = useState([]);
   const [contextMenu, setContextMenu] = useState(null);
   const [markerMenu, setMarkerMenu] = useState(null);
   const [previewPin, setPreviewPin] = useState(null);
@@ -138,14 +144,12 @@ function App() {
   const [selectedResultIndex, setSelectedResultIndex] = useState(-1); // 键盘选中的结果索引
   const searchInputRef = useRef(null); // 搜索输入框引用
   const [toast, setToast] = useState(null); // { type: 'success'|'error'|'info', message }
-  const [markersLoading, setMarkersLoading] = useState(true); // 标记是否正在加载
   const [isOnline, setIsOnline] = useState(typeof navigator !== 'undefined' ? navigator.onLine : true);
   const [cloudSyncEnabled, setCloudSyncEnabled] = useState(() => syncService.isCloudSyncEnabled());
   const [syncApiBase, setSyncApiBase] = useState(() => syncService.getApiBase());
   const [syncingNow, setSyncingNow] = useState(false);
   const [syncQueueSize, setSyncQueueSize] = useState(() => syncService.getQueueLength());
   const [heatmapMode, setHeatmapMode] = useState(false); // 热力图模式
-  const [newMarkerIds, setNewMarkerIds] = useState(new Set()); // 新添加的标记ID（用于入场动画）
   const [viewportVersion, setViewportVersion] = useState(0); // 视口版本号，用于触发标记更新
   const [photoEditor, setPhotoEditor] = useState(null); // 照片编辑器 { photoId, photoUrl }
   
@@ -180,12 +184,9 @@ function App() {
   const mapRef = useRef(null);
   const mapMarkersRef = useRef({});
   const previewMarkerRef = useRef(null);
-  const markersStateRef = useRef(markers);
   const userLocationRef = useRef(null);
   const measureModeRef = useRef(false);
   const measureStartRef = useRef(null);
-
-  useEffect(() => { markersStateRef.current = markers; }, [markers]);
 
   // 监听语义搜索模型下载进度
   useEffect(() => {
@@ -421,6 +422,14 @@ function App() {
     setToast({ type, message });
     setTimeout(() => setToast(null), duration);
   }, []);
+
+  // 包装 deleteMarkerById 添加 toast 提示
+  const deleteMarkerById = useCallback(async (id) => {
+    const success = await deleteMarkerByIdBase(id);
+    if (success) {
+      showToast('success', '标记已删除');
+    }
+  }, [deleteMarkerByIdBase, showToast]);
 
   useEffect(() => {
     const onOnline = () => setIsOnline(true);
@@ -1450,32 +1459,6 @@ function App() {
     }
   }, [previewPin, createMarkerEl]);
 
-  // 刷新标记列表（从数据库重新加载）
-  const refreshMarkers = useCallback(async () => {
-    if (window.electronAPI && !window.electronAPI.__isWebAdapter) {
-      window.electronAPI.loadMarkers().then(loaded => {
-        setMarkers(loaded);
-      });
-    } else {
-      // Web 环境 - 加载轻量版格式
-      const loaded = await api.markers.getAll();
-      const markersWithCounts = await Promise.all(
-        loaded.map(async marker => {
-          const photos = await api.photos.getByMarkerId(marker.id);
-          // 按 order 字段排序（设为封面时写入）
-          const sorted = [...photos].sort((a, b) => (a.order ?? 9999) - (b.order ?? 9999));
-          return {
-            ...marker,
-            photoCount: sorted.length,
-            firstPhoto: sorted.length > 0 ? sorted[0] : null,
-            photos: sorted
-          };
-        })
-      );
-      setMarkers(markersWithCounts);
-    }
-  }, []);
-
   // 设为封面照片（将该照片移到 photos 数组第一位）
   const handleSetCover = useCallback(async (markerId, photo) => {
     try {
@@ -1717,19 +1700,8 @@ function App() {
   const closeContextMenu = useCallback(() => { 
     setContextMenu(null); 
     setPreviewPin(null); 
-    setMarkerMenu(null); 
+    setMarkerMenu(null);
   }, []);
-
-  const deleteMarkerById = useCallback(async (id) => {
-    if (!window.confirm('确定要删除这个标记点吗？\n删除后无法恢复。')) return;
-    if (window.electronAPI) {
-      await window.electronAPI.deleteMarker(id);
-      refreshMarkers();
-      showToast('success', '标记已删除');
-    }
-  }, [refreshMarkers, showToast]);
-
-
 
   const goToMyLocation = useCallback(() => {
     if (mapRef.current && userLocationRef.current) {
