@@ -22,6 +22,7 @@ import SearchBar from './components/map/SearchBar.jsx';
 import Toolbar from './components/map/Toolbar.jsx';
 import NoteEditor from './components/panels/NoteEditor.jsx';
 import MarkerListPanel from './components/panels/MarkerListPanel.jsx';
+import NotesPanel from './components/panels/NotesPanel.jsx';
 
 // 如果是Web版本，导入Web样式
 if (!window.electronAPI) {
@@ -3399,10 +3400,15 @@ function App() {
       />
 
       {/* 备注管理面板 */}
-      {notesPanel && (
-        <div className="notes-panel-overlay" onClick={async () => {
+      <NotesPanel
+        notesPanel={notesPanel}
+        markers={markers}
+        editing={notesEditing}
+        editingNotes={editingNotes}
+        getPhotoNote={getPhotoNote}
+        onClose={async () => {
           if (!notesEditing) {
-            if (notesPanel.returnToMenu) {
+            if (notesPanel?.returnToMenu) {
               // 重新从数据库获取完整标记数据
               if (window.electronAPI?.getMarkerDetail) {
                 const detail = await window.electronAPI.getMarkerDetail(notesPanel.markerId);
@@ -3414,99 +3420,53 @@ function App() {
             }
             setNotesPanel(null);
           }
-        }}>
-          <div className="notes-panel" onClick={e => e.stopPropagation()}>
-            <div className="notes-panel-header">
-              <h3>📝 照片备注</h3>
-              <div className="header-actions">
-                {!notesEditing ? (
-                  <button className="edit-btn" onClick={() => {
-                    const photos = markers.find(m => m.id === notesPanel.markerId)?.photos || [];
-                    setEditingNotes(photos.map(p => getPhotoNote(p)));
-                    setNotesEditing(true);
-                  }}>✏️ 编辑</button>
-                ) : (
-                  <>
-                    <button className="cancel-btn" onClick={() => {
-                      setNotesEditing(false);
-                      setEditingNotes([]);
-                    }}>取消</button>
-                    <button className="save-btn" onClick={async () => {
-                      // 批量更新照片备注
-                      const photos = markers.find(m => m.id === notesPanel.markerId)?.photos || [];
-                      for (let i = 0; i < Math.min(editingNotes.length, photos.length); i++) {
-                        const note = editingNotes[i] || '';
-                        try {
-                          await api.photos.update(notesPanel.markerId, photos[i].id, { note });
-                        } catch (e) {
-                          console.warn('备注更新失败', e);
-                        }
-                      }
-                      setNotesEditing(false);
-                      setEditingNotes([]);
-                      showToast('success', '备注已保存');
-                      // 刷新当前面板的标记数据
-                      let detail = null;
-                      if (window.electronAPI?.getMarkerDetail) {
-                        detail = await window.electronAPI.getMarkerDetail(notesPanel.markerId);
-                      } else {
-                        const marker = await api.markers.getById(notesPanel.markerId);
-                        if (marker) {
-                          const photos = await api.photos.getByMarkerId(notesPanel.markerId);
-                          const sorted = [...photos].sort((a, b) => (a.order ?? 9999) - (b.order ?? 9999));
-                          detail = { ...marker, photos: sorted, photoCount: sorted.length };
-                        }
-                      }
-                      if (detail) {
-                        setNotesPanel(prev => ({ ...prev, marker: detail }));
-                        setMarkers(prev => prev.map(m => m.id === detail.id ? detail : m));
-                      }
-                    }}>💾 保存</button>
-                  </>
-                )}
-                <button className="panel-close" onClick={async () => {
-                  if (notesPanel.returnToMenu) {
-                    // 重新从数据库获取完整标记数据
-                    if (window.electronAPI?.getMarkerDetail) {
-                      const detail = await window.electronAPI.getMarkerDetail(notesPanel.markerId);
-                      if (detail) setMarkerMenu({ ...notesPanel.returnToMenu, marker: detail });
-                    } else {
-                      const marker = markers.find(m => m.id === notesPanel.markerId);
-                      if (marker) setMarkerMenu({ ...notesPanel.returnToMenu, marker });
-                    }
-                  }
-                  setNotesEditing(false);
-                  setEditingNotes([]);
-                  setNotesPanel(null);
-                }}>✕</button>
-              </div>
-            </div>
-            <div className="notes-list">
-              {(markers.find(m => m.id === notesPanel.markerId)?.photos || []).map((photo, index) => (
-                <div key={index} className="note-item">
-                  <LazyPhoto photo={photo} className="note-thumb" alt={`照片${index + 1}`} />
-                  <div className="note-content">
-                    <div className="note-label">照片 {index + 1}</div>
-                    {notesEditing ? (
-                      <textarea 
-                        value={editingNotes[index] || ''}
-                        onChange={e => {
-                          const newNotes = [...editingNotes];
-                          newNotes[index] = e.target.value;
-                          setEditingNotes(newNotes);
-                        }}
-                        placeholder="输入备注..."
-                      />
-                    ) : (
-                      <div className="note-text">{getPhotoNote(photo) || '暂无备注'}</div>
-                    )}
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
-        </div>
-      )}
+        }}
+        onEdit={() => {
+          const photos = markers.find(m => m.id === notesPanel.markerId)?.photos || [];
+          setEditingNotes(photos.map(p => getPhotoNote(p)));
+          setNotesEditing(true);
+        }}
+        onSave={async (updatedNotes, isStateUpdate) => {
+          if (isStateUpdate) {
+            // 仅更新编辑状态，不保存到数据库
+            setEditingNotes(updatedNotes);
+            return;
+          }
+          // 批量更新照片备注
+          const photos = markers.find(m => m.id === notesPanel.markerId)?.photos || [];
+          for (let i = 0; i < Math.min(updatedNotes.length, photos.length); i++) {
+            const note = updatedNotes[i] || '';
+            try {
+              await api.photos.update(notesPanel.markerId, photos[i].id, { note });
+            } catch (e) {
+              console.warn('备注更新失败', e);
+            }
+          }
+          setNotesEditing(false);
+          setEditingNotes([]);
+          showToast('success', '备注已保存');
+          // 刷新当前面板的标记数据
+          let detail = null;
+          if (window.electronAPI?.getMarkerDetail) {
+            detail = await window.electronAPI.getMarkerDetail(notesPanel.markerId);
+          } else {
+            const marker = await api.markers.getById(notesPanel.markerId);
+            if (marker) {
+              const photos = await api.photos.getByMarkerId(notesPanel.markerId);
+              const sorted = [...photos].sort((a, b) => (a.order ?? 9999) - (b.order ?? 9999));
+              detail = { ...marker, photos: sorted, photoCount: sorted.length };
+            }
+          }
+          if (detail) {
+            setNotesPanel(prev => ({ ...prev, marker: detail }));
+            setMarkers(prev => prev.map(m => m.id === detail.id ? detail : m));
+          }
+        }}
+        onCancel={() => {
+          setNotesEditing(false);
+          setEditingNotes([]);
+        }}
+      />
 
       {/* 照片编辑器（裁剪+旋转） */}
       {photoEditor && (
