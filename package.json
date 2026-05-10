@@ -12,7 +12,7 @@
   "bugs": {
     "url": "https://github.com/Satulalala/photo-map/issues"
   },
-  "main": "main.cjs",
+  "main": "electron/main.cjs",
   "scripts": {
     "start": "electron .",
     "postinstall": "electron-rebuild",
@@ -77,9 +77,9 @@
     },
     "files": [
       "build/**/*",
-      "main.cjs",
-      "preload.cjs",
-      "database.cjs",
+      "electron/main.cjs",
+      "electron/preload.cjs",
+      "electron/database.cjs",
       "!node_modules/**/*",
       "node_modules/better-sqlite3/**/*",
       "node_modules/electron-store/**/*",

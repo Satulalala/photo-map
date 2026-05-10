@@ -259,7 +259,7 @@ module.exports = {
     
     // Electron 主进程文件
     {
-      files: ['main.cjs', 'preload.cjs', 'database.cjs'],
+      files: ['electron/main.cjs', 'electron/preload.cjs', 'electron/database.cjs'],
       env: {
         node: true,
         browser: false,
