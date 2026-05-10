@@ -1,0 +1,8 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(mkdir -p ~/.claude/skills)",
+      "Bash(cp -r .claude/skills/* ~/.claude/skills/)"
+    ]
+  }
+}

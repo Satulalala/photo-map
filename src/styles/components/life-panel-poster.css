@@ -371,26 +371,67 @@
 .village-modal-overlay {
   position: fixed;
   inset: 0;
-  background: rgba(3, 11, 30, 0.52);
-  backdrop-filter: blur(6px);
+  background: rgba(0,0,0,0.25);
+  backdrop-filter: blur(4px);
   z-index: 1450;
 }
 
 .village-modal-shell {
   position: fixed;
-  left: var(--origin-x, 50%);
-  top: var(--origin-y, 50%);
-  width: var(--origin-size, 44px);
-  height: var(--origin-size, 44px);
-  transform: translate(-50%, -50%);
-  background: radial-gradient(circle at 18% 12%, rgba(79,120,255,0.28), transparent 34%), radial-gradient(circle at 80% 78%, rgba(0,184,255,0.24), transparent 40%), #071a46;
+  left: 50%;
+  top: 50%;
+  width: var(--target-w, min(92vw, 1080px));
+  height: var(--target-h, min(82vh, 640px));
+  background: #ffffff;
   border-radius: 50%;
   padding: 12px;
   display: grid;
   grid-template-columns: minmax(0, 1.65fr) minmax(300px, 1fr);
   gap: 12px;
   overflow: hidden;
-  box-shadow: 0 28px 70px rgba(2, 10, 28, 0.58);
-  opacity: 1;
+  box-shadow: 0 20px 60px rgba(0,0,0,0.15), 0 0 0 1px rgba(0,0,0,0.05);
+  will-change: transform, opacity, border-radius;
+  transform: translate(calc(-50% + var(--dx, 0px)), calc(-50% + var(--dy, 0px))) scale(var(--start-scale, 0));
+  opacity: 0;
+}
+
+.village-modal-shell.open {
+  animation: villageMorphIn 0.65s cubic-bezier(0.16, 0.82, 0.16, 1) forwards;
+}
+
+.village-modal-shell.closing {
+  animation: villageMorphOut 0.38s cubic-bezier(0.65, 0, 0.75, 0.3) forwards;
+}
+
+@keyframes villageMorphIn {
+  0% {
+    transform: translate(calc(-50% + var(--dx, 0px)), calc(-50% + var(--dy, 0px))) scale(var(--start-scale, 0));
+    border-radius: 50%;
+    opacity: 0;
+  }
+  15% {
+    opacity: 1;
+  }
+  100% {
+    transform: translate(-50%, -50%) scale(1);
+    border-radius: 26px;
+    opacity: 1;
+  }
+}
+
+@keyframes villageMorphOut {
+  0% {
+    transform: translate(-50%, -50%) scale(1);
+    border-radius: 26px;
+    opacity: 1;
+  }
+  85% {
+    opacity: 1;
+  }
+  100% {
+    transform: translate(calc(-50% + var(--dx, 0px)), calc(-50% + var(--dy, 0px))) scale(var(--start-scale, 0));
+    border-radius: 50%;
+    opacity: 0;
+  }
 }
 

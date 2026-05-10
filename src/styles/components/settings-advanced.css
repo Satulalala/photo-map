@@ -117,12 +117,14 @@
 }
 
 /* 底部保存按钮 */
-/* 底部保存按钮 */
 .settings-footer {
-  position: fixed;
-  bottom: 16px;
-  right: 16px;
-  z-index: 100;
+  position: sticky;
+  bottom: 0;
+  display: flex;
+  justify-content: flex-end;
+  padding: 16px 0 4px;
+  background: linear-gradient(transparent, #ffffff 30%);
+  margin-top: auto;
 }
 
 .save-btn {

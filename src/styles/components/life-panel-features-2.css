@@ -1,8 +1,8 @@
 .village-feed-card {
-  background: #f5e3a3;
-  border: 1px solid #000;
-  border-radius: 14px;
-  padding: 10px;
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  padding: 12px;
   display: flex;
   flex-direction: column;
   gap: 8px;
@@ -10,23 +10,23 @@
 
 .village-feed-title {
   font-size: 13px;
-  font-weight: 800;
-  color: #523b0d;
+  font-weight: 700;
+  color: #1e293b;
 }
 
 .village-feed-list {
-  max-height: 180px;
+  max-height: 160px;
   overflow: auto;
   display: flex;
   flex-direction: column;
-  gap: 7px;
+  gap: 6px;
 }
 
 .village-feed-item {
-  background: rgba(255,255,255,0.45);
-  border: 1px dashed #000;
-  border-radius: 10px;
-  padding: 8px;
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  padding: 8px 10px;
   display: flex;
   justify-content: space-between;
   gap: 8px;
@@ -38,47 +38,49 @@
   gap: 2px;
 }
 
-.village-feed-main strong { color: #433009; font-size: 12px; }
-.village-feed-main span { color: #5f4718; font-size: 11px; }
-.village-feed-item small { color: #7f6330; font-size: 10px; white-space: nowrap; }
-.village-feed-empty { color: #6d5423; font-size: 12px; }
+.village-feed-main strong { color: #1e293b; font-size: 12px; }
+.village-feed-main span { color: #64748b; font-size: 11px; }
+.village-feed-item small { color: #94a3b8; font-size: 10px; white-space: nowrap; }
+.village-feed-empty { color: #94a3b8; font-size: 12px; }
 
 .village-main-btn {
   border: none;
-  height: 40px;
-  border-radius: 12px;
-  background: linear-gradient(135deg, #4b8fff, #2ca8ff);
+  height: 38px;
+  border-radius: 10px;
+  background: #3b82f6;
   color: #fff;
-  font-weight: 800;
+  font-weight: 600;
   font-size: 13px;
   cursor: pointer;
-  box-shadow: 0 10px 22px rgba(37, 120, 255, 0.35);
-  transition: transform 0.22s ease, box-shadow 0.22s ease, filter 0.22s ease;
+  transition: background 0.15s;
 }
 
 .village-main-btn:hover {
-  transform: translateY(-1px);
-  box-shadow: 0 14px 28px rgba(40, 128, 255, 0.42);
-  filter: brightness(1.03);
+  background: #2563eb;
 }
 
 .village-main-btn.ghost {
-  background: rgba(255,255,255,0.16);
-  box-shadow: inset 0 0 0 1px rgba(255,255,255,0.22);
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  color: #3b82f6;
+}
+.village-main-btn.ghost:hover {
+  background: #f8fafc;
+  border-color: #cbd5e1;
 }
 
 .village-empty-state {
-  min-height: 210px;
+  min-height: 160px;
   display: flex;
   flex-direction: column;
   justify-content: center;
   align-items: center;
-  gap: 12px;
-  color: #d4e3ff;
-  background: linear-gradient(165deg, rgba(255,255,255,0.09), rgba(130,180,255,0.08));
-  border: 1px solid rgba(255,255,255,0.16);
-  border-radius: 16px;
-  padding: 22px 16px;
+  gap: 10px;
+  color: #64748b;
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  padding: 20px 16px;
   text-align: center;
 }
 
@@ -86,31 +88,36 @@
   padding: 4px 10px;
   border-radius: 999px;
   font-size: 11px;
-  color: #dff1ff;
-  background: rgba(80, 140, 255, 0.26);
-  border: 1px solid rgba(150, 200, 255, 0.32);
+  color: #3b82f6;
+  background: #dbeafe;
+  border: 1px solid #bfdbfe;
 }
 
 .village-empty-state h4 {
   margin: 0;
-  font-size: 16px;
-  color: #fff;
+  font-size: 15px;
+  color: #1e293b;
 }
 
 .village-empty-state p {
   margin: 0;
   font-size: 12px;
-  line-height: 1.6;
-  color: #c5dbff;
-  max-width: 420px;
+  line-height: 1.5;
+  color: #64748b;
+  max-width: 380px;
 }
 
 .village-empty-actions {
   display: flex;
-  gap: 10px;
+  gap: 8px;
 }
 
-.village-modal-right h4 { margin: 0 0 10px; color: #fff; }
+.village-modal-right h4 {
+  margin: 0 0 8px;
+  color: #1e293b;
+  font-size: 13px;
+  font-weight: 700;
+}
 
 .village-modal-right {
   display: flex;
@@ -121,8 +128,8 @@
 .village-friend-tools {
   display: flex;
   flex-direction: column;
-  gap: 8px;
-  margin-bottom: 10px;
+  gap: 6px;
+  margin-bottom: 8px;
 }
 
 .village-friend-add {
@@ -132,36 +139,49 @@
 
 .village-friend-add input,
 .village-friend-search {
-  height: 32px;
-  border: 1px solid rgba(255,255,255,0.3);
+  height: 30px;
+  border: 1px solid #e2e8f0;
   border-radius: 8px;
-  background: rgba(4, 18, 46, 0.7);
-  color: #e6efff;
-  padding: 0 9px;
+  background: #ffffff;
+  color: #1e293b;
+  padding: 0 10px;
   font-size: 12px;
+  outline: none;
+  transition: border-color 0.15s;
 }
+
+.village-friend-add input:focus,
+.village-friend-search:focus {
+  border-color: #3b82f6;
+}
+
+.village-friend-add input::placeholder,
+.village-friend-search::placeholder { color: #94a3b8; }
 
 .village-friend-add input { flex: 1; }
 
 .village-friend-add button {
   border: none;
   border-radius: 8px;
-  background: #2f6ef7;
+  background: #3b82f6;
   color: #fff;
-  padding: 0 10px;
+  padding: 0 12px;
   font-size: 12px;
+  font-weight: 600;
   cursor: pointer;
+  transition: background 0.15s;
 }
+.village-friend-add button:hover { background: #2563eb; }
 
 .village-friend-list {
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: 4px;
   overflow-y: auto;
   min-height: 0;
   padding-right: 2px;
 }
-.village-friend-item-wrap { display: flex; flex-direction: column; gap: 6px; }
+.village-friend-item-wrap { display: flex; flex-direction: column; gap: 4px; }
 
 .village-friend-item {
   cursor: pointer;
@@ -170,26 +190,32 @@
 .village-friend-actions {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
-  gap: 6px;
+  gap: 4px;
 }
 
 .village-friend-actions button {
-  border: 1px solid rgba(255,255,255,0.25);
-  border-radius: 7px;
-  height: 28px;
-  background: rgba(255,255,255,0.08);
-  color: #d8e6ff;
+  border: 1px solid #e2e8f0;
+  border-radius: 6px;
+  height: 26px;
+  background: #ffffff;
+  color: #64748b;
   font-size: 11px;
   cursor: pointer;
+  transition: background 0.15s, color 0.15s, border-color 0.15s;
+}
+.village-friend-actions button:hover {
+  background: #f1f5f9;
+  color: #1e293b;
+  border-color: #cbd5e1;
 }
 
-.village-friend-empty { color: #c3d7ff; font-size: 12px; }
+.village-friend-empty { color: #94a3b8; font-size: 12px; }
 
 @media (max-width: 1180px) {
   .village-modal-shell {
+    --target-w: min(95vw, 920px);
+    --target-h: min(88vh, 700px);
     grid-template-columns: minmax(0, 1.3fr) minmax(260px, 0.95fr);
-    width: min(95vw, 920px) !important;
-    height: min(88vh, 700px) !important;
   }
 
   .village-stats-grid {
@@ -199,9 +225,9 @@
 
 @media (max-width: 900px) {
   .village-modal-shell {
+    --target-w: min(96vw, 760px);
+    --target-h: min(90vh, 760px);
     grid-template-columns: 1fr;
-    width: min(96vw, 760px) !important;
-    height: min(90vh, 760px) !important;
   }
 
   .village-modal-right {

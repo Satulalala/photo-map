@@ -1,0 +1,52 @@
+# Dependencies
+node_modules/
+
+# Build outputs
+build/
+dist/
+dist-web/
+server-java/target/
+
+# User data (mounted as volumes)
+photos/
+thumbnails/
+placeholders/
+tile-cache/
+*.db
+*.db-shm
+*.db-wal
+.model-cache/
+
+# Environment files
+.env
+.env.*
+
+# IDE and OS files
+.vscode/
+.idea/
+.git/
+.DS_Store
+Thumbs.db
+
+# Development-only files
+.claude/
+.github/
+.husky/
+coverage/
+.nyc_output/
+
+# Electron-specific
+*.bat
+*.ps1
+upload-github.*
+
+# Logs
+logs/
+*.log
+npm-debug.log*
+
+# Temporary files
+*.tmp
+*.temp
+.cache/
+.netlify/

@@ -1,45 +1,108 @@
 @echo off
 cd /d "%~dp0"
 
+:menu
 cls
 echo.
-echo ========================================
-echo   Photo Map - Frontend + Java Backend
-echo ========================================
+echo  ========================================
+echo          Photo Map - Launcher
+echo  ========================================
 echo.
-echo Choose startup mode:
+echo    [1] Docker Deploy
+echo    [2] Web Dev
+echo    [3] Desktop Dev
+echo    [4] Backend Only
+echo    [0] Exit
 echo.
-echo [1] Web + Java Backend
-echo [2] Desktop + Java Backend
-echo [3] Java Backend Only
-echo [0] Exit
+echo  ========================================
 echo.
-set /p choice=Select (0-3): 
+set /p choice=  Select (0-4):
 
-if "%choice%"=="1" goto run_web
-if "%choice%"=="2" goto run_desktop
-if "%choice%"=="3" goto run_backend
+if "%choice%"=="1" goto docker
+if "%choice%"=="2" goto web
+if "%choice%"=="3" goto desktop
+if "%choice%"=="4" goto backend
 if "%choice%"=="0" exit
 
-echo Invalid choice, please try again...
-pause
-goto :eof
+echo.
+echo  Invalid choice
+timeout /t 2 >nul
+goto menu
 
-:run_backend
-echo Starting Java backend on :8080 ...
-start "PhotoMap Java Backend" cmd /k "cd /d "%~dp0server-java" && mvn spring-boot:run"
-goto :eof
+:docker
+cls
+echo.
+echo  [Docker Deploy]
+echo  ----------------------------------------
+echo  Building and starting containers...
+echo.
+docker-compose up --build -d
+if %errorlevel% neq 0 (
+    echo.
+    echo  Failed! Make sure Docker Desktop is running.
+    echo.
+    pause
+    goto menu
+)
+echo.
+echo  Success! Visit http://localhost
+echo.
+echo  ----------------------------------------
+echo    [1] View logs
+echo    [2] Stop containers
+echo    [0] Back to menu
+echo  ----------------------------------------
+echo.
+set /p action=  Select:
+if "%action%"=="1" (
+    docker-compose logs -f
+    pause
+    goto docker
+)
+if "%action%"=="2" (
+    docker-compose down
+    echo.
+    echo  Containers stopped.
+    pause
+    goto menu
+)
+goto menu
 
-:run_web
-echo Starting Java backend + Web frontend...
-start "PhotoMap Java Backend" cmd /k "cd /d "%~dp0server-java" && mvn spring-boot:run"
-call timeout /t 2 >nul
+:web
+cls
+echo.
+echo  [Web Dev]
+echo  ----------------------------------------
+echo  Starting backend on port 8080...
+start "PhotoMap Backend" cmd /k "cd /d "%~dp0server-java" && mvn spring-boot:run"
+echo  Waiting for backend...
+timeout /t 3 >nul
+echo  Starting frontend on port 3001...
+echo.
 npm run web:dev
-goto :eof
+goto menu
 
-:run_desktop
-echo Starting Java backend + Desktop frontend...
-start "PhotoMap Java Backend" cmd /k "cd /d "%~dp0server-java" && mvn spring-boot:run"
-call timeout /t 2 >nul
+:desktop
+cls
+echo.
+echo  [Desktop Dev]
+echo  ----------------------------------------
+echo  Starting backend on port 8080...
+start "PhotoMap Backend" cmd /k "cd /d "%~dp0server-java" && mvn spring-boot:run"
+echo  Waiting for backend...
+timeout /t 3 >nul
+echo  Starting Electron...
+echo.
 npm run dev
-goto :eof
+goto menu
+
+:backend
+cls
+echo.
+echo  [Backend Only]
+echo  ----------------------------------------
+echo  Starting backend on port 8080...
+echo.
+cd /d "%~dp0server-java"
+mvn spring-boot:run
+goto menu

@@ -1,3 +1,5 @@
+import { getToken } from '../api/auth.js';
+
 const SYNC_QUEUE_KEY = 'cloudSyncQueue_v1';
 const SYNC_ENABLED_KEY = 'cloudSyncEnabled';
 const SYNC_LAST_PULL_KEY = 'cloudSyncLastPullAt';
@@ -56,10 +58,19 @@ function sanitizeMarkers(markers) {
   }));
 }
 
+function authHeaders() {
+  const token = getToken();
+  const headers = { 'Content-Type': 'application/json' };
+  if (token) {
+    headers['Authorization'] = `Bearer ${token}`;
+  }
+  return headers;
+}
+
 async function post(path, body) {
   const res = await fetch(`${getApiBase()}${path}`, {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
+    headers: authHeaders(),
     body: JSON.stringify(body),
   });
   if (!res.ok) throw new Error(`HTTP ${res.status}`);
@@ -67,7 +78,9 @@ async function post(path, body) {
 }
 
 async function get(path) {
-  const res = await fetch(`${getApiBase()}${path}`);
+  const res = await fetch(`${getApiBase()}${path}`, {
+    headers: authHeaders(),
+  });
   if (!res.ok) throw new Error(`HTTP ${res.status}`);
   return res.json();
 }

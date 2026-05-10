@@ -1,4 +1,4 @@
-/* 登录按钮容器 - 从顶部落下 */
+/* ========== 登录按钮容器 - 从顶部落下 ========== */
 .login-buttons-container {
   position: fixed;
   top: 80px;
@@ -21,7 +21,7 @@
   }
 }
 
-/* 登录按钮 - 透明背景 */
+/* ========== 登录按钮 - 透明背景 ========== */
 .login-drop-btn {
   display: flex;
   align-items: center;
@@ -57,6 +57,11 @@
   display: flex;
   align-items: center;
   justify-content: center;
+  transition: transform 0.3s ease;
+}
+
+.login-drop-btn:hover:not(:disabled) .btn-icon {
+  transform: scale(1.15);
 }
 
 .login-drop-btn .btn-text {
@@ -101,11 +106,51 @@
   border-color: rgba(255, 255, 255, 0.35);
 }
 
-/* 退出按钮 - 右上角 */
-.logout-btn {
+/* ========== Spinner ========== */
+.login-spinner {
+  display: inline-block;
+  width: 16px;
+  height: 16px;
+  border: 2px solid rgba(255, 255, 255, 0.3);
+  border-top-color: #fff;
+  border-radius: 50%;
+  animation: spin 0.6s linear infinite;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+/* ========== 已登录状态栏 ========== */
+.logged-in-bar {
   position: fixed;
   top: 20px;
   right: 20px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  z-index: 10000;
+  animation: fadeIn 0.4s ease-out;
+}
+
+.user-avatar {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.25);
+  border: 2px solid rgba(255, 255, 255, 0.4);
+  color: #fff;
+  font-size: 15px;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+}
+
+/* 退出按钮 */
+.logout-btn {
   display: flex;
   align-items: center;
   gap: 8px;
@@ -121,8 +166,6 @@
   -webkit-backdrop-filter: blur(20px);
   box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
   transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
-  z-index: 10000;
-  animation: fadeIn 0.4s ease-out;
 }
 
 .logout-btn:hover {
@@ -136,69 +179,80 @@
   transform: translateY(0);
 }
 
-.logout-icon {
-  font-size: 18px;
-}
-
-.logout-text {
-  font-weight: 500;
-}
-
-/* 进入地图按钮 - 屏幕中央 */
-.enter-map-btn {
+/* ========== GitHub OAuth 过渡动画 ========== */
+.github-oauth-overlay {
   position: fixed;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
+  inset: 0;
+  background: rgba(0, 0, 0, 0.6);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
   display: flex;
   align-items: center;
-  gap: 12px;
-  padding: 18px 36px;
-  background: rgba(220, 220, 220, 0.3);
-  border: 2px solid rgba(255, 255, 255, 0.4);
+  justify-content: center;
+  z-index: 10002;
+  animation: fadeIn 0.3s ease-out;
+}
+
+.github-oauth-modal {
+  background: rgba(36, 41, 47, 0.95);
   border-radius: 16px;
+  padding: 48px 40px;
+  text-align: center;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.4);
+  animation: scaleIn 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+@keyframes scaleIn {
+  from {
+    opacity: 0;
+    transform: scale(0.9);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+.github-oauth-icon {
   color: #fff;
-  font-size: 18px;
-  font-weight: 600;
-  cursor: pointer;
-  backdrop-filter: blur(20px);
-  -webkit-backdrop-filter: blur(20px);
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.15);
-  transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
-  z-index: 10000;
-  animation: fadeIn 0.6s ease-out 0.3s backwards;
+  margin-bottom: 20px;
+  animation: pulse 1.5s ease-in-out infinite;
 }
 
-.enter-map-btn:hover:not(:disabled) {
-  background: rgba(240, 240, 240, 0.4);
-  border-color: rgba(255, 255, 255, 0.5);
-  transform: translate(-50%, -50%) translateY(-4px) scale(1.05);
-  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.2);
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.5; }
 }
 
-.enter-map-btn:active:not(:disabled) {
-  transform: translate(-50%, -50%) translateY(-2px) scale(1.02);
+.github-oauth-text {
+  color: rgba(255, 255, 255, 0.9);
+  font-size: 16px;
+  margin: 0 0 20px;
 }
 
-.enter-map-btn:disabled,
-.enter-map-btn--disabled {
-  opacity: 0.4;
-  cursor: not-allowed;
-  pointer-events: none;
-  background: rgba(120, 120, 120, 0.2);
-  border-color: rgba(255, 255, 255, 0.2);
-  color: rgba(255, 255, 255, 0.5);
+.github-oauth-dots {
+  display: flex;
+  gap: 8px;
+  justify-content: center;
 }
 
-.enter-icon {
-  font-size: 24px;
+.github-oauth-dots span {
+  width: 8px;
+  height: 8px;
+  background: rgba(255, 255, 255, 0.6);
+  border-radius: 50%;
+  animation: dotBounce 1.2s ease-in-out infinite;
 }
 
-.enter-text {
-  font-weight: 600;
+.github-oauth-dots span:nth-child(2) { animation-delay: 0.2s; }
+.github-oauth-dots span:nth-child(3) { animation-delay: 0.4s; }
+
+@keyframes dotBounce {
+  0%, 80%, 100% { transform: scale(0.6); opacity: 0.4; }
+  40% { transform: scale(1); opacity: 1; }
 }
 
-/* 邮箱登录表单弹窗 */
+/* ========== 邮箱表单弹窗 ========== */
 .email-form-overlay {
   position: fixed;
   inset: 0;
@@ -212,16 +266,22 @@
   animation: fadeIn 0.3s ease-out;
 }
 
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
 .email-form-modal {
   background: rgba(255, 255, 255, 0.95);
   backdrop-filter: blur(30px);
   -webkit-backdrop-filter: blur(30px);
   border-radius: 16px;
-  padding: 32px;
+  padding: 0;
   width: 380px;
   max-width: 90vw;
   box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
   animation: slideUp 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+  overflow: hidden;
 }
 
 @keyframes slideUp {
@@ -235,60 +295,101 @@
   }
 }
 
-@keyframes fadeIn {
-  from {
-    opacity: 0;
-  }
-  to {
-    opacity: 1;
-  }
-}
-
-.email-form-header {
+/* Tab 切换 */
+.email-form-tabs {
   display: flex;
-  justify-content: space-between;
   align-items: center;
-  margin-bottom: 24px;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.08);
+  padding: 0;
 }
 
-.email-form-header h3 {
-  margin: 0;
-  font-size: 20px;
-  font-weight: 600;
+.tab-btn {
+  flex: 1;
+  padding: 16px 0;
+  border: none;
+  background: transparent;
+  font-size: 15px;
+  font-weight: 500;
+  color: #9ca3af;
+  cursor: pointer;
+  transition: all 0.2s;
+  position: relative;
+}
+
+.tab-btn.active {
   color: #1a1a1a;
 }
 
-.close-btn {
-  width: 32px;
-  height: 32px;
+.tab-btn.active::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 20%;
+  width: 60%;
+  height: 2px;
+  background: #1a1a1a;
+  border-radius: 1px;
+}
+
+.tab-btn:hover:not(.active) {
+  color: #6b7280;
+}
+
+.email-form-tabs .close-btn {
+  width: 40px;
+  height: 40px;
   border: none;
-  background: rgba(0, 0, 0, 0.05);
-  color: #666;
-  font-size: 18px;
+  background: transparent;
+  color: #9ca3af;
   cursor: pointer;
-  border-radius: 50%;
   display: flex;
   align-items: center;
   justify-content: center;
   transition: all 0.2s;
+  flex-shrink: 0;
+  margin-right: 8px;
 }
 
-.close-btn:hover {
-  background: rgba(239, 68, 68, 0.1);
+.email-form-tabs .close-btn:hover {
   color: #ef4444;
-  transform: rotate(90deg);
-}
-
-.form-error {
-  padding: 12px;
-  background: rgba(239, 68, 68, 0.1);
-  border: 1px solid rgba(239, 68, 68, 0.2);
+  background: rgba(239, 68, 68, 0.08);
   border-radius: 8px;
-  color: #dc2626;
-  font-size: 14px;
-  margin-bottom: 16px;
 }
 
+/* 表单内容区 */
+.email-form {
+  padding: 24px 28px 28px;
+}
+
+.form-hint {
+  margin: 0 0 16px;
+  font-size: 13px;
+  color: #6b7280;
+  line-height: 1.5;
+}
+
+/* 消息提示 */
+.form-message {
+  padding: 10px 16px;
+  margin: 16px 28px 0;
+  border-radius: 8px;
+  font-size: 13px;
+  line-height: 1.5;
+}
+
+.form-message.error {
+  background: rgba(239, 68, 68, 0.08);
+  border: 1px solid rgba(239, 68, 68, 0.15);
+  color: #dc2626;
+}
+
+.form-message.success {
+  background: rgba(34, 197, 94, 0.08);
+  border: 1px solid rgba(34, 197, 94, 0.15);
+  color: #16a34a;
+}
+
+/* 表单字段 */
 .form-field {
   margin-bottom: 16px;
 }
@@ -310,6 +411,7 @@
   background: rgba(255, 255, 255, 0.8);
   color: #1a1a1a;
   transition: all 0.2s;
+  box-sizing: border-box;
 }
 
 .form-field input:focus {
@@ -328,6 +430,39 @@
   cursor: not-allowed;
 }
 
+/* 密码输入框 + 可见性切换 */
+.password-input-wrapper {
+  position: relative;
+}
+
+.password-input-wrapper input {
+  padding-right: 44px;
+}
+
+.password-toggle {
+  position: absolute;
+  right: 8px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 32px;
+  height: 32px;
+  border: none;
+  background: transparent;
+  color: #9ca3af;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 6px;
+  transition: all 0.2s;
+}
+
+.password-toggle:hover {
+  color: #4b5563;
+  background: rgba(0, 0, 0, 0.04);
+}
+
+/* 提交按钮 */
 .form-submit-btn {
   width: 100%;
   padding: 14px;
@@ -340,6 +475,10 @@
   cursor: pointer;
   transition: all 0.2s;
   margin-top: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
 }
 
 .form-submit-btn:hover:not(:disabled) {
@@ -357,28 +496,54 @@
   cursor: not-allowed;
 }
 
-/* 响应式 */
+.form-submit-btn .login-spinner {
+  border-color: rgba(255, 255, 255, 0.3);
+  border-top-color: #fff;
+}
+
+/* 文字链接按钮 */
+.form-link-btn {
+  display: block;
+  width: 100%;
+  padding: 10px;
+  margin-top: 8px;
+  border: none;
+  background: transparent;
+  color: #6b7280;
+  font-size: 13px;
+  cursor: pointer;
+  text-align: center;
+  transition: color 0.2s;
+}
+
+.form-link-btn:hover {
+  color: #1a1a1a;
+}
+
+/* ========== 响应式 ========== */
 @media (max-width: 768px) {
   .login-buttons-container {
     flex-direction: column;
     gap: 12px;
     top: 60px;
   }
-  
+
   .login-drop-btn {
     padding: 12px 20px;
     font-size: 14px;
   }
-  
-  .logout-btn {
+
+  .logged-in-bar {
     top: 16px;
     right: 16px;
+  }
+
+  .logout-btn {
     padding: 8px 14px;
     font-size: 13px;
   }
-  
-  .enter-map-btn {
-    padding: 16px 28px;
-    font-size: 16px;
+
+  .email-form-modal {
+    width: 340px;
   }
 }

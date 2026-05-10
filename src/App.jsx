@@ -17,6 +17,7 @@ import LazyPhoto from './components/LazyPhoto.jsx';
 import MarkerListItem, { highlightText } from './components/MarkerListItem.jsx';
 import MarkerGridItem from './components/MarkerGridItem.jsx';
 import { initMapbox, gcj02ToWgs84, formatLastSeen } from './utils/mapUtils.js';
+import { getCurrentUser, logout as authLogout } from './api/auth.js';
 
 // 如果是Web版本，导入Web样式
 if (!window.electronAPI) {
@@ -57,10 +58,10 @@ function App() {
     checkMapbox();
   }, []);
   
-  const [isLoggedIn, setIsLoggedIn] = useState(false);
-  const [userChose, setUserChose] = useState(false); // 用户是否已做出选择（登录/跳过）
+  const [isLoggedIn, setIsLoggedIn] = useState(() => !!getCurrentUser());
+  const [userChose, setUserChose] = useState(() => !!getCurrentUser());
   const [showLoginModal, setShowLoginModal] = useState(false);
-  const [user, setUser] = useState(null);
+  const [user, setUser] = useState(() => getCurrentUser());
   const [mapEntered, setMapEntered] = useState(false); // 用户点击进入地图（触发器）
   const [offlinePrompted, setOfflinePrompted] = useState(false);
   const [markers, setMarkers] = useState([]);
@@ -2001,10 +2002,15 @@ function App() {
       targetH = Math.min(vh * 0.88, 700);
     }
 
+    const btnW = btn.offsetWidth;
+    const btnH = btn.offsetHeight;
+
     setVillageRect({
-      x: rect.left + rect.width / 2,
-      y: rect.top + rect.height / 2,
-      size: Math.max(btn.offsetWidth, btn.offsetHeight),
+      dx: (rect.left + rect.width / 2) - vw / 2,
+      dy: (rect.top + rect.height / 2) - vh / 2,
+      startScale: Math.max(targetW, targetH) > 0
+        ? Math.max(btnW, btnH) / Math.max(targetW, targetH)
+        : 0.05,
       targetW,
       targetH,
     });
@@ -2024,6 +2030,31 @@ function App() {
 
   const handleCloseVillage = () => {
     if (villageTransitioning) return;
+    const btn = globeVillageBtnRef.current;
+    const rect = btn?.getBoundingClientRect();
+    if (rect && btn) {
+      const vw = window.innerWidth;
+      const vh = window.innerHeight;
+      let targetW = Math.min(vw * 0.92, 1080);
+      let targetH = Math.min(vh * 0.82, 640);
+      if (vw <= 900) {
+        targetW = Math.min(vw * 0.96, 760);
+        targetH = Math.min(vh * 0.9, 760);
+      } else if (vw <= 1180) {
+        targetW = Math.min(vw * 0.95, 920);
+        targetH = Math.min(vh * 0.88, 700);
+      }
+      const btnW = btn.offsetWidth;
+      const btnH = btn.offsetHeight;
+      setVillageRect(prev => ({
+        ...prev,
+        dx: (rect.left + rect.width / 2) - vw / 2,
+        dy: (rect.top + rect.height / 2) - vh / 2,
+        startScale: Math.max(targetW, targetH) > 0
+          ? Math.max(btnW, btnH) / Math.max(targetW, targetH)
+          : 0.05,
+      }));
+    }
     setVillageTransitioning(true);
     setVillageClosing(true);
     setVillageReady(false);
@@ -2032,7 +2063,7 @@ function App() {
       setShowVillageModal(false);
       setVillageClosing(false);
       setVillageTransitioning(false);
-    }, 560);
+    }, 480);
   };
 
   const handleOpenMarkerList = useCallback(() => {
@@ -2147,6 +2178,7 @@ function App() {
 
   // 退出登录
   const handleLogout = () => {
+    authLogout();
     setUser(null);
     setIsLoggedIn(false);
     setUserChose(false);
@@ -2179,11 +2211,10 @@ function App() {
           canEnter={false}
         />
         {/* 登录按钮和禁用的进入地图按钮 */}
-        <LoginButtons 
+        <LoginButtons
           onLogin={handleLogin}
           onSkip={handleSkipLogin}
           onLogout={handleLogout}
-          onEnterMap={() => {}}
           isLoggedIn={false}
           showButtons={true}
         />
@@ -2202,11 +2233,11 @@ function App() {
           canEnter={true}
         />
         {/* 右上角退出按钮 */}
-        <LoginButtons 
+        <LoginButtons
           onLogin={handleLogin}
           onSkip={handleSkipLogin}
           onLogout={handleLogout}
-          onEnterMap={() => {}}
+          user={user}
           isLoggedIn={true}
           showButtons={false}
         />
@@ -3203,11 +3234,9 @@ function App() {
             className={`village-modal-shell ${villageReady ? 'open' : ''} ${villageClosing ? 'closing' : ''}`}
             onClick={e => e.stopPropagation()}
             style={villageRect ? {
-              '--origin-x': `${villageRect.x}px`,
-              '--origin-y': `${villageRect.y}px`,
-              '--origin-size': `${villageRect.size}px`,
-              '--target-w': `${villageRect.targetW}px`,
-              '--target-h': `${villageRect.targetH}px`,
+              '--dx': `${villageRect.dx}px`,
+              '--dy': `${villageRect.dy}px`,
+              '--start-scale': villageRect.startScale,
             } : undefined}
           >
             <button className="village-shell-close" onClick={handleCloseVillage}>✕</button>

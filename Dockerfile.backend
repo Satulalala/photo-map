@@ -1,0 +1,32 @@
+# Stage 1: Build
+FROM docker.m.daocloud.io/library/maven:3.9-eclipse-temurin-17 AS builder
+WORKDIR /app
+
+RUN mkdir -p /root/.m2 && \
+    echo '<settings><mirrors><mirror><id>aliyun</id><mirrorOf>central</mirrorOf><url>https://maven.aliyun.com/repository/central</url></mirror></mirrors></settings>' > /root/.m2/settings.xml
+
+COPY server-java/pom.xml .
+RUN mvn dependency:go-offline -B
+
+COPY server-java/src ./src
+RUN mvn package -DskipTests -B
+
+# Stage 2: Runtime
+FROM docker.m.daocloud.io/library/eclipse-temurin:17-jre-alpine
+
+RUN addgroup -S appgroup && adduser -S appuser -G appgroup
+
+WORKDIR /app
+COPY --from=builder /app/target/photo-map-sync-server-0.1.0.jar app.jar
+RUN chown -R appuser:appgroup /app
+
+USER appuser
+
+ENV JAVA_OPTS="-XX:+UseContainerSupport -XX:MaxRAMPercentage=75.0"
+
+EXPOSE 8080
+
+HEALTHCHECK --interval=30s --timeout=5s --retries=3 \
+  CMD wget -qO- http://localhost:8080/actuator/health || exit 1
+
+ENTRYPOINT ["sh", "-c", "java $JAVA_OPTS -jar app.jar"]
