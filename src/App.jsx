@@ -19,6 +19,7 @@ import MarkerGridItem from './components/MarkerGridItem.jsx';
 import { initMapbox, gcj02ToWgs84, formatLastSeen } from './utils/mapUtils.js';
 import { getCurrentUser, logout as authLogout } from './api/auth.js';
 import { useMarkers } from './hooks/useMarkers.js';
+import { usePhotos } from './hooks/usePhotos.js';
 
 // 如果是Web版本，导入Web样式
 if (!window.electronAPI) {
@@ -49,6 +50,13 @@ function App() {
     markers, markersLoading, newMarkerIds, markersStateRef,
     setMarkers, setMarkersLoading, setNewMarkerIds, refreshMarkers, deleteMarkerById: deleteMarkerByIdBase
   } = useMarkers();
+
+  // 照片管理 Hook
+  const {
+    photoViewer, currentPhotoUrl, photoInfo, photoEditor, noteEditor, notesPanel,
+    getPhotoUrl, getPhotoUrlSync, getPhotoNote,
+    setPhotoViewer, setCurrentPhotoUrl, setPhotoInfo, setPhotoEditor, setNoteEditor, setNotesPanel,
+  } = usePhotos();
 
   // Mapbox 加载检查
   const [mapboxReady, setMapboxReady] = useState(false);
@@ -99,13 +107,8 @@ function App() {
   const [friendActionMenu, setFriendActionMenu] = useState('');
   const globeVillageBtnRef = useRef(null);
   const markerManageBtnRef = useRef(null);
-  const [photoViewer, setPhotoViewer] = useState(null); // { photos: [], index: 0, markerId }
-  const [currentPhotoUrl, setCurrentPhotoUrl] = useState(''); // 当前查看的照片URL
-  const [photoInfo, setPhotoInfo] = useState(null); // 当前照片的详细信息
   const [showPhotoInfo, setShowPhotoInfo] = useState(false); // 是否显示照片信息面板
   const [mapLoaded, setMapLoaded] = useState(false); // 地图是否加载完成
-  const [noteEditor, setNoteEditor] = useState(null); // { markerId, photoIndex, note }
-  const [notesPanel, setNotesPanel] = useState(null); // { markerId, marker, returnToMenu }
   const [notesEditing, setNotesEditing] = useState(false); // 备注面板是否处于编辑模式
   const [editingNotes, setEditingNotes] = useState([]); // 编辑中的备注临时数据
   const [cacheStats, setCacheStats] = useState({ count: 0, size: 0 }); // 瓦片缓存统计
@@ -151,8 +154,7 @@ function App() {
   const [syncQueueSize, setSyncQueueSize] = useState(() => syncService.getQueueLength());
   const [heatmapMode, setHeatmapMode] = useState(false); // 热力图模式
   const [viewportVersion, setViewportVersion] = useState(0); // 视口版本号，用于触发标记更新
-  const [photoEditor, setPhotoEditor] = useState(null); // 照片编辑器 { photoId, photoUrl }
-  
+
   // 性能设置 - 从 localStorage 读取
   // 平滑缩放配置
   const defaultSettings = {
@@ -214,37 +216,6 @@ function App() {
       unsubscribe?.();
       clearTimeout(hideTimer);
     };
-  }, []);
-
-  // 获取照片URL（支持新旧格式，使用 LRU 缓存）
-  const getPhotoUrl = useCallback(async (photo) => {
-    if (!photo) return null;
-    // 旧格式：直接是base64字符串
-    if (typeof photo === 'string') return photo;
-    // 旧格式：photo.data 是 base64
-    if (photo.data && photo.data.startsWith('data:')) return photo.data;
-    // 新格式：photo.id 是文件名
-    const photoId = photo.id;
-    if (!photoId) return null;
-    // 检查 LRU 缓存
-    const cached = photoUrlCache.get(photoId);
-    if (cached) return cached;
-    // 从文件获取URL
-    if (window.electronAPI) {
-      const url = await window.electronAPI.getPhotoUrl(photoId);
-      if (url) photoUrlCache.set(photoId, url);
-      return url;
-    }
-    return null;
-  }, []);
-
-  // 同步获取照片URL（用于已缓存的情况）
-  const getPhotoUrlSync = useCallback((photo) => {
-    if (!photo) return '';
-    if (typeof photo === 'string') return photo;
-    if (photo.data && photo.data.startsWith('data:')) return photo.data;
-    const photoId = photo.id;
-    return photoUrlCache.get(photoId) || '';
   }, []);
 
   // 计算总照片数 - 使用 useMemo 避免重复计算
@@ -369,53 +340,6 @@ function App() {
     if (!q) return villageMembers;
     return villageMembers.filter(m => m.id.toLowerCase().includes(q));
   }, [villageMembers, friendSearchQuery]);
-
-  // 加载当前查看的照片
-  useEffect(() => {
-    if (photoViewer && photoViewer.photos[photoViewer.index]) {
-      getPhotoUrl(photoViewer.photos[photoViewer.index]).then(url => {
-        setCurrentPhotoUrl(url || '');
-      });
-      
-      // 空闲时预加载相邻照片
-      const preloadNext = () => {
-        const { photos, index } = photoViewer;
-        const preloadIndexes = [index + 1, index - 1].filter(i => i >= 0 && i < photos.length);
-        preloadIndexes.forEach(i => {
-          getPhotoUrl(photos[i]).then(url => {
-            if (url) {
-              const img = new Image();
-              img.src = url;
-            }
-          });
-        });
-      };
-      
-      // 使用 requestIdleCallback 在空闲时预加载
-      if ('requestIdleCallback' in window) {
-        requestIdleCallback(preloadNext, { timeout: 1000 });
-      } else {
-        setTimeout(preloadNext, 100);
-      }
-    } else {
-      setCurrentPhotoUrl('');
-      setPhotoInfo(null);
-    }
-  }, [photoViewer, getPhotoUrl]);
-
-  // 加载当前照片的详细信息
-  useEffect(() => {
-    if (photoViewer && photoViewer.photos[photoViewer.index]) {
-      const photo = photoViewer.photos[photoViewer.index];
-      if (photo?.id && window.electronAPI?.getPhotoInfo) {
-        window.electronAPI.getPhotoInfo(photo.id).then(info => {
-          setPhotoInfo(info);
-        });
-      } else {
-        setPhotoInfo(null);
-      }
-    }
-  }, [photoViewer?.index, photoViewer?.photos]);
 
   // Toast 提示
   const showToast = useCallback((type, message, duration = 2500) => {
@@ -1694,8 +1618,6 @@ function App() {
     setNoteEditor(null);
   };
   
-  // 获取照片备注
-  const getPhotoNote = useCallback((photo) => typeof photo === 'string' ? '' : (photo.note || ''), []);
 
   const closeContextMenu = useCallback(() => { 
     setContextMenu(null); 
