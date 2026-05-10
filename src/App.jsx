@@ -10,13 +10,10 @@ import { useAnalytics } from './utils/webAnalytics.js';
 import { usePWA } from './utils/pwaManager.js';
 import api from './api/index.js';
 import syncService from './services/syncService.js';
-import { matchMarkerName, getMatchRanges } from './utils/searchUtils.js';
 import LoginButtons from './components/LoginButtons.jsx';
 import WebDownloadButton from './components/WebDownloadButton.jsx';
 import LazyPhoto from './components/LazyPhoto.jsx';
-import MarkerListItem, { highlightText } from './components/MarkerListItem.jsx';
-import MarkerGridItem from './components/MarkerGridItem.jsx';
-import { initMapbox, formatLastSeen } from './utils/mapUtils.js';
+import { formatLastSeen } from './utils/mapUtils.js';
 import { getCurrentUser, logout as authLogout } from './api/auth.js';
 import { useMarkers } from './hooks/useMarkers.js';
 import { usePhotos } from './hooks/usePhotos.js';
@@ -24,6 +21,7 @@ import { useSearch } from './hooks/useSearch.js';
 import SearchBar from './components/map/SearchBar.jsx';
 import Toolbar from './components/map/Toolbar.jsx';
 import NoteEditor from './components/panels/NoteEditor.jsx';
+import MarkerListPanel from './components/panels/MarkerListPanel.jsx';
 
 // 如果是Web版本，导入Web样式
 if (!window.electronAPI) {
@@ -1820,13 +1818,201 @@ function App() {
         setMarkerListReady(true);
         setMarkerListContentHidden(false);
         setMarkerListTransitioning(false);
-	      });
-	    });
-	  }, [markerListTransitioning]);
+      });
+    });
+  }, [markerListTransitioning]);
 
   const handleCloseMarkerList = () => {
     closeMarkerListWithAnimation();
   };
+
+  // MarkerListPanel callback functions
+  const handleMarkerListSearch = useCallback((val) => {
+    setMarkerListSearch(val);
+    // Note search
+    if (val.trim()) {
+      setIsNoteSearching(true);
+      api.photos.searchNotes(val).then(results => {
+        setNoteSearchResults(results || []);
+        setIsNoteSearching(false);
+      }).catch(() => {
+        setNoteSearchResults([]);
+        setIsNoteSearching(false);
+      });
+    } else {
+      setNoteSearchResults([]);
+    }
+    // Semantic search
+    if (val.trim()) {
+      setIsSemanticSearching(true);
+      api.photos.searchByContent(val, 20).then(results => {
+        setSemanticResults(results || []);
+        setIsSemanticSearching(false);
+      }).catch(() => {
+        setSemanticResults([]);
+        setIsSemanticSearching(false);
+      });
+    } else {
+      setSemanticResults([]);
+    }
+  }, []);
+
+  const handleMarkerListSort = useCallback((sortType) => {
+    setMarkerListSort(sortType);
+  }, []);
+
+  const handleMarkerListLayout = useCallback((layoutType) => {
+    setMarkerListLayout(layoutType);
+  }, []);
+
+  const handleMarkerListTimeFilter = useCallback((filter) => {
+    setMarkerListTimeFilter(filter);
+  }, []);
+
+  const handleMarkerListTimeRangeChange = useCallback((range) => {
+    setMarkerListTimeRange(range);
+  }, []);
+
+  const handleMarkerListBatchToggle = useCallback(() => {
+    setBatchMode(!batchMode);
+    setSelectedPhotos([]);
+  }, [batchMode]);
+
+  const handleMarkerListSortMenuToggle = useCallback((show) => {
+    setShowSortMenu(show);
+  }, []);
+
+  const handleMarkerListLayoutMenuToggle = useCallback((show) => {
+    setShowLayoutMenu(show);
+  }, []);
+
+  const handleMarkerListTimeFilterMenuToggle = useCallback((show) => {
+    setShowTimeFilterMenu(show);
+  }, []);
+
+  const handleMarkerListSearchFocusIndexChange = useCallback((indexOrFn) => {
+    if (typeof indexOrFn === 'function') {
+      setSearchFocusIndex(indexOrFn);
+    } else {
+      setSearchFocusIndex(indexOrFn);
+    }
+  }, []);
+
+  const handleMarkerListMarkerClick = useCallback(async (m) => {
+    if (batchMode) return; // Batch mode doesn't respond to clicks
+    handleCloseMarkerList();
+    if (mapRef.current) {
+      mapRef.current.flyTo({ center: [m.lng, m.lat], zoom: 15, duration: 1000 });
+      setTimeout(async () => {
+        const point = mapRef.current.project([m.lng, m.lat]);
+        let fullMarker = m;
+
+        // Load complete marker data
+        if (window.electronAPI?.getMarkerDetail) {
+          const detail = await window.electronAPI.getMarkerDetail(m.id);
+          if (detail) fullMarker = detail;
+        } else {
+          // Web environment
+          const photos = await api.photos.getByMarkerId(m.id);
+          const sorted = [...photos].sort((a, b) => (a.order ?? 9999) - (b.order ?? 9999));
+          fullMarker = {
+            ...m,
+            photos: sorted,
+            photoCount: sorted.length,
+            firstPhoto: sorted[0] || null
+          };
+        }
+
+        setMarkerMenu({ x: point.x, y: point.y, marker: fullMarker });
+      }, 1050);
+    }
+  }, [batchMode]);
+
+  const handleMarkerListNoteClick = useCallback(async (result) => {
+    handleCloseMarkerList();
+    if (mapRef.current) {
+      mapRef.current.flyTo({ center: [result.lng, result.lat], zoom: 15, duration: 1000 });
+    }
+    if (window.electronAPI?.getMarkerDetail) {
+      const detail = await window.electronAPI.getMarkerDetail(result.markerId);
+      if (detail) {
+        const photoIndex = detail.photos.findIndex(p => p.id === result.fileId);
+        setPhotoViewer({
+          photos: detail.photos,
+          index: photoIndex >= 0 ? photoIndex : 0,
+          markerId: result.markerId
+        });
+      }
+    }
+  }, []);
+
+  const handleMarkerListSemanticClick = useCallback(async (result) => {
+    handleCloseMarkerList();
+    if (mapRef.current) {
+      mapRef.current.flyTo({ center: [result.lng, result.lat], zoom: 15, duration: 1000 });
+    }
+    if (window.electronAPI?.getMarkerDetail) {
+      const detail = await window.electronAPI.getMarkerDetail(result.markerId);
+      if (detail) {
+        const photoIndex = detail.photos.findIndex(p => p.id === result.photoId);
+        setPhotoViewer({
+          photos: detail.photos,
+          index: photoIndex >= 0 ? photoIndex : 0,
+          markerId: result.markerId
+        });
+      }
+    }
+  }, []);
+
+  const handleMarkerListBatchDelete = useCallback(async () => {
+    if (!confirm(`确定要删除选中的 ${selectedPhotos.length} 张照片吗？`)) return;
+
+    try {
+      // Group by marker
+      const photosByMarker = {};
+      selectedPhotos.forEach(p => {
+        if (!photosByMarker[p.markerId]) photosByMarker[p.markerId] = [];
+        photosByMarker[p.markerId].push(p.photoId);
+      });
+
+      for (const [markerId, photoIds] of Object.entries(photosByMarker)) {
+        // Delete each photo
+        for (const photoId of photoIds) {
+          await api.photos.delete(markerId, photoId);
+        }
+        // Check if marker still has photos
+        const remaining = await api.photos.getByMarkerId(markerId);
+        if (remaining.length === 0) {
+          // No photos left, delete marker
+          await api.markers.delete(markerId);
+        } else {
+          // Update marker's photoCount and firstPhoto
+          const { webStorage } = await import('./api/index.js');
+          await webStorage.markers.update(markerId, {
+            photoCount: remaining.length,
+            firstPhoto: remaining[0] || null
+          });
+        }
+      }
+
+      // Reload markers
+      await refreshMarkers();
+      setSelectedPhotos([]);
+      setBatchMode(false);
+      showToast('success', `已删除 ${selectedPhotos.length} 张照片`);
+    } catch (err) {
+      console.error('批量删除失败:', err);
+      showToast('error', '删除失败: ' + err.message);
+    }
+  }, [selectedPhotos, refreshMarkers, showToast]);
+
+  const handleMarkerListBatchMerge = useCallback(() => {
+    if (selectedPhotos.length < 2) {
+      alert('请至少选择2张照片进行整合');
+      return;
+    }
+    setShowMergeDialog(true);
+  }, [selectedPhotos]);
 
   const handleAddFriend = () => {
     const val = pendingFriendId.trim();
@@ -2057,710 +2243,55 @@ function App() {
         </button>
       )}
 
-      {/* 标记列表面板 */}
-      {showMarkerList && (
-        <div className={`marker-list-overlay ${markerListReady ? 'open' : ''} ${markerListClosing ? 'closing' : ''}`} onClick={handleCloseMarkerList}>
-          <div
-            className={`marker-list-panel themed-floating-panel theme-${uiThemeStyle} ${markerListReady ? 'open' : ''} ${markerListClosing ? 'closing' : ''} ${markerListContentHidden ? 'content-hidden' : ''}`}
-            style={markerListRect ? {
-              '--origin-x': `${markerListRect.x}px`,
-              '--origin-y': `${markerListRect.y}px`,
-              '--origin-size': `${markerListRect.size}px`,
-              '--target-w': `${markerListRect.targetW}px`,
-              '--target-h': `${markerListRect.targetH}px`,
-              '--dx': `${markerListRect.dx}px`,
-              '--dy': `${markerListRect.dy}px`,
-              '--start-scale': markerListRect.startScale,
-            } : undefined}
-            onClick={e => {
-              e.stopPropagation();
-              setShowSortMenu(false);
-              setShowLayoutMenu(false);
-              setShowTimeFilterMenu(false);
-            }}
-          >
-            <div className="marker-list-panel-inner">
-            <div className="marker-list-header">
-              <h3>📍 所有标记</h3>
-              <div className="header-actions">
-                <button
-                  className="batch-toggle-btn"
-                  onClick={() => {
-                    setBatchMode(!batchMode);
-                    setSelectedPhotos([]);
-                  }}
-                  style={{ background: batchMode ? '#ef4444' : '#4a90e2' }}
-                >
-                  {batchMode ? '✕ 退出批量' : '📋 批量操作'}
-                </button>
-                <button 
-                  className="panel-close" 
-                  onClick={handleCloseMarkerList}
-                >✕</button>
-              </div>
-            </div>
-            <div className="marker-list-toolbar">
-              <input
-                type="text"
-                placeholder="搜索地名、备注或图片描述..."
-                value={markerListSearch}
-                onChange={e => {
-                  const val = e.target.value;
-                  setMarkerListSearch(val);
-                  // 备注搜索
-                  if (val.trim()) {
-                    setIsNoteSearching(true);
-                    api.photos.searchNotes(val).then(results => {
-                      setNoteSearchResults(results || []);
-                      setIsNoteSearching(false);
-                    }).catch(() => {
-                      setNoteSearchResults([]);
-                      setIsNoteSearching(false);
-                    });
-                  } else {
-                    setNoteSearchResults([]);
-                  }
-                  // 语义搜索
-                  if (val.trim()) {
-                    setIsSemanticSearching(true);
-                    api.photos.searchByContent(val, 20).then(results => {
-                      setSemanticResults(results || []);
-                      setIsSemanticSearching(false);
-                    }).catch(() => {
-                      setSemanticResults([]);
-                      setIsSemanticSearching(false);
-                    });
-                  } else {
-                    setSemanticResults([]);
-                  }
-                }}
-                onKeyDown={e => {
-                  if (e.key === 'ArrowDown') {
-                    e.preventDefault();
-                    setSearchFocusIndex(0);
-                    searchResultsRef.current?.focus();
-                  } else if (e.key === 'Enter' && markerListSearch.trim()) {
-                    e.preventDefault();
-                    setSearchFocusIndex(0);
-                    searchResultsRef.current?.focus();
-                  }
-                }}
-                className="marker-search"
-              />
-              <div className="toolbar-actions">
-                <div className="dropdown-wrapper">
-                  <button
-                    className={`toolbar-btn ${showSortMenu ? 'active' : ''}`}
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      setShowSortMenu(!showSortMenu);
-                      setShowLayoutMenu(false);
-                      setShowTimeFilterMenu(false);
-                    }}
-                  >
-                    排序方式 ▾
-                  </button>
-                  {showSortMenu && (
-                    <div className="dropdown-menu" onClick={(e) => e.stopPropagation()}>
-                      <div
-                        className={`dropdown-item ${markerListSort === 'time' ? 'active' : ''}`}
-                        onClick={() => { setMarkerListSort('time'); setShowSortMenu(false); }}
-                      >
-                        {markerListSort === 'time' ? '✓ ' : ''}时间排序
-                      </div>
-                      <div
-                        className={`dropdown-item ${markerListSort === 'name' ? 'active' : ''}`}
-                        onClick={() => { setMarkerListSort('name'); setShowSortMenu(false); }}
-                      >
-                        {markerListSort === 'name' ? '✓ ' : ''}地名排序
-                      </div>
-                    </div>
-                  )}
-                </div>
-                <div className="dropdown-wrapper">
-                  <button
-                    className={`toolbar-btn ${showLayoutMenu ? 'active' : ''}`}
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      setShowLayoutMenu(!showLayoutMenu);
-                      setShowSortMenu(false);
-                      setShowTimeFilterMenu(false);
-                    }}
-                  >
-                    布局方式 ▾
-                  </button>
-                  {showLayoutMenu && (
-                    <div className="dropdown-menu" onClick={(e) => e.stopPropagation()}>
-                      <div
-                        className={`dropdown-item ${markerListLayout === 'list' ? 'active' : ''}`}
-                        onClick={() => { setMarkerListLayout('list'); setShowLayoutMenu(false); }}
-                      >
-                        {markerListLayout === 'list' ? '✓ ' : ''}列表布局
-                      </div>
-                      <div
-                        className={`dropdown-item ${markerListLayout === 'grid' ? 'active' : ''}`}
-                        onClick={() => { setMarkerListLayout('grid'); setShowLayoutMenu(false); }}
-                      >
-                        {markerListLayout === 'grid' ? '✓ ' : ''}网格布局
-                      </div>
-                    </div>
-                  )}
-                </div>
-                <div className="dropdown-wrapper">
-                  <button
-                    className={`toolbar-btn ${showTimeFilterMenu ? 'active' : ''}`}
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      setShowTimeFilterMenu(!showTimeFilterMenu);
-                      setShowSortMenu(false);
-                      setShowLayoutMenu(false);
-                    }}
-                  >
-                    时间范围 ▾
-                  </button>
-                  {showTimeFilterMenu && (
-                    <div className="dropdown-menu time-filter-menu" onClick={(e) => e.stopPropagation()}>
-                      <div
-                        className={`dropdown-item ${markerListTimeFilter === 'all' ? 'active' : ''}`}
-                        onClick={() => { setMarkerListTimeFilter('all'); setShowTimeFilterMenu(false); }}
-                      >
-                        {markerListTimeFilter === 'all' ? '✓ ' : ''}全部时间
-                      </div>
-                      <div
-                        className={`dropdown-item ${markerListTimeFilter === 'week' ? 'active' : ''}`}
-                        onClick={() => { setMarkerListTimeFilter('week'); setShowTimeFilterMenu(false); }}
-                      >
-                        {markerListTimeFilter === 'week' ? '✓ ' : ''}最近一周
-                      </div>
-                      <div
-                        className={`dropdown-item ${markerListTimeFilter === 'month' ? 'active' : ''}`}
-                        onClick={() => { setMarkerListTimeFilter('month'); setShowTimeFilterMenu(false); }}
-                      >
-                        {markerListTimeFilter === 'month' ? '✓ ' : ''}最近一月
-                      </div>
-                      <div
-                        className={`dropdown-item ${markerListTimeFilter === 'year' ? 'active' : ''}`}
-                        onClick={() => { setMarkerListTimeFilter('year'); setShowTimeFilterMenu(false); }}
-                      >
-                        {markerListTimeFilter === 'year' ? '✓ ' : ''}最近一年
-                      </div>
-                      <div
-                        className={`dropdown-item ${markerListTimeFilter === 'custom' ? 'active' : ''}`}
-                        onClick={() => { setMarkerListTimeFilter('custom'); }}
-                      >
-                        {markerListTimeFilter === 'custom' ? '✓ ' : ''}自定义时间范围
-                      </div>
-                      {markerListTimeFilter === 'custom' && (
-                        <div className="custom-date-range" onClick={(e) => e.stopPropagation()}>
-                          <div className="date-field">
-                            <label>从</label>
-                            <input
-                              type="date"
-                              value={markerListTimeRange.start}
-                              onChange={e => setMarkerListTimeRange(prev => ({ ...prev, start: e.target.value }))}
-                              onClick={e => e.stopPropagation()}
-                            />
-                          </div>
-                          <div className="date-field">
-                            <label>至</label>
-                            <input
-                              type="date"
-                              value={markerListTimeRange.end}
-                              onChange={e => setMarkerListTimeRange(prev => ({ ...prev, end: e.target.value }))}
-                              onClick={e => e.stopPropagation()}
-                            />
-                          </div>
-                        </div>
-                      )}
-                    </div>
-                  )}
-                </div>
-              </div>
-            </div>
+            {/* 标记列表面板 */}
+      <MarkerListPanel
+        markers={markers}
+        show={showMarkerList}
+        batchMode={batchMode}
+        selectedPhotos={selectedPhotos}
+        markerListSearch={markerListSearch}
+        markerListSort={markerListSort}
+        markerListLayout={markerListLayout}
+        markerListTimeFilter={markerListTimeFilter}
+        markerListTimeRange={markerListTimeRange}
+        uiThemeStyle={uiThemeStyle}
+        markersLoading={markersLoading}
+        noteSearchResults={noteSearchResults}
+        semanticResults={semanticResults}
+        isNoteSearching={isNoteSearching}
+        isSemanticSearching={isSemanticSearching}
+        embeddingProgress={embeddingProgress}
+        searchFocusIndex={searchFocusIndex}
+        markerListReady={markerListReady}
+        markerListClosing={markerListClosing}
+        markerListContentHidden={markerListContentHidden}
+        markerListRect={markerListRect}
+        showSortMenu={showSortMenu}
+        showLayoutMenu={showLayoutMenu}
+        showTimeFilterMenu={showTimeFilterMenu}
+        onClose={handleCloseMarkerList}
+        onSearch={handleMarkerListSearch}
+        onSort={handleMarkerListSort}
+        onLayout={handleMarkerListLayout}
+        onTimeFilter={handleMarkerListTimeFilter}
+        onTimeRangeChange={handleMarkerListTimeRangeChange}
+        onBatchToggle={handleMarkerListBatchToggle}
+        onPhotoSelect={handlePhotoSelect}
+        onSetCover={handleSetCover}
+        onDeletePhoto={handleDeletePhotoFromList}
+        onAddPhoto={handleAddPhotoToMarker}
+        onMarkerClick={handleMarkerListMarkerClick}
+        onNoteClick={handleMarkerListNoteClick}
+        onSemanticClick={handleMarkerListSemanticClick}
+        onSortMenuToggle={handleMarkerListSortMenuToggle}
+        onLayoutMenuToggle={handleMarkerListLayoutMenuToggle}
+        onTimeFilterMenuToggle={handleMarkerListTimeFilterMenuToggle}
+        onSearchFocusIndexChange={handleMarkerListSearchFocusIndexChange}
+        onBatchDelete={handleMarkerListBatchDelete}
+        onBatchMerge={handleMarkerListBatchMerge}
+      />
 
-            {embeddingProgress && (
-              <div className="embedding-progress">
-                <div className="embedding-progress-bar">
-                  <div className="embedding-progress-fill" style={{ width: `${embeddingProgress.percent}%` }} />
-                </div>
-                <span className="embedding-progress-text">
-                  下载语义搜索模型 {embeddingProgress.percent}%
-                </span>
-              </div>
-            )}
-
-            <div className="marker-list-content">
-              {(() => {
-                const filteredMarkers = markers
-                  .filter(m => {
-                    // 搜索过滤
-                    if (markerListSearch) {
-                      const name = m.name || `${m.lat.toFixed(3)}°, ${m.lng.toFixed(3)}°`;
-                      if (!matchMarkerName(markerListSearch, name)) return false;
-                    }
-                    // 时间范围过滤
-                    if (markerListTimeFilter !== 'all') {
-                      const t = m.createdAt || 0;
-                      const now = Date.now();
-                      if (markerListTimeFilter === 'week' && t < now - 7 * 24 * 60 * 60 * 1000) return false;
-                      if (markerListTimeFilter === 'month' && t < now - 30 * 24 * 60 * 60 * 1000) return false;
-                      if (markerListTimeFilter === 'year' && t < now - 365 * 24 * 60 * 60 * 1000) return false;
-                      if (markerListTimeFilter === 'custom') {
-                        const start = markerListTimeRange.start ? new Date(markerListTimeRange.start).getTime() : 0;
-                        const end = markerListTimeRange.end ? new Date(markerListTimeRange.end).getTime() : Infinity;
-                        if (t < start || t > end) return false;
-                      }
-                    }
-                    return true;
-                  })
-                  .sort((a, b) => {
-                    if (markerListSort === 'time') {
-                      return (b.createdAt || 0) - (a.createdAt || 0);
-                    } else {
-                      const nameA = a.name || '';
-                      const nameB = b.name || '';
-                      return nameA.localeCompare(nameB, 'zh-CN');
-                    }
-                  });
-                
-                if (markersLoading) {
-                  return [1,2,3,4].map(i => (
-                    <div key={i} className="skeleton-list-item">
-                      <div className="skeleton-list-thumb"></div>
-                      <div className="skeleton-list-info">
-                        <div className="skeleton-text medium"></div>
-                        <div className="skeleton-text short"></div>
-                      </div>
-                    </div>
-                  ));
-                }
-                
-                // 有搜索词时，显示标记、备注、语义分组
-                if (markerListSearch) {
-                  const hasMarkers = filteredMarkers.length > 0;
-                  const hasNotes = noteSearchResults.length > 0;
-                  // 过滤掉已在关键词结果中出现的语义结果
-                  const keywordMarkerIds = new Set(filteredMarkers.map(m => m.id));
-                  const noteMarkerIds = new Set(noteSearchResults.map(r => r.markerId));
-                  const dedupedSemantic = semanticResults.filter(r =>
-                    !keywordMarkerIds.has(r.markerId) && !noteMarkerIds.has(r.markerId)
-                  );
-                  const hasSemantic = dedupedSemantic.length > 0;
-
-                  if (!hasMarkers && !hasNotes && !hasSemantic && !isNoteSearching && !isSemanticSearching) {
-                    return <div className="marker-list-empty">未找到匹配 "{markerListSearch}" 的结果</div>;
-                  }
-
-                  const displayedMarkers = filteredMarkers.slice(0, 10);
-                  const displayedNotes = noteSearchResults.slice(0, 10);
-                  const displayedSemantic = dedupedSemantic.slice(0, 10);
-                  const totalDisplayed = displayedMarkers.length + displayedNotes.length + displayedSemantic.length;
-
-                  const handleSearchKeyDown = (e) => {
-                    if (totalDisplayed === 0) return;
-                    if (e.key === 'ArrowDown') {
-                      e.preventDefault();
-                      setSearchFocusIndex(prev => {
-                        const next = Math.min(prev + 1, totalDisplayed - 1);
-                        const el = searchResultsRef.current?.querySelector(`[data-index="${next}"]`);
-                        el?.scrollIntoView({ block: 'nearest' });
-                        return next;
-                      });
-                    } else if (e.key === 'ArrowUp') {
-                      e.preventDefault();
-                      setSearchFocusIndex(prev => {
-                        if (prev <= 0) {
-                          document.querySelector('.marker-search')?.focus();
-                          return -1;
-                        }
-                        const next = prev - 1;
-                        const el = searchResultsRef.current?.querySelector(`[data-index="${next}"]`);
-                        el?.scrollIntoView({ block: 'nearest' });
-                        return next;
-                      });
-                    } else if (e.key === 'Enter' && searchFocusIndex >= 0) {
-                      e.preventDefault();
-                      const el = searchResultsRef.current?.querySelector(`[data-index="${searchFocusIndex}"]`);
-                      el?.click();
-                    }
-                  };
-
-                  return (
-                    <div
-                      ref={searchResultsRef}
-                      tabIndex={-1}
-                      className="search-results-grouped"
-                      onKeyDown={handleSearchKeyDown}
-                    >
-                      {/* 标记结果 */}
-                      {hasMarkers && (
-                        <div className="result-group">
-                          <div className="result-group-title">📍 标记 ({filteredMarkers.length})</div>
-                          {displayedMarkers.map((m, idx) => (
-                            <MarkerListItem
-                              key={m.id}
-                              marker={m}
-                              highlight={markerListSearch}
-                              focused={searchFocusIndex === idx}
-                              dataIndex={idx}
-                              allMarkers={markers}
-                              batchMode={batchMode}
-                              selectedPhotos={selectedPhotos}
-                              onPhotoSelect={handlePhotoSelect}
-                              onClick={async () => {
-                                if (batchMode) return; // 批量模式下不响应点击
-                                handleCloseMarkerList();
-                                if (mapRef.current) {
-                                  mapRef.current.flyTo({ center: [m.lng, m.lat], zoom: 15, duration: 1000 });
-                                  setTimeout(async () => {
-                                    const point = mapRef.current.project([m.lng, m.lat]);
-                                    let fullMarker = m;
-                                    if (window.electronAPI?.getMarkerDetail) {
-                                      const detail = await window.electronAPI.getMarkerDetail(m.id);
-                                      if (detail) fullMarker = detail;
-                                    }
-                                    setMarkerMenu({ x: point.x, y: point.y, marker: fullMarker });
-                                  }, 1050);
-                                }
-                              }}
-                            />
-                          ))}
-                          {filteredMarkers.length > 10 && (
-                            <div className="result-more">还有 {filteredMarkers.length - 10} 个结果...</div>
-                          )}
-                        </div>
-                      )}
-
-
-                      {/* 备注结果 */}
-                      {isNoteSearching ? (
-                        <div className="result-group">
-                          <div className="result-group-title">📝 备注</div>
-                          <div className="marker-list-empty"><span className="loading-spinner"></span> 搜索中...</div>
-                        </div>
-                      ) : hasNotes && (
-                        <div className="result-group">
-                          <div className="result-group-title">📝 备注 ({noteSearchResults.length})</div>
-                          {displayedNotes.map((result, i) => {
-                            const noteIdx = displayedMarkers.length + i;
-                            return (
-                              <div
-                                key={`note-${i}`}
-                                data-index={noteIdx}
-                                className={`marker-list-item note-item ${searchFocusIndex === noteIdx ? 'focused' : ''}`}
-                                onClick={async () => {
-                                  handleCloseMarkerList();
-                                  if (mapRef.current) {
-                                    mapRef.current.flyTo({ center: [result.lng, result.lat], zoom: 15, duration: 1000 });
-                                  }
-                                  if (window.electronAPI?.getMarkerDetail) {
-                                    const detail = await window.electronAPI.getMarkerDetail(result.markerId);
-                                    if (detail) {
-                                      const photoIndex = detail.photos.findIndex(p => p.id === result.fileId);
-                                      setPhotoViewer({
-                                        photos: detail.photos,
-                                        index: photoIndex >= 0 ? photoIndex : 0,
-                                        markerId: result.markerId
-                                      });
-                                    }
-                                  }
-                                }}
-                              >
-                                <LazyPhoto photo={result.data ? result : { id: result.fileId || result.id }} className="marker-list-thumb" />
-                                <div className="marker-list-info">
-                                  <div className="marker-list-name">"{highlightText(result.note, markerListSearch)}"</div>
-                                  <div className="marker-list-meta">
-                                    📍 {highlightText(result.markerName || `${result.lat.toFixed(3)}°, ${result.lng.toFixed(3)}°`, markerListSearch)}
-                                  </div>
-                                </div>
-                              </div>
-                            );}
-                          )}
-                          {noteSearchResults.length > 10 && (
-                            <div className="result-more">还有 {noteSearchResults.length - 10} 个结果...</div>
-                          )}
-                        </div>
-                      )}
-
-                      {/* 语义搜索结果 */}
-                      {isSemanticSearching ? (
-                        <div className="result-group">
-                          <div className="result-group-title">🖼️ 内容匹配</div>
-                          <div className="marker-list-empty"><span className="loading-spinner"></span> 分析中...</div>
-                        </div>
-                      ) : hasSemantic && (
-                        <div className="result-group">
-                          <div className="result-group-title">🖼️ 内容匹配 ({semanticResults.length})</div>
-                          {displayedSemantic.map((result, i) => {
-                            const noteIdx = displayedMarkers.length + displayedNotes.length + i;
-                            return (
-                              <div
-                                key={`semantic-${i}`}
-                                data-index={noteIdx}
-                                className={`marker-list-item note-item ${searchFocusIndex === noteIdx ? 'focused' : ''}`}
-                                onClick={async () => {
-                                  handleCloseMarkerList();
-                                  if (mapRef.current) {
-                                    mapRef.current.flyTo({ center: [result.lng, result.lat], zoom: 15, duration: 1000 });
-                                  }
-                                  if (window.electronAPI?.getMarkerDetail) {
-                                    const detail = await window.electronAPI.getMarkerDetail(result.markerId);
-                                    if (detail) {
-                                      const photoIndex = detail.photos.findIndex(p => p.id === result.photoId);
-                                      setPhotoViewer({
-                                        photos: detail.photos,
-                                        index: photoIndex >= 0 ? photoIndex : 0,
-                                        markerId: result.markerId
-                                      });
-                                    }
-                                  }
-                                }}
-                              >
-                                <LazyPhoto photo={{ id: result.photoId }} className="marker-list-thumb" />
-                                <div className="marker-list-info">
-                                  <div className="marker-list-name">
-                                    🖼️ {result.note || result.markerName || '照片'}
-                                  </div>
-                                  <div className="marker-list-meta">
-                                    📍 {result.markerName || `${result.lat.toFixed(3)}°, ${result.lng.toFixed(3)}°`}
-                                    <span className="semantic-score"> 匹配度 {Math.round(result.score * 100)}%</span>
-                                  </div>
-                                </div>
-                              </div>
-                            );}
-                          )}
-                          {semanticResults.length > 10 && (
-                            <div className="result-more">还有 {semanticResults.length - 10} 个结果...</div>
-                          )}
-                        </div>
-                      )}
-                    </div>
-                  );
-                }
-
-                // 无搜索词时，显示完整标记列表
-                if (filteredMarkers.length === 0) {
-                  return <div className="marker-list-empty">暂无标记，点击地图添加</div>;
-                }
-                
-                // 网格布局
-                if (markerListLayout === 'grid') {
-                  return (
-                    <div className="marker-grid-container">
-                      {filteredMarkers.map(m => (
-                        <MarkerGridItem
-                          key={m.id}
-                          marker={m}
-                          allMarkers={markers}
-                          batchMode={batchMode}
-                          selectedPhotos={selectedPhotos}
-                          onPhotoSelect={handlePhotoSelect}
-                          onSetCover={handleSetCover}
-                          onDeletePhoto={handleDeletePhotoFromList}
-                          onAddPhoto={handleAddPhotoToMarker}
-                          onClick={async () => {
-                            handleCloseMarkerList();
-                            if (mapRef.current) {
-                              mapRef.current.flyTo({ center: [m.lng, m.lat], zoom: 15, duration: 1000 });
-                              setTimeout(async () => {
-                                const point = mapRef.current.project([m.lng, m.lat]);
-                                let fullMarker = m;
-                                
-                                if (window.electronAPI?.getMarkerDetail) {
-                                  const detail = await window.electronAPI.getMarkerDetail(m.id);
-                                  if (detail) fullMarker = detail;
-                                } else {
-                                  const photos = await api.photos.getByMarkerId(m.id);
-                                  const sorted = [...photos].sort((a, b) => (a.order ?? 9999) - (b.order ?? 9999));
-                                  fullMarker = {
-                                    ...m,
-                                    photos: sorted,
-                                    photoCount: sorted.length,
-                                    firstPhoto: sorted[0] || null
-                                  };
-                                }
-                                
-                                setMarkerMenu({ x: point.x, y: point.y, marker: fullMarker });
-                              }, 1050);
-                            }
-                          }}
-                        />
-                      ))}
-                    </div>
-                  );
-                }
-                
-                // 列表布局（使用虚拟滚动）
-                const Row = ({ index, style }) => {
-                  const m = filteredMarkers[index];
-                  return (
-                    <div style={style}>
-                      <MarkerListItem 
-                        marker={m}
-                        batchMode={batchMode}
-                        allMarkers={markers}
-                        selectedPhotos={selectedPhotos}
-                        onPhotoSelect={handlePhotoSelect}
-                        onSetCover={handleSetCover}
-                        onDeletePhoto={handleDeletePhotoFromList}
-                        onAddPhoto={handleAddPhotoToMarker}
-                        onClick={async () => {
-                          if (batchMode) return; // 批量模式下不响应点击
-                          handleCloseMarkerList();
-                          if (mapRef.current) {
-                            mapRef.current.flyTo({ center: [m.lng, m.lat], zoom: 15, duration: 1000 });
-                            setTimeout(async () => {
-                              const point = mapRef.current.project([m.lng, m.lat]);
-                              let fullMarker = m;
-                              
-                              // 加载完整的标记数据
-                              if (window.electronAPI?.getMarkerDetail) {
-                                const detail = await window.electronAPI.getMarkerDetail(m.id);
-                                if (detail) fullMarker = detail;
-                              } else {
-                                // Web 环境
-                                const photos = await api.photos.getByMarkerId(m.id);
-                                const sorted = [...photos].sort((a, b) => (a.order ?? 9999) - (b.order ?? 9999));
-                                fullMarker = {
-                                  ...m,
-                                  photos: sorted,
-                                  photoCount: sorted.length,
-                                  firstPhoto: sorted[0] || null
-                                };
-                              }
-                              
-                              setMarkerMenu({ x: point.x, y: point.y, marker: fullMarker });
-                            }, 1050);
-                          }
-                        }}
-                      />
-                    </div>
-                  );
-                };
-                
-                // 使用普通滚动代替虚拟滚动，以支持动态高度
-                return (
-                  <div className="marker-list-scroll">
-                    {filteredMarkers.map(m => (
-                      <MarkerListItem 
-                        key={m.id}
-                        marker={m}
-                        allMarkers={markers}
-                        batchMode={batchMode}
-                        selectedPhotos={selectedPhotos}
-                        onPhotoSelect={handlePhotoSelect}
-                        onSetCover={handleSetCover}
-                        onDeletePhoto={handleDeletePhotoFromList}
-                        onAddPhoto={handleAddPhotoToMarker}
-                        onClick={async () => {
-                          if (batchMode) return;
-                          handleCloseMarkerList();
-                          if (mapRef.current) {
-                            mapRef.current.flyTo({ center: [m.lng, m.lat], zoom: 15, duration: 1000 });
-                            setTimeout(async () => {
-                              const point = mapRef.current.project([m.lng, m.lat]);
-                              let fullMarker = m;
-                              
-                              // 加载完整的标记数据
-                              if (window.electronAPI?.getMarkerDetail) {
-                                const detail = await window.electronAPI.getMarkerDetail(m.id);
-                                if (detail) fullMarker = detail;
-                              } else {
-                                // Web 环境
-                                const photos = await api.photos.getByMarkerId(m.id);
-                                const sorted = [...photos].sort((a, b) => (a.order ?? 9999) - (b.order ?? 9999));
-                                fullMarker = {
-                                  ...m,
-                                  photos: sorted,
-                                  photoCount: sorted.length,
-                                  firstPhoto: sorted[0] || null
-                                };
-                              }
-                              
-                              setMarkerMenu({ x: point.x, y: point.y, marker: fullMarker });
-                            }, 1050);
-                          }
-                        }}
-                      />
-                    ))}
-                  </div>
-                );
-              })()}
-            </div>
-            
-            {/* 批量操作栏 - 固定在底部 */}
-            {batchMode && selectedPhotos.length > 0 && (
-              <div className="batch-actions-bar">
-                <span className="batch-count">已选 {selectedPhotos.length} 张</span>
-                <div className="batch-buttons">
-                  <button 
-                    className="batch-btn batch-merge"
-                    onClick={() => {
-                      if (selectedPhotos.length < 2) {
-                        alert('请至少选择2张照片进行整合');
-                        return;
-                      }
-                      setShowMergeDialog(true);
-                    }}
-                    disabled={selectedPhotos.length < 2}
-                  >
-                    🔗 整合
-                  </button>
-                  <button 
-                    className="batch-btn batch-delete"
-                    onClick={async () => {
-                      if (!confirm(`确定要删除选中的 ${selectedPhotos.length} 张照片吗？`)) return;
-                      
-                      try {
-                        // 按标记分组
-                        const photosByMarker = {};
-                        selectedPhotos.forEach(p => {
-                          if (!photosByMarker[p.markerId]) photosByMarker[p.markerId] = [];
-                          photosByMarker[p.markerId].push(p.photoId);
-                        });
-                        
-                        for (const [markerId, photoIds] of Object.entries(photosByMarker)) {
-                          // 删除每张照片
-                          for (const photoId of photoIds) {
-                            await api.photos.delete(markerId, photoId);
-                          }
-                          // 检查该标记是否还有照片
-                          const remaining = await api.photos.getByMarkerId(markerId);
-                          if (remaining.length === 0) {
-                            // 无照片了，删除标记
-                            await api.markers.delete(markerId);
-                          } else {
-                            // 更新标记的 photoCount 和 firstPhoto
-                            const { webStorage } = await import('./api/index.js');
-                            await webStorage.markers.update(markerId, {
-                              photoCount: remaining.length,
-                              firstPhoto: remaining[0] || null
-                            });
-                          }
-                        }
-                        
-                        // 重新加载标记
-                        await refreshMarkers();
-                        setSelectedPhotos([]);
-                        setBatchMode(false);
-                        showToast('success', `已删除 ${selectedPhotos.length} 张照片`);
-                      } catch (err) {
-                        console.error('批量删除失败:', err);
-                        showToast('error', '删除失败: ' + err.message);
-                      }
-                    }}
-                  >
-                    🗑️ 删除
-                  </button>
-                </div>
-              </div>
-            )}
-          </div>
-          </div>
-        </div>
-      )}
-
-      {/* 整合照片对话框 */}
+{/* 整合照片对话框 */}
       {showMergeDialog && (
         <div className="merge-dialog-overlay" onClick={() => setShowMergeDialog(false)}>
           <div className={`merge-dialog themed-floating-panel theme-${uiThemeStyle}`} onClick={e => e.stopPropagation()}>
