@@ -21,6 +21,7 @@ import { getCurrentUser, logout as authLogout } from './api/auth.js';
 import { useMarkers } from './hooks/useMarkers.js';
 import { usePhotos } from './hooks/usePhotos.js';
 import { useSearch } from './hooks/useSearch.js';
+import SearchBar from './components/map/SearchBar.jsx';
 
 // 如果是Web版本，导入Web样式
 if (!window.electronAPI) {
@@ -184,6 +185,14 @@ function App() {
     searchPlace, selectSearchResult, clearSearchHistory,
     handleSearchInput, handleSearchFocus, handleSearchKeyDown,
   } = useSearch(mapRef);
+
+  // 清除搜索内容
+  const handleClearSearch = useCallback(() => {
+    setSearchQuery('');
+    setSearchResults([]);
+    setShowSearchResults(false);
+    setSelectedResultIndex(-1);
+  }, [setSearchQuery, setSearchResults, setShowSearchResults, setSelectedResultIndex]);
 
   const mapMarkersRef = useRef({});
   const previewMarkerRef = useRef(null);
@@ -1971,99 +1980,22 @@ function App() {
           >
             <span className="globe-village-icon">🌍</span>
           </button>
-          <div className="search-bar-wrapper">
-            <label className="search-bar">
-              <span className="search-icon">🔍</span>
-              <input 
-                type="text"
-                placeholder="搜索地点..."
-                value={searchQuery}
-                onChange={(e) => handleSearchInput(e.target.value)}
-                onFocus={handleSearchFocus}
-                onKeyDown={handleSearchKeyDown}
-                ref={searchInputRef}
-              />
-              {searchQuery && (
-                <button 
-                  type="button"
-                  className="search-clear" 
-                  onClick={(e) => {
-                    e.preventDefault();
-                    setSearchQuery('');
-                    setSearchResults([]);
-                    setShowSearchResults(false);
-                    setSelectedResultIndex(-1);
-                    searchInputRef.current?.focus();
-                  }}
-                >✕</button>
-              )}
-            </label>
-            
-            {/* 搜索结果/历史 */}
-            {showSearchResults && (
-              <div className="search-results">
-              {isSearching ? (
-                <div className="search-loading">
-                  <span className="loading-spinner"></span>搜索中...
-                </div>
-              ) : searchQuery && searchResults.length > 0 ? (
-                searchResults.map((result, i) => (
-                  <div 
-                    key={i} 
-                    className={`search-result-item ${selectedResultIndex === i ? 'selected' : ''}`}
-                    onClick={() => selectSearchResult(result)}
-                    onMouseEnter={() => setSelectedResultIndex(i)}
-                  >
-                    <span className="result-icon">{
-                      result.type?.includes('餐饮') ? '🍽️' :
-                      result.type?.includes('酒店') || result.type?.includes('住宿') ? '🏨' :
-                      result.type?.includes('风景') || result.type?.includes('公园') || result.type?.includes('旅游') ? '🏞️' :
-                      result.type?.includes('医疗') || result.type?.includes('医院') ? '🏥' :
-                      result.type?.includes('学校') || result.type?.includes('教育') ? '🏫' :
-                      result.type?.includes('购物') || result.type?.includes('商场') ? '🛒' :
-                      result.type?.includes('交通') || result.type?.includes('站') || result.type?.includes('地铁') ? '🚉' :
-                      result.type?.includes('银行') || result.type?.includes('金融') ? '🏦' :
-                      result.type?.includes('政府') || result.type?.includes('机关') ? '🏛️' :
-                      result.type?.includes('小区') || result.type?.includes('住宅') ? '🏘️' :
-                      result.type?.includes('写字楼') || result.type?.includes('公司') ? '🏢' :
-                      result.type?.includes('地名') || result.type === 'region' ? '🗺️' : '📍'
-                    }</span>
-                    <div className="result-info">
-                      <div className="result-name">{result.name}</div>
-                      <div className="result-address">{result.address}</div>
-                    </div>
-                    <span className="result-distance">{result.distance}</span>
-                  </div>
-                ))
-              ) : searchQuery ? (
-                <div className="search-empty">未找到 "{searchQuery}" 相关地点</div>
-              ) : searchHistory.length > 0 ? (
-                <>
-                  <div className="search-history-header">
-                    <span>🕐 搜索历史</span>
-                    <button onClick={clearSearchHistory}>清除</button>
-                  </div>
-                  {searchHistory.map((item, i) => (
-                    <div 
-                      key={i} 
-                      className={`search-result-item history-item ${selectedResultIndex === i ? 'selected' : ''}`}
-                      onClick={() => selectSearchResult(item)}
-                      onMouseEnter={() => setSelectedResultIndex(i)}
-                    >
-                      <span className="result-icon">🕐</span>
-                      <div className="result-info">
-                        <div className="result-name">{item.name}</div>
-                        <div className="result-address">{item.address}</div>
-                      </div>
-                    </div>
-                  ))}
-                </>
-              ) : (
-                <div className="search-tip">输入地名、地址搜索</div>
-              )}
-            </div>
-          )}
-          </div>
+          <SearchBar
+            searchQuery={searchQuery}
+            searchResults={searchResults}
+            showSearchResults={showSearchResults}
+            selectedResultIndex={selectedResultIndex}
+            isSearching={isSearching}
+            searchHistory={searchHistory}
+            searchInputRef={searchInputRef}
+            onInputChange={handleSearchInput}
+            onFocus={handleSearchFocus}
+            onKeyDown={handleSearchKeyDown}
+            onSelectResult={selectSearchResult}
+            onClear={handleClearSearch}
+            onClearHistory={clearSearchHistory}
+            onSelectedResultIndexChange={setSelectedResultIndex}
+          />
           
           {/* Web 版本下载按钮 - 搜索栏右侧固定位置 */}
           {isWebVersion && isLoggedIn && (
