@@ -23,6 +23,7 @@ import { usePhotos } from './hooks/usePhotos.js';
 import { useSearch } from './hooks/useSearch.js';
 import SearchBar from './components/map/SearchBar.jsx';
 import Toolbar from './components/map/Toolbar.jsx';
+import NoteEditor from './components/panels/NoteEditor.jsx';
 
 // 如果是Web版本，导入Web样式
 if (!window.electronAPI) {
@@ -3832,9 +3833,10 @@ function App() {
 
 
       {/* 备注编辑器 */}
-      {noteEditor && (
-        <div className="note-editor-overlay" onClick={() => {
-          // 返回到之前的界面
+      <NoteEditor
+        noteEditor={noteEditor}
+        onNoteChange={note => setNoteEditor({ ...noteEditor, note })}
+        onClose={() => {
           if (noteEditor.returnToViewer) {
             setPhotoViewer(noteEditor.returnToViewer);
           } else if (noteEditor.returnToMenu) {
@@ -3844,51 +3846,26 @@ function App() {
             }
           }
           setNoteEditor(null);
-        }}>
-          <div className="note-editor" onClick={e => e.stopPropagation()}>
-            <h3>📝 编辑备注</h3>
-            <textarea 
-              value={noteEditor.note}
-              onChange={e => setNoteEditor({ ...noteEditor, note: e.target.value })}
-              placeholder="输入照片备注..."
-              autoFocus
-            />
-            <div className="note-editor-btns">
-              <button onClick={() => {
-                // 取消时返回
-                if (noteEditor.returnToViewer) {
-                  setPhotoViewer(noteEditor.returnToViewer);
-                } else if (noteEditor.returnToMenu) {
-                  const marker = markers.find(m => m.id === noteEditor.markerId);
-                  if (marker) {
-                    setMarkerMenu({ ...noteEditor.returnToMenu, marker });
-                  }
-                }
-                setNoteEditor(null);
-              }}>取消</button>
-              <button className="save" onClick={() => {
-                savePhotoNote(noteEditor.markerId, noteEditor.photoIndex, noteEditor.note);
-                // 更新数据后返回
-                const marker = markers.find(m => m.id === noteEditor.markerId);
-                if (marker) {
-                  const newPhotos = [...marker.photos];
-                  if (typeof newPhotos[noteEditor.photoIndex] === 'string') {
-                    newPhotos[noteEditor.photoIndex] = { data: newPhotos[noteEditor.photoIndex], note: noteEditor.note };
-                  } else {
-                    newPhotos[noteEditor.photoIndex] = { ...newPhotos[noteEditor.photoIndex], note: noteEditor.note };
-                  }
-                  if (noteEditor.returnToViewer) {
-                    setPhotoViewer({ ...noteEditor.returnToViewer, photos: newPhotos });
-                  } else if (noteEditor.returnToMenu) {
-                    const updatedMarker = { ...marker, photos: newPhotos };
-                    setMarkerMenu({ ...noteEditor.returnToMenu, marker: updatedMarker });
-                  }
-                }
-              }}>保存</button>
-            </div>
-          </div>
-        </div>
-      )}
+        }}
+        onSave={() => {
+          savePhotoNote(noteEditor.markerId, noteEditor.photoIndex, noteEditor.note);
+          const marker = markers.find(m => m.id === noteEditor.markerId);
+          if (marker) {
+            const newPhotos = [...marker.photos];
+            if (typeof newPhotos[noteEditor.photoIndex] === 'string') {
+              newPhotos[noteEditor.photoIndex] = { data: newPhotos[noteEditor.photoIndex], note: noteEditor.note };
+            } else {
+              newPhotos[noteEditor.photoIndex] = { ...newPhotos[noteEditor.photoIndex], note: noteEditor.note };
+            }
+            if (noteEditor.returnToViewer) {
+              setPhotoViewer({ ...noteEditor.returnToViewer, photos: newPhotos });
+            } else if (noteEditor.returnToMenu) {
+              const updatedMarker = { ...marker, photos: newPhotos };
+              setMarkerMenu({ ...noteEditor.returnToMenu, marker: updatedMarker });
+            }
+          }
+        }}
+      />
 
       {/* 备注管理面板 */}
       {notesPanel && (
