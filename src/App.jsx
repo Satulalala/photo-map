@@ -18,6 +18,7 @@ import { usePhotos } from './hooks/usePhotos.js';
 import { useSearch } from './hooks/useSearch.js';
 import { useMap } from './hooks/useMap.js';
 import { useAuth } from './hooks/useAuth.js';
+import { useSync } from './hooks/useSync.js';
 import { useVillage } from './hooks/useVillage.js';
 import { useSettings } from './hooks/useSettings.js';
 import SearchBar from './components/map/SearchBar.jsx';
@@ -134,12 +135,19 @@ function App() {
   const [markerListTimeFilter, setMarkerListTimeFilter] = useState('all'); // 时间过滤: all, week, month, year, custom
   const [markerListTimeRange, setMarkerListTimeRange] = useState({ start: '', end: '' }); // 自定义时间范围
   const [showTimeFilterMenu, setShowTimeFilterMenu] = useState(false); // 显示时间过滤菜单
-  const [toast, setToast] = useState(null); // { type: 'success'|'error'|'info', message }
-  const [isOnline, setIsOnline] = useState(typeof navigator !== 'undefined' ? navigator.onLine : true);
+  const [toast, setToast] = useState(null);
   const [cloudSyncEnabled, setCloudSyncEnabled] = useState(() => syncService.isCloudSyncEnabled());
-  const [syncApiBase, setSyncApiBase] = useState(() => syncService.getApiBase());
-  const [syncingNow, setSyncingNow] = useState(false);
-  const [syncQueueSize, setSyncQueueSize] = useState(() => syncService.getQueueLength());
+
+  const showToast = useCallback((type, message, duration = 2500) => {
+    setToast({ type, message });
+    setTimeout(() => setToast(null), duration);
+  }, []);
+
+  const {
+    isOnline, syncingNow, syncQueueSize, syncApiBase,
+    setSyncingNow, setSyncQueueSize, setSyncApiBase,
+    runCloudSync,
+  } = useSync({ showToast, setMarkers, cloudSyncEnabled });
 
   // 搜索功能 Hook
   const {
@@ -199,12 +207,6 @@ function App() {
     setSyncQueueSize(syncService.getQueueLength());
   }, [markers, cloudSyncEnabled]);
 
-  // Toast 提示
-  const showToast = useCallback((type, message, duration = 2500) => {
-    setToast({ type, message });
-    setTimeout(() => setToast(null), duration);
-  }, []);
-
   // 认证管理 Hook
   const {
     isLoggedIn, userChose, user, showLoginModal, offlinePrompted,
@@ -240,66 +242,10 @@ function App() {
   }, [deleteMarkerByIdBase, showToast]);
 
   useEffect(() => {
-    const onOnline = () => setIsOnline(true);
-    const onOffline = () => setIsOnline(false);
-    window.addEventListener('online', onOnline);
-    window.addEventListener('offline', onOffline);
-    return () => {
-      window.removeEventListener('online', onOnline);
-      window.removeEventListener('offline', onOffline);
-    };
-  }, []);
-
-  useEffect(() => {
     if (isOnline) setOfflinePrompted(false);
   }, [isOnline]);
 
-  const runCloudSync = useCallback(async () => {
-    if (!cloudSyncEnabled || syncingNow) return;
-    try {
-      setSyncingNow(true);
-      const result = await syncService.syncNow({
-        loadLocalMarkers: async () => {
-          if (window.electronAPI?.loadMarkers) return window.electronAPI.loadMarkers();
-          return api.markers.getAll();
-        },
-        onApplyServerMarkers: async (serverMarkers) => {
-          if (window.electronAPI?.addMarker) {
-            for (const m of serverMarkers) {
-              await window.electronAPI.addMarker(m);
-            }
-            const latest = window.electronAPI.loadMarkers
-              ? await window.electronAPI.loadMarkers()
-              : await api.markers.getAll();
-            setMarkers(latest || []);
-          } else {
-            for (const m of serverMarkers) {
-              await api.markers.create(m);
-            }
-            const latest = await api.markers.getAll();
-            setMarkers(latest || []);
-          }
-        }
-      });
-      setSyncQueueSize(syncService.getQueueLength());
-      if (!result.skipped) {
-        showToast('success', `云同步完成：上传${result.pushed}，下载${result.pulled}`);
-      }
-    } catch (e) {
-      showToast('error', `云同步失败：${e.message || '网络异常'}`);
-    } finally {
-      setSyncingNow(false);
-    }
-  }, [cloudSyncEnabled, syncingNow, showToast]);
 
-  useEffect(() => {
-    if (!isOnline || !cloudSyncEnabled) return;
-    runCloudSync();
-    const timer = setInterval(() => {
-      runCloudSync();
-    }, 45000);
-    return () => clearInterval(timer);
-  }, [isOnline, cloudSyncEnabled, runCloudSync]);
 
   function closeMarkerListWithAnimation() {
     if (markerListTransitioning) return;
