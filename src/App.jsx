@@ -16,10 +16,11 @@ import WebDownloadButton from './components/WebDownloadButton.jsx';
 import LazyPhoto from './components/LazyPhoto.jsx';
 import MarkerListItem, { highlightText } from './components/MarkerListItem.jsx';
 import MarkerGridItem from './components/MarkerGridItem.jsx';
-import { initMapbox, gcj02ToWgs84, formatLastSeen } from './utils/mapUtils.js';
+import { initMapbox, formatLastSeen } from './utils/mapUtils.js';
 import { getCurrentUser, logout as authLogout } from './api/auth.js';
 import { useMarkers } from './hooks/useMarkers.js';
 import { usePhotos } from './hooks/usePhotos.js';
+import { useSearch } from './hooks/useSearch.js';
 
 // 如果是Web版本，导入Web样式
 if (!window.electronAPI) {
@@ -136,16 +137,6 @@ function App() {
   const [showTimeFilterMenu, setShowTimeFilterMenu] = useState(false); // 显示时间过滤菜单
   const [isDragOver, setIsDragOver] = useState(false); // 是否正在拖拽文件到菜单
   const [isMarkerDragOver, setIsMarkerDragOver] = useState(false); // 是否正在拖拽文件到标记菜单
-  const [searchQuery, setSearchQuery] = useState(''); // 地图搜索关键词
-  const deferredSearchQuery = useDeferredValue(searchQuery); // 延迟搜索值，避免输入卡顿
-  const [searchResults, setSearchResults] = useState([]); // 搜索结果
-  const [showSearchResults, setShowSearchResults] = useState(false); // 是否显示搜索结果
-  const [isSearching, setIsSearching] = useState(false); // 是否正在搜索
-  const [searchHistory, setSearchHistory] = useState(() => {
-    try { return JSON.parse(localStorage.getItem('searchHistory') || '[]'); } catch { return []; }
-  }); // 搜索历史
-  const [selectedResultIndex, setSelectedResultIndex] = useState(-1); // 键盘选中的结果索引
-  const searchInputRef = useRef(null); // 搜索输入框引用
   const [toast, setToast] = useState(null); // { type: 'success'|'error'|'info', message }
   const [isOnline, setIsOnline] = useState(typeof navigator !== 'undefined' ? navigator.onLine : true);
   const [cloudSyncEnabled, setCloudSyncEnabled] = useState(() => syncService.isCloudSyncEnabled());
@@ -184,6 +175,16 @@ function App() {
   
   const mapContainerRef = useRef(null);
   const mapRef = useRef(null);
+
+  // 搜索功能 Hook
+  const {
+    searchQuery, deferredSearchQuery, searchResults, showSearchResults,
+    isSearching, searchHistory, selectedResultIndex, searchInputRef,
+    setSearchQuery, setSearchResults, setShowSearchResults, setSelectedResultIndex,
+    searchPlace, selectSearchResult, clearSearchHistory,
+    handleSearchInput, handleSearchFocus, handleSearchKeyDown,
+  } = useSearch(mapRef);
+
   const mapMarkersRef = useRef({});
   const previewMarkerRef = useRef(null);
   const userLocationRef = useRef(null);
@@ -1633,155 +1634,11 @@ function App() {
 
   const zoomIn = useCallback(() => mapRef.current?.zoomIn(), []);
   const zoomOut = useCallback(() => mapRef.current?.zoomOut(), []);
-  
-  // 计算两点距离（km）
-  const calcDistance = useCallback((lng1, lat1, lng2, lat2) => {
-    const R = 6371;
-    const dLat = (lat2 - lat1) * Math.PI / 180;
-    const dLng = (lng2 - lng1) * Math.PI / 180;
-    const a = Math.sin(dLat/2) * Math.sin(dLat/2) + Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) * Math.sin(dLng/2) * Math.sin(dLng/2);
-    return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
-  }, []);
-
-  // 高德地图 Web服务 API Key
-  const AMAP_KEY = '9fb3c3f43537ecacd6d0a082958a883c';
-  
-  // 搜索地名 - 高德 POI 搜索 + 输入提示 + 地理编码
-  const searchPlace = useCallback(async (query) => {
-    if (!query.trim()) {
-      setSearchResults([]);
-      return;
-    }
-    
-    setIsSearching(true);
-    setSelectedResultIndex(-1);
-    
-    try {
-      const center = mapRef.current?.getCenter() || { lng: 117, lat: 32 };
-      const controller = new AbortController();
-      const timeoutId = setTimeout(() => controller.abort(), 5000);
-      
-      let results = [];
-      
-      // 1. 使用输入提示 API（更精确，支持模糊匹配）
-      const tipRes = await fetch(
-        `https://restapi.amap.com/v3/assistant/inputtips?key=${AMAP_KEY}&keywords=${encodeURIComponent(query)}&location=${center.lng},${center.lat}&datatype=all`,
-        { signal: controller.signal }
-      );
-      const tipData = await tipRes.json();
-      
-      if (tipData.status === '1' && tipData.tips?.length > 0) {
-        // 过滤掉没有坐标的结果
-        const validTips = tipData.tips.filter(t => t.location && t.location.includes(','));
-        results = validTips.slice(0, 10).map(tip => {
-          const [gcjLng, gcjLat] = tip.location.split(',').map(Number);
-          // GCJ-02 转 WGS-84
-          const { lng, lat } = gcj02ToWgs84(gcjLng, gcjLat);
-          const dist = calcDistance(center.lng, center.lat, lng, lat);
-          return {
-            name: tip.name,
-            address: tip.district || tip.address || '',
-            type: tip.typecode || '',
-            lng, lat,
-            distance: dist < 1 ? `${Math.round(dist * 1000)}m` : `${dist.toFixed(1)}km`
-          };
-        });
-      }
-      
-      // 2. 如果输入提示没结果，用 POI 搜索
-      if (results.length === 0) {
-        const poiRes = await fetch(
-          `https://restapi.amap.com/v3/place/text?key=${AMAP_KEY}&keywords=${encodeURIComponent(query)}&offset=10&extensions=base`,
-          { signal: controller.signal }
-        );
-        const poiData = await poiRes.json();
-        
-        if (poiData.status === '1' && poiData.pois?.length > 0) {
-          results = poiData.pois.map(poi => {
-            const [gcjLng, gcjLat] = poi.location.split(',').map(Number);
-            // GCJ-02 转 WGS-84
-            const { lng, lat } = gcj02ToWgs84(gcjLng, gcjLat);
-            const dist = calcDistance(center.lng, center.lat, lng, lat);
-            return {
-              name: poi.name,
-              address: (poi.pname || '') + (poi.cityname || '') + (poi.adname || ''),
-              type: poi.type || '',
-              lng, lat,
-              distance: dist < 1 ? `${Math.round(dist * 1000)}m` : `${dist.toFixed(1)}km`
-            };
-          });
-        }
-      }
-      
-      // 3. 如果还没结果，用地理编码（搜索城市/地区名）
-      if (results.length === 0) {
-        const geoRes = await fetch(
-          `https://restapi.amap.com/v3/geocode/geo?key=${AMAP_KEY}&address=${encodeURIComponent(query)}`,
-          { signal: controller.signal }
-        );
-        const geoData = await geoRes.json();
-        
-        if (geoData.status === '1' && geoData.geocodes?.length > 0) {
-          results = geoData.geocodes.map(geo => {
-            const [gcjLng, gcjLat] = geo.location.split(',').map(Number);
-            // GCJ-02 转 WGS-84
-            const { lng, lat } = gcj02ToWgs84(gcjLng, gcjLat);
-            const dist = calcDistance(center.lng, center.lat, lng, lat);
-            return {
-              name: geo.formatted_address || query,
-              address: (geo.province || '') + (geo.city || '') + (geo.district || ''),
-              type: 'region',
-              lng, lat,
-              distance: dist < 1 ? `${Math.round(dist * 1000)}m` : `${dist.toFixed(1)}km`
-            };
-          });
-        }
-      }
-      
-      clearTimeout(timeoutId);
-      setSearchResults(results);
-    } catch (e) {
-      if (e.name !== 'AbortError') setSearchResults([]);
-    }
-    
-    setIsSearching(false);
-  }, [calcDistance]);
-  
-  // 使用 useDeferredValue 自动处理搜索延迟
-  useEffect(() => {
-    if (deferredSearchQuery) {
-      searchPlace(deferredSearchQuery);
-    } else {
-      setSearchResults([]);
-    }
-  }, [deferredSearchQuery, searchPlace]);
-
-  // 搜索词变化时重置键盘焦点
-  useEffect(() => {
-    setSearchFocusIndex(-1);
-  }, [markerListSearch]);
-  
-  // 保存搜索历史
-  const saveToHistory = useCallback((result) => {
-    setSearchHistory(prev => {
-      const filtered = prev.filter(h => h.name !== result.name);
-      const newHistory = [{ name: result.name, address: result.address, lng: result.lng, lat: result.lat }, ...filtered].slice(0, 10);
-      localStorage.setItem('searchHistory', JSON.stringify(newHistory));
-      return newHistory;
-    });
-  }, []);
 
   useEffect(() => {
     localStorage.setItem('uiThemeStyle', uiThemeStyle);
   }, [uiThemeStyle]);
-  
-  // 清除搜索历史
-  const clearSearchHistory = useCallback(() => {
-    setSearchHistory([]);
-    localStorage.removeItem('searchHistory');
-  }, []);
-  
-  
+
   // 旋转照片
   const rotatePhoto = useCallback(async (photoId, degrees) => {
     if (!window.electronAPI?.rotatePhoto) return false;
@@ -1796,7 +1653,7 @@ function App() {
     }
     return result;
   }, [showToast]);
-  
+
   // 裁剪照片
   const cropPhoto = useCallback(async (photoId, crop) => {
     if (!window.electronAPI?.cropPhoto) return false;
@@ -1811,56 +1668,7 @@ function App() {
     }
     return result;
   }, [showToast]);
-  
-  const handleSearchInput = (value) => {
-    setSearchQuery(value);
-    setSelectedResultIndex(-1);
-    if (value || searchHistory.length > 0) setShowSearchResults(true);
-  };
-  
-  // 搜索框获得焦点
-  const handleSearchFocus = () => {
-    if (searchQuery || searchHistory.length > 0) setShowSearchResults(true);
-  };
-  
-  // 键盘导航
-  const handleSearchKeyDown = (e) => {
-    const items = searchQuery ? searchResults : searchHistory;
-    if (!items.length) return;
-    
-    if (e.key === 'ArrowDown') {
-      e.preventDefault();
-      setSelectedResultIndex(prev => Math.min(prev + 1, items.length - 1));
-    } else if (e.key === 'ArrowUp') {
-      e.preventDefault();
-      setSelectedResultIndex(prev => Math.max(prev - 1, -1));
-    } else if (e.key === 'Enter' && selectedResultIndex >= 0) {
-      e.preventDefault();
-      selectSearchResult(items[selectedResultIndex]);
-    } else if (e.key === 'Escape') {
-      setShowSearchResults(false);
-      searchInputRef.current?.blur();
-    }
-  };
-  
-  // 选择搜索结果
-  const selectSearchResult = useCallback((result) => {
-    if (mapRef.current) {
-      // 根据类型调整缩放级别
-      let zoom = 17; // 默认：POI/地址级别
-      if (result.type === 'region' || result.type?.includes('省') || result.type?.includes('市')) {
-        zoom = 14; // 省/市级别
-      } else if (result.type?.includes('区') || result.type?.includes('县')) {
-        zoom = 15; // 区/县级别
-      }
-      mapRef.current.flyTo({ center: [result.lng, result.lat], zoom, duration: 1500 });
-    }
-    saveToHistory(result);
-    setShowSearchResults(false);
-    setSearchQuery(result.name);
-    setSelectedResultIndex(-1);
-  }, [saveToHistory]);
-  
+
   const exitMeasureMode = () => {
     setMeasureMode(false);
     measureModeRef.current = false;
