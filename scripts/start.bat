@@ -74,11 +74,12 @@ echo.
 echo  [Web Dev]
 echo  ----------------------------------------
 echo  Starting backend on port 8080...
-start "PhotoMap Backend" cmd /k "cd /d "%~dp0server-java" && mvn spring-boot:run"
+start "PhotoMap Backend" cmd /k "cd /d "%~dp0..\server-java" && mvn spring-boot:run"
 echo  Waiting for backend...
 timeout /t 3 >nul
 echo  Starting frontend on port 3001...
 echo.
+cd /d "%~dp0.."
 npm run web:dev
 goto menu
 
@@ -88,11 +89,12 @@ echo.
 echo  [Desktop Dev]
 echo  ----------------------------------------
 echo  Starting backend on port 8080...
-start "PhotoMap Backend" cmd /k "cd /d "%~dp0server-java" && mvn spring-boot:run"
+start "PhotoMap Backend" cmd /k "cd /d "%~dp0..\server-java" && mvn spring-boot:run"
 echo  Waiting for backend...
 timeout /t 3 >nul
 echo  Starting Electron...
 echo.
+cd /d "%~dp0.."
 npm run dev
 goto menu
 
@@ -103,6 +105,6 @@ echo  [Backend Only]
 echo  ----------------------------------------
 echo  Starting backend on port 8080...
 echo.
-cd /d "%~dp0server-java"
+cd /d "%~dp0..\server-java"
 mvn spring-boot:run
 goto menu
