@@ -57,7 +57,7 @@ function PhotoEditor({
   };
 
   // 裁剪开始
-  const handleMouseDown = (e) => {
+  const handleMouseDown = e => {
     if (e.target.closest('.crop-handle')) return; // 由 handle 自己处理
     
     const bounds = getContainerBounds();
@@ -97,7 +97,7 @@ function PhotoEditor({
   };
 
   // 鼠标移动
-  const handleMouseMove = (e) => {
+  const handleMouseMove = e => {
     if (!isDragging || !dragStartRef.current) return;
     
     const bounds = getContainerBounds();
@@ -126,7 +126,7 @@ function PhotoEditor({
     } else {
       // 角落调整
       const { cropArea: orig } = dragStartRef.current;
-      let newArea = { ...orig };
+      const newArea = { ...orig };
       
       if (dragType.includes('l')) {
         newArea.width = orig.x + orig.width - x;
@@ -196,7 +196,7 @@ function PhotoEditor({
     tempImg.crossOrigin = 'anonymous';
     
     tempImg.onload = async () => {
-      let sw = tempImg.naturalWidth, sh = tempImg.naturalHeight;
+      const sw = tempImg.naturalWidth, sh = tempImg.naturalHeight;
       const actualRotation = getActualRotation();
       const isRotated = actualRotation % 180 !== 0;
       
@@ -232,7 +232,7 @@ function PhotoEditor({
         }
       }
       
-      canvas.toBlob((blob) => {
+      canvas.toBlob(blob => {
         if (!blob) { setSaving(false); return; }
         const url = URL.createObjectURL(blob);
         const link = document.createElement('a');
@@ -311,10 +311,10 @@ function PhotoEditor({
                     <div className="pe-grid-v" style={{ left: '66.66%' }} />
                   </div>
                   {/* 角落手柄 */}
-                  <div className="crop-handle tl" onMouseDown={(e) => handleCornerDown('tl', e)} />
-                  <div className="crop-handle tr" onMouseDown={(e) => handleCornerDown('tr', e)} />
-                  <div className="crop-handle bl" onMouseDown={(e) => handleCornerDown('bl', e)} />
-                  <div className="crop-handle br" onMouseDown={(e) => handleCornerDown('br', e)} />
+                  <div className="crop-handle tl" onMouseDown={e => handleCornerDown('tl', e)} />
+                  <div className="crop-handle tr" onMouseDown={e => handleCornerDown('tr', e)} />
+                  <div className="crop-handle bl" onMouseDown={e => handleCornerDown('bl', e)} />
+                  <div className="crop-handle br" onMouseDown={e => handleCornerDown('br', e)} />
                 </div>
               </>
             )}

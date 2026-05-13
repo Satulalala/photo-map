@@ -26,12 +26,12 @@ export function useSettings() {
   });
   const [cacheStats, setCacheStats] = useState({ count: 0, size: 0 });
 
-  const saveSettings = useCallback((newSettings) => {
+  const saveSettings = useCallback(newSettings => {
     setMapSettings(newSettings);
     localStorage.setItem('mapSettings', JSON.stringify(newSettings));
   }, []);
 
-  const saveTheme = useCallback((theme) => {
+  const saveTheme = useCallback(theme => {
     setUiThemeStyle(theme);
     localStorage.setItem('uiThemeStyle', theme);
   }, []);

@@ -208,12 +208,12 @@ class SEOManager {
     const originalPushState = history.pushState;
     const originalReplaceState = history.replaceState;
 
-    history.pushState = function(...args) {
+    history.pushState = function (...args) {
       originalPushState.apply(history, args);
       setTimeout(checkUrlChange, 0);
     };
 
-    history.replaceState = function(...args) {
+    history.replaceState = function (...args) {
       originalReplaceState.apply(history, args);
       setTimeout(checkUrlChange, 0);
     };
@@ -234,11 +234,11 @@ class SEOManager {
 const seoManager = new SEOManager();
 
 export const useSEO = () => {
-  const updateSEO = (options) => seoManager.updatePageSEO(options);
-  const setPhotoSEO = (photo) => seoManager.setPhotoPageSEO(photo);
+  const updateSEO = options => seoManager.updatePageSEO(options);
+  const setPhotoSEO = photo => seoManager.setPhotoPageSEO(photo);
   const setMapSEO = (location, photoCount) => seoManager.setMapPageSEO(location, photoCount);
-  const setBreadcrumbs = (breadcrumbs) => setBreadcrumbData(breadcrumbs);
-  const setImages = (images) => setImageData(images);
+  const setBreadcrumbs = breadcrumbs => setBreadcrumbData(breadcrumbs);
+  const setImages = images => setImageData(images);
   const getReport = () => getSEOReport();
 
   return { updateSEO, setPhotoSEO, setMapSEO, setBreadcrumbs, setImages, getReport };

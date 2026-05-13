@@ -8,7 +8,7 @@ export function useAuth(showToast) {
   const [showLoginModal, setShowLoginModal] = useState(false);
   const [offlinePrompted, setOfflinePrompted] = useState(false);
 
-  const handleLogin = useCallback((userData) => {
+  const handleLogin = useCallback(userData => {
     setUser(userData);
     setIsLoggedIn(true);
     setUserChose(true);
@@ -31,7 +31,7 @@ export function useAuth(showToast) {
     showToast('info', '已退出登录');
   }, [showToast]);
 
-  const handleEnterMapFromLoader = useCallback((setMapEntered) => {
+  const handleEnterMapFromLoader = useCallback(setMapEntered => {
     if (navigator.onLine) {
       setOfflinePrompted(false);
       setMapEntered(true);

@@ -100,7 +100,7 @@ export function useMarkerListUI({
   }, [closeMarkerListWithAnimation]);
 
   // --- Handler callbacks ---
-  const handleMarkerListSearch = useCallback((val) => {
+  const handleMarkerListSearch = useCallback(val => {
     setMarkerListSearch(val);
     // Note search
     if (val.trim()) {
@@ -130,19 +130,19 @@ export function useMarkerListUI({
     }
   }, []);
 
-  const handleMarkerListSort = useCallback((sortType) => {
+  const handleMarkerListSort = useCallback(sortType => {
     setMarkerListSort(sortType);
   }, []);
 
-  const handleMarkerListLayout = useCallback((layoutType) => {
+  const handleMarkerListLayout = useCallback(layoutType => {
     setMarkerListLayout(layoutType);
   }, []);
 
-  const handleMarkerListTimeFilter = useCallback((filter) => {
+  const handleMarkerListTimeFilter = useCallback(filter => {
     setMarkerListTimeFilter(filter);
   }, []);
 
-  const handleMarkerListTimeRangeChange = useCallback((range) => {
+  const handleMarkerListTimeRangeChange = useCallback(range => {
     setMarkerListTimeRange(range);
   }, []);
 
@@ -151,19 +151,19 @@ export function useMarkerListUI({
     setSelectedPhotos([]);
   }, [batchMode]);
 
-  const handleMarkerListSortMenuToggle = useCallback((show) => {
+  const handleMarkerListSortMenuToggle = useCallback(show => {
     setShowSortMenu(show);
   }, []);
 
-  const handleMarkerListLayoutMenuToggle = useCallback((show) => {
+  const handleMarkerListLayoutMenuToggle = useCallback(show => {
     setShowLayoutMenu(show);
   }, []);
 
-  const handleMarkerListTimeFilterMenuToggle = useCallback((show) => {
+  const handleMarkerListTimeFilterMenuToggle = useCallback(show => {
     setShowTimeFilterMenu(show);
   }, []);
 
-  const handleMarkerListSearchFocusIndexChange = useCallback((indexOrFn) => {
+  const handleMarkerListSearchFocusIndexChange = useCallback(indexOrFn => {
     if (typeof indexOrFn === 'function') {
       setSearchFocusIndex(indexOrFn);
     } else {
@@ -171,7 +171,7 @@ export function useMarkerListUI({
     }
   }, []);
 
-  const handleMarkerListMarkerClick = useCallback(async (m) => {
+  const handleMarkerListMarkerClick = useCallback(async m => {
     if (batchMode) return; // Batch mode doesn't respond to clicks
     handleCloseMarkerList();
     if (mapRef.current) {
@@ -201,7 +201,7 @@ export function useMarkerListUI({
     }
   }, [batchMode]);
 
-  const handleMarkerListNoteClick = useCallback(async (result) => {
+  const handleMarkerListNoteClick = useCallback(async result => {
     handleCloseMarkerList();
     if (mapRef.current) {
       mapRef.current.flyTo({ center: [result.lng, result.lat], zoom: 15, duration: 1000 });
@@ -219,7 +219,7 @@ export function useMarkerListUI({
     }
   }, []);
 
-  const handleMarkerListSemanticClick = useCallback(async (result) => {
+  const handleMarkerListSemanticClick = useCallback(async result => {
     handleCloseMarkerList();
     if (mapRef.current) {
       mapRef.current.flyTo({ center: [result.lng, result.lat], zoom: 15, duration: 1000 });

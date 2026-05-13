@@ -21,7 +21,7 @@ export const webStorage = {
         resolve(this.db);
       };
 
-      request.onupgradeneeded = (event) => {
+      request.onupgradeneeded = event => {
         const db = event.target.result;
 
         if (!db.objectStoreNames.contains('markers')) {
@@ -177,7 +177,7 @@ export const webStorage = {
           const matched = photos.filter(p =>
             p.note?.toLowerCase().includes(lowerKeyword)
           );
-          const enriched = await Promise.all(matched.map(async (p) => {
+          const enriched = await Promise.all(matched.map(async p => {
             try {
               const marker = await webStorage.markers.getById(p.markerId);
               if (marker) {

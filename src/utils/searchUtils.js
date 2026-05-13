@@ -67,7 +67,7 @@ export function getMatchRanges(query, name) {
   const fullPinyin = pyArray.join('');
 
   // 2. 拼音全拼匹配 → 定位对应的中文字符
-  let pyIdx = fullPinyin.indexOf(q);
+  const pyIdx = fullPinyin.indexOf(q);
   if (pyIdx !== -1) {
     let start = 0, end = pyArray.length, accum = 0;
     for (let i = 0; i < pyArray.length; i++) {
@@ -83,7 +83,7 @@ export function getMatchRanges(query, name) {
   // 3. 拼音首字母匹配
   const initials = getPinyinInitials(name);
   if (initials) {
-    let iIdx = initials.indexOf(q);
+    const iIdx = initials.indexOf(q);
     if (iIdx !== -1) {
       ranges.push([iIdx, iIdx + q.length]);
       return ranges;

@@ -198,19 +198,19 @@ export function usePhotoOperations(
   }, [refreshMarkers, showToast, mapMarkersRef]);
 
   // 向已有标记添加照片
-  const handleAddPhotoToMarker = useCallback(async (markerId) => {
+  const handleAddPhotoToMarker = useCallback(async markerId => {
     const input = document.createElement('input');
     input.type = 'file';
     input.accept = 'image/*';
     input.multiple = true;
-    input.onchange = async (e) => {
+    input.onchange = async e => {
       const files = Array.from(e.target.files);
       if (files.length === 0) return;
       showToast('info', '正在添加照片...', 1000);
       try {
         const photoPromises = files.map(file => new Promise(resolve => {
           const reader = new FileReader();
-          reader.onload = (ev) => resolve({ data: ev.target.result, note: '' });
+          reader.onload = ev => resolve({ data: ev.target.result, note: '' });
           reader.onerror = () => resolve(null);
           reader.readAsDataURL(file);
         }));
@@ -239,7 +239,7 @@ export function usePhotoOperations(
   }, [refreshMarkers, showToast]);
 
   // 添加照片标记（必须选择照片）
-  const addPhotoMarker = async (latlng) => {
+  const addPhotoMarker = async latlng => {
     // 立即隐藏右键菜单和预览图钉
     setContextMenu(null);
     setPreviewPin(null);
@@ -301,7 +301,7 @@ export function usePhotoOperations(
       input.type = 'file';
       input.accept = 'image/*';
       input.multiple = true;
-      input.onchange = async (e) => {
+      input.onchange = async e => {
         const files = Array.from(e.target.files);
         if (files.length === 0) {
           setMarkers(prev => prev.filter(m => m.id !== markerId));
@@ -311,9 +311,9 @@ export function usePhotoOperations(
         showToast('info', '正在处理照片...', 1000);
 
         try {
-          const photoPromises = files.map(file => new Promise((resolve) => {
+          const photoPromises = files.map(file => new Promise(resolve => {
             const reader = new FileReader();
-            reader.onload = (e) => resolve({ data: e.target.result, note: '' });
+            reader.onload = e => resolve({ data: e.target.result, note: '' });
             reader.onerror = () => resolve(null);
             reader.readAsDataURL(file);
           }));

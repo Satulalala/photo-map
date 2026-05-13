@@ -73,7 +73,7 @@ export function useMap({
           );
           const data = await res.json();
           if (data.features?.[0]?.place_name) {
-            let place = data.features[0].place_name.replace(/\s*\d{5,6}\s*$/, '').replace(/,\s*$/, '').trim();
+            const place = data.features[0].place_name.replace(/\s*\d{5,6}\s*$/, '').replace(/,\s*$/, '').trim();
             if (place && place.length > 0) {
               return place;
             }
@@ -90,7 +90,7 @@ export function useMap({
           );
           const dataEn = await resEn.json();
           if (dataEn.features?.[0]?.place_name) {
-            let place = dataEn.features[0].place_name.replace(/\s*\d{5,6}\s*$/, '').replace(/,\s*$/, '').trim();
+            const place = dataEn.features[0].place_name.replace(/\s*\d{5,6}\s*$/, '').replace(/,\s*$/, '').trim();
             if (place && place.length > 0) {
               return place;
             }
@@ -173,7 +173,7 @@ export function useMap({
       map.on('dragend', () => setIsDragging(false));
 
       // 点击事件
-      map.on('click', (e) => {
+      map.on('click', e => {
         // 创建涟漪效果
         const ripple = document.createElement('div');
         ripple.className = 'click-ripple';
@@ -290,10 +290,10 @@ export function useMap({
     const R = 6371;
     const dLat = (to[1] - from[1]) * Math.PI / 180;
     const dLon = (to[0] - from[0]) * Math.PI / 180;
-    const a = Math.sin(dLat/2) * Math.sin(dLat/2) +
+    const a = Math.sin(dLat / 2) * Math.sin(dLat / 2) +
               Math.cos(from[1] * Math.PI / 180) * Math.cos(to[1] * Math.PI / 180) *
-              Math.sin(dLon/2) * Math.sin(dLon/2);
-    return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+              Math.sin(dLon / 2) * Math.sin(dLon / 2);
+    return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
   };
 
   // ---- 创建标记元素（带照片预览）----
@@ -349,7 +349,7 @@ export function useMap({
         });
       }
     } else {
-      el.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="32" viewBox="0 0 24 32"><path d="M12 0C5.4 0 0 5.4 0 12c0 9 12 20 12 20s12-11 12-20C24 5.4 18.6 0 12 0z" fill="#ff6b6b"/><circle cx="12" cy="12" r="5" fill="white"/></svg>`;
+      el.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="32" viewBox="0 0 24 32"><path d="M12 0C5.4 0 0 5.4 0 12c0 9 12 20 12 20s12-11 12-20C24 5.4 18.6 0 12 0z" fill="#ff6b6b"/><circle cx="12" cy="12" r="5" fill="white"/></svg>';
     }
     return el;
   }, []);
@@ -389,10 +389,10 @@ export function useMap({
         }
       }
     } else {
-      el.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="32" viewBox="0 0 24 32"><path d="M12 0C5.4 0 0 5.4 0 12c0 9 12 20 12 20s12-11 12-20C24 5.4 18.6 0 12 0z" fill="#ff6b6b"/><circle cx="12" cy="12" r="5" fill="white"/></svg>`;
+      el.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="32" viewBox="0 0 24 32"><path d="M12 0C5.4 0 0 5.4 0 12c0 9 12 20 12 20s12-11 12-20C24 5.4 18.6 0 12 0z" fill="#ff6b6b"/><circle cx="12" cy="12" r="5" fill="white"/></svg>';
     }
 
-    el.addEventListener('click', async (e) => {
+    el.addEventListener('click', async e => {
       e.stopPropagation();
       mapRef.current.flyTo({ center: [m.lng, m.lat], zoom: Math.max(mapRef.current.getZoom(), 15), duration: 800 });
       setTimeout(async () => {

@@ -55,7 +55,7 @@ const MarkerListItem = memo(function MarkerListItem({ marker, onClick, batchMode
   const hasMultiplePhotos = photoCount > 0;
 
   // 展开时加载照片
-  const handleToggleExpand = useCallback(async (e) => {
+  const handleToggleExpand = useCallback(async e => {
     e.stopPropagation();
     if (expanded) {
       setExpanded(false);
@@ -146,7 +146,7 @@ const MarkerListItem = memo(function MarkerListItem({ marker, onClick, batchMode
               >
                 <div
                   className="photo-item-inner"
-                  onClick={(e) => {
+                  onClick={e => {
                     e.stopPropagation();
                     if (batchMode) {
                       onPhotoSelect(marker.id, photo.id, photoIndex);
@@ -184,7 +184,7 @@ const MarkerListItem = memo(function MarkerListItem({ marker, onClick, batchMode
           {!batchMode && (
             <div
               className="photo-item-expanded photo-item-add"
-              onClick={(e) => { e.stopPropagation(); onAddPhoto && onAddPhoto(marker.id); }}
+              onClick={e => { e.stopPropagation(); onAddPhoto && onAddPhoto(marker.id); }}
               title="添加照片"
             >
               <span>＋</span>

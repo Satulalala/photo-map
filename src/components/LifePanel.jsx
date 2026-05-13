@@ -52,7 +52,7 @@ export default function LifePanel({ markers, totalPhotos, user, onClose }) {
 
   const poster = usePoster({ markers, user, stats });
 
-  const goView = (target) => {
+  const goView = target => {
     setViewAnim('exit');
     setTimeout(() => {
       setView(target);

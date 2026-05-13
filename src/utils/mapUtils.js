@@ -41,7 +41,7 @@ export const gcj02ToWgs84 = (lng, lat) => {
   return { lng: lng - dLng, lat: lat - dLat };
 };
 
-export const formatLastSeen = (ts) => {
+export const formatLastSeen = ts => {
   if (!ts) return '时间未知';
   const t = Number(ts);
   if (!Number.isFinite(t)) return '时间未知';

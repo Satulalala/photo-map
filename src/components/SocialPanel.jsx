@@ -41,7 +41,7 @@ function useLifeStats(markers, totalPhotos) {
       totalMarkers: markers.length, totalPhotos,
       visitedCount: visitedProvinces.length, coverage,
       provinceCounts, provincePhotos, provinceCities,
-      sortedProvinces: Object.entries(provinceCounts).sort((a,b) => b[1]-a[1]),
+      sortedProvinces: Object.entries(provinceCounts).sort((a,b) => b[1] - a[1]),
       unvisited,
     };
   }, [markers, totalPhotos]);
@@ -50,9 +50,9 @@ function useLifeStats(markers, totalPhotos) {
 function Breadcrumb({ drillLevel, selectedProvince, onGlobal, onProvince }) {
   return (
     <div className="life-breadcrumb">
-      <span className={drillLevel==='global'?'bc-active':'bc-link'} onClick={onGlobal}>🌍 全球</span>
-      {(drillLevel==='province'||drillLevel==='city') && (<><span className="bc-sep">›</span><span className={drillLevel==='province'?'bc-active':'bc-link'} onClick={onProvince}>🇨🇳 中国</span></>)}
-      {drillLevel==='city' && selectedProvince && (<><span className="bc-sep">›</span><span className="bc-active">{selectedProvince}</span></>)}
+      <span className={drillLevel === 'global' ? 'bc-active' : 'bc-link'} onClick={onGlobal}>🌍 全球</span>
+      {(drillLevel === 'province' || drillLevel === 'city') && (<><span className="bc-sep">›</span><span className={drillLevel === 'province' ? 'bc-active' : 'bc-link'} onClick={onProvince}>🇨🇳 中国</span></>)}
+      {drillLevel === 'city' && selectedProvince && (<><span className="bc-sep">›</span><span className="bc-active">{selectedProvince}</span></>)}
     </div>
   );
 }
@@ -119,7 +119,7 @@ function GlobalView({ stats, bc, onChina, showPoster, setShowPoster, handleCopyL
         <div className="life-globe-card" onClick={() => setShowOverseas(v => !v)}>
           <div className="lgc-icon">🌏</div>
           <div className="lgc-info"><strong>海外</strong><span>{visitedOverseas.length} 个国家已到访</span></div>
-          <span className="lgc-arrow" style={{transform: showOverseas?'rotate(90deg)':'none', transition:'0.2s'}}>›</span>
+          <span className="lgc-arrow" style={{ transform: showOverseas ? 'rotate(90deg)' : 'none', transition:'0.2s' }}>›</span>
         </div>
       </div>
 
@@ -136,7 +136,7 @@ function GlobalView({ stats, bc, onChina, showPoster, setShowPoster, handleCopyL
             ))}
           </div>
           {visitedOverseas.length === 0 && (
-            <div className="empty-hint" style={{paddingTop:8}}><span>✈️</span><p>还没有海外标记，出发探索世界吧！</p></div>
+            <div className="empty-hint" style={{ paddingTop:8 }}><span>✈️</span><p>还没有海外标记，出发探索世界吧！</p></div>
           )}
         </div>
       )}
@@ -160,14 +160,14 @@ function GlobalView({ stats, bc, onChina, showPoster, setShowPoster, handleCopyL
       {showPoster && (
         <div className="poster-overlay" onClick={() => setShowPoster(false)}>
           <div className="poster-card" onClick={e => e.stopPropagation()}>
-            <div className="poster-header"><h2>🌍 我的旅行地图</h2><p>{user?.username||user?.email||'旅行者'} 的足迹</p></div>
+            <div className="poster-header"><h2>🌍 我的旅行地图</h2><p>{user?.username || user?.email || '旅行者'} 的足迹</p></div>
             <div className="poster-stats">
               <div className="poster-stat"><span>{stats.totalMarkers}</span><small>个标记点</small></div>
               <div className="poster-stat"><span>{stats.totalPhotos}</span><small>张照片</small></div>
               <div className="poster-stat"><span>{stats.visitedCount}</span><small>个省份</small></div>
               <div className="poster-stat"><span>{stats.coverage}%</span><small>国土覆盖</small></div>
             </div>
-            {stats.sortedProvinces.length>0&&(<p className="poster-highlight">最常去<strong>{stats.sortedProvinces[0][0]}</strong>，有<strong>{stats.sortedProvinces[0][1]}</strong>个足迹</p>)}
+            {stats.sortedProvinces.length > 0 && (<p className="poster-highlight">最常去<strong>{stats.sortedProvinces[0][0]}</strong>，有<strong>{stats.sortedProvinces[0][1]}</strong>个足迹</p>)}
             <div className="poster-footer"><p>📍 地图相册 · 记录每一个值得纪念的地方</p></div>
             <button className="poster-close" onClick={() => setShowPoster(false)}>✕ 关闭</button>
           </div>
@@ -190,15 +190,15 @@ function ProvinceView({ stats, bc, onCity }) {
           <div className="soc-card"><div className="soc-card-icon">🌏</div><div className="soc-card-value">{stats.coverage}%</div><div className="soc-card-label">覆盖率</div></div>
         </div>
       </div>
-      {stats.sortedProvinces.length>0 && (
+      {stats.sortedProvinces.length > 0 && (
         <div className="social-section">
           <h3>🏆 已到访省份（点击查看城市）</h3>
           <div className="province-drill-list">
             {stats.sortedProvinces.map(([p,count],i) => (
               <div key={p} className="province-drill-item" onClick={() => onCity(p)}>
-                <span className="pdl-rank">{i<3?['🥇','🥈','🥉'][i]:i+1}</span>
+                <span className="pdl-rank">{i < 3 ? ['🥇','🥈','🥉'][i] : i + 1}</span>
                 <span className="pdl-name">{p}</span>
-                <div className="pdl-bar-wrap"><div className="pdl-bar" style={{width:`${Math.min(100,count/stats.sortedProvinces[0][1]*100)}%`}}/></div>
+                <div className="pdl-bar-wrap"><div className="pdl-bar" style={{ width:`${Math.min(100,count / stats.sortedProvinces[0][1] * 100)}%` }}/></div>
                 <span className="pdl-count">{count}个</span>
                 <span className="pdl-arrow">›</span>
               </div>
@@ -206,7 +206,7 @@ function ProvinceView({ stats, bc, onCity }) {
           </div>
         </div>
       )}
-      {stats.unvisited.length>0 && (
+      {stats.unvisited.length > 0 && (
         <div className="social-section">
           <h3>🗺️ 未到访省份</h3>
           <div className="province-tags">{stats.unvisited.map(p => <span key={p} className="province-tag unvisited">{p}</span>)}</div>
@@ -217,28 +217,28 @@ function ProvinceView({ stats, bc, onCity }) {
 }
 
 function CityView({ stats, province, bc }) {
-  const cities = stats.provinceCities[province]||{};
-  const sorted = Object.entries(cities).sort((a,b) => b[1]-a[1]);
+  const cities = stats.provinceCities[province] || {};
+  const sorted = Object.entries(cities).sort((a,b) => b[1] - a[1]);
   return (
     <div className="social-page">
       {bc}
       <div className="social-section">
         <h3>📍 {province} 概览</h3>
         <div className="social-overview-cards">
-          <div className="soc-card"><div className="soc-card-icon">📍</div><div className="soc-card-value">{stats.provinceCounts[province]||0}</div><div className="soc-card-label">标记点</div></div>
-          <div className="soc-card"><div className="soc-card-icon">📷</div><div className="soc-card-value">{stats.provincePhotos[province]||0}</div><div className="soc-card-label">照片</div></div>
+          <div className="soc-card"><div className="soc-card-icon">📍</div><div className="soc-card-value">{stats.provinceCounts[province] || 0}</div><div className="soc-card-label">标记点</div></div>
+          <div className="soc-card"><div className="soc-card-icon">📷</div><div className="soc-card-value">{stats.provincePhotos[province] || 0}</div><div className="soc-card-label">照片</div></div>
           <div className="soc-card"><div className="soc-card-icon">🏙️</div><div className="soc-card-value">{sorted.length}</div><div className="soc-card-label">城市</div></div>
         </div>
       </div>
-      {sorted.length>0 ? (
+      {sorted.length > 0 ? (
         <div className="social-section">
           <h3>🏙️ 城市分布</h3>
           <div className="province-drill-list">
             {sorted.map(([city,count],i) => (
               <div key={city} className="province-drill-item no-arrow">
-                <span className="pdl-rank">{i<3?['🥇','🥈','🥉'][i]:i+1}</span>
+                <span className="pdl-rank">{i < 3 ? ['🥇','🥈','🥉'][i] : i + 1}</span>
                 <span className="pdl-name">{city}</span>
-                <div className="pdl-bar-wrap"><div className="pdl-bar" style={{width:`${Math.min(100,count/sorted[0][1]*100)}%`}}/></div>
+                <div className="pdl-bar-wrap"><div className="pdl-bar" style={{ width:`${Math.min(100,count / sorted[0][1] * 100)}%` }}/></div>
                 <span className="pdl-count">{count}个</span>
               </div>
             ))}
@@ -256,15 +256,15 @@ function LifePage({ markers, totalPhotos, user }) {
   const stats = useLifeStats(markers, totalPhotos);
   const goGlobal = () => { setDrillLevel('global'); setSelectedProvince(null); };
   const goProvince = () => setDrillLevel('province');
-  const goCity = (p) => { setSelectedProvince(p); setDrillLevel('city'); };
+  const goCity = p => { setSelectedProvince(p); setDrillLevel('city'); };
   const handleCopyLink = () => {
-    const link = `${window.location.origin}?invite=${encodeURIComponent(user?.username||'friend')}`;
+    const link = `${window.location.origin}?invite=${encodeURIComponent(user?.username || 'friend')}`;
     navigator.clipboard?.writeText(link).then(() => alert('邀请链接已复制！'));
   };
   const bc = <Breadcrumb drillLevel={drillLevel} selectedProvince={selectedProvince} onGlobal={goGlobal} onProvince={goProvince}/>;
-  if (drillLevel==='global') return <GlobalView stats={stats} bc={bc} onChina={goProvince} showPoster={showPoster} setShowPoster={setShowPoster} handleCopyLink={handleCopyLink} user={user}/>;
-  if (drillLevel==='province') return <ProvinceView stats={stats} bc={bc} onCity={goCity}/>;
-  if (drillLevel==='city' && selectedProvince) return <CityView stats={stats} province={selectedProvince} bc={bc}/>;
+  if (drillLevel === 'global') return <GlobalView stats={stats} bc={bc} onChina={goProvince} showPoster={showPoster} setShowPoster={setShowPoster} handleCopyLink={handleCopyLink} user={user}/>;
+  if (drillLevel === 'province') return <ProvinceView stats={stats} bc={bc} onCity={goCity}/>;
+  if (drillLevel === 'city' && selectedProvince) return <CityView stats={stats} province={selectedProvince} bc={bc}/>;
   return null;
 }
 
@@ -281,8 +281,8 @@ function VillagePage({ onBack, villageMembers }) {
         <div className="village-map-full">
           <div className="village-map-inner">
             <div className="village-map-dots">
-              {[...Array(12)].map((_,i)=>(
-                <div key={i} className="vmap-dot" style={{left:`${10+Math.random()*80}%`,top:`${15+Math.random()*70}%`,animationDelay:`${i*0.3}s`}}/>
+              {[...Array(12)].map((_,i) => (
+                <div key={i} className="vmap-dot" style={{ left:`${10 + Math.random() * 80}%`,top:`${15 + Math.random() * 70}%`,animationDelay:`${i * 0.3}s` }}/>
               ))}
             </div>
             <div className="village-map-hint-inner">
@@ -318,7 +318,7 @@ function VillagePage({ onBack, villageMembers }) {
               {villageMembers.map(m => (
                 <div key={m.id} className="friend-item">
                   <div className="friend-avatar">{m.name[0]}</div>
-                  <div className="friend-info"><strong>{m.name}</strong><small>{m.markers||0} 个标记</small></div>
+                  <div className="friend-info"><strong>{m.name}</strong><small>{m.markers || 0} 个标记</small></div>
                 </div>
               ))}
             </div>

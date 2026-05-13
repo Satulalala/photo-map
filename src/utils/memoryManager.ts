@@ -39,7 +39,7 @@ export function getCacheStats(): {
   thumbnail: number;
   placeholder: number;
   total: number;
-} {
+  } {
   return {
     photoUrl: photoUrlCache.size,
     thumbnail: thumbnailCache.size,

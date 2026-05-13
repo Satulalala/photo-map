@@ -42,7 +42,7 @@ function setQueue(queue) {
 }
 
 function sanitizeMarkers(markers) {
-  return (markers || []).map((m) => ({
+  return (markers || []).map(m => ({
     id: m.id,
     lat: m.lat,
     lng: m.lng,
@@ -50,7 +50,7 @@ function sanitizeMarkers(markers) {
     createdAt: m.createdAt || now(),
     updatedAt: m.updatedAt || m.createdAt || now(),
     photoCount: m.photoCount ?? m.photos?.length ?? 0,
-    photos: (m.photos || []).map((p) => ({
+    photos: (m.photos || []).map(p => ({
       id: p.id,
       note: p.note || '',
       createdAt: p.createdAt || now(),

@@ -69,7 +69,7 @@ class PWAManager {
       this.onNetworkChange(false);
     });
 
-    window.addEventListener('beforeinstallprompt', (event) => {
+    window.addEventListener('beforeinstallprompt', event => {
       event.preventDefault();
       this.installPrompt = event;
       showInstallButton(() => this.promptInstall());
@@ -81,7 +81,7 @@ class PWAManager {
       this.trackEvent('pwa_installed');
     });
 
-    navigator.serviceWorker.addEventListener('message', (event) => {
+    navigator.serviceWorker.addEventListener('message', event => {
       this.handleServiceWorkerMessage(event.data);
     });
   }
@@ -154,9 +154,9 @@ class PWAManager {
   async getCacheSize() {
     if (!this.registration) return null;
 
-    return new Promise((resolve) => {
+    return new Promise(resolve => {
       const messageChannel = new MessageChannel();
-      messageChannel.port1.onmessage = (event) => {
+      messageChannel.port1.onmessage = event => {
         if (event.data.type === 'CACHE_SIZE') {
           resolve(event.data.payload);
         }
@@ -168,9 +168,9 @@ class PWAManager {
   async clearCache() {
     if (!this.registration) return;
 
-    return new Promise((resolve) => {
+    return new Promise(resolve => {
       const messageChannel = new MessageChannel();
-      messageChannel.port1.onmessage = (event) => {
+      messageChannel.port1.onmessage = event => {
         if (event.data.type === 'CACHE_CLEARED') {
           resolve();
         }
@@ -182,9 +182,9 @@ class PWAManager {
   async cacheUrls(urls) {
     if (!this.registration) return;
 
-    return new Promise((resolve) => {
+    return new Promise(resolve => {
       const messageChannel = new MessageChannel();
-      messageChannel.port1.onmessage = (event) => {
+      messageChannel.port1.onmessage = event => {
         if (event.data.type === 'URLS_CACHED') {
           resolve();
         }

@@ -28,7 +28,7 @@ export function useSync({ showToast, setMarkers, cloudSyncEnabled }) {
           if (window.electronAPI?.loadMarkers) return window.electronAPI.loadMarkers();
           return api.markers.getAll();
         },
-        onApplyServerMarkers: async (serverMarkers) => {
+        onApplyServerMarkers: async serverMarkers => {
           if (window.electronAPI?.addMarker) {
             for (const m of serverMarkers) {
               await window.electronAPI.addMarker(m);

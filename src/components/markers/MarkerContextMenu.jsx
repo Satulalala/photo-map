@@ -35,25 +35,25 @@ export default function MarkerContextMenu({
             left: Math.min(contextMenu.x, window.innerWidth - 280),
             top: Math.min(contextMenu.y, window.innerHeight - 200),
           }}
-          onDragEnter={(e) => {
+          onDragEnter={e => {
             e.preventDefault();
             e.stopPropagation();
             setIsDragOver(true);
           }}
-          onDragOver={(e) => {
+          onDragOver={e => {
             e.preventDefault();
             e.stopPropagation();
             e.dataTransfer.dropEffect = 'copy';
             setIsDragOver(true);
           }}
-          onDragLeave={(e) => {
+          onDragLeave={e => {
             e.preventDefault();
             e.stopPropagation();
             if (!e.currentTarget.contains(e.relatedTarget)) {
               setIsDragOver(false);
             }
           }}
-          onDrop={async (e) => {
+          onDrop={async e => {
             e.preventDefault();
             e.stopPropagation();
             setIsDragOver(false);
@@ -64,9 +64,9 @@ export default function MarkerContextMenu({
             if (files.length === 0) return;
 
             const photos = await Promise.all(files.map(file => {
-              return new Promise((resolve) => {
+              return new Promise(resolve => {
                 const reader = new FileReader();
-                reader.onload = async (ev) => {
+                reader.onload = async ev => {
                   if (window.electronAPI) {
                     const result = await window.electronAPI.savePhotoFromBase64(ev.target.result);
                     resolve(result ? { id: result.id, note: '' } : null);
@@ -124,25 +124,25 @@ export default function MarkerContextMenu({
             left: Math.min(markerMenu.x, window.innerWidth - 280),
             top: Math.min(markerMenu.y, window.innerHeight - 320),
           }}
-          onDragEnter={(e) => {
+          onDragEnter={e => {
             e.preventDefault();
             e.stopPropagation();
             setIsMarkerDragOver(true);
           }}
-          onDragOver={(e) => {
+          onDragOver={e => {
             e.preventDefault();
             e.stopPropagation();
             e.dataTransfer.dropEffect = 'copy';
             setIsMarkerDragOver(true);
           }}
-          onDragLeave={(e) => {
+          onDragLeave={e => {
             e.preventDefault();
             e.stopPropagation();
             if (!e.currentTarget.contains(e.relatedTarget)) {
               setIsMarkerDragOver(false);
             }
           }}
-          onDrop={async (e) => {
+          onDrop={async e => {
             e.preventDefault();
             e.stopPropagation();
             setIsMarkerDragOver(false);
@@ -155,9 +155,9 @@ export default function MarkerContextMenu({
             showToast('info', '正在处理照片...', 1000);
 
             const photos = await Promise.all(files.map(file => {
-              return new Promise((resolve) => {
+              return new Promise(resolve => {
                 const reader = new FileReader();
-                reader.onload = async (ev) => {
+                reader.onload = async ev => {
                   if (window.electronAPI) {
                     const result = await window.electronAPI.savePhotoFromBase64(ev.target.result);
                     resolve(result ? { id: result.id, data: ev.target.result, note: '' } : null);
@@ -180,10 +180,10 @@ export default function MarkerContextMenu({
                 const newMarkers = prev.map(m =>
                   m.id === currentMenu.marker.id
                     ? {
-                        ...m,
-                        photoCount: (m.photoCount || 0) + validPhotos.length,
-                        firstPhoto: m.firstPhoto || validPhotos[0]
-                      }
+                      ...m,
+                      photoCount: (m.photoCount || 0) + validPhotos.length,
+                      firstPhoto: m.firstPhoto || validPhotos[0]
+                    }
                     : m
                 );
                 return newMarkers;
@@ -216,10 +216,10 @@ export default function MarkerContextMenu({
               setMarkers(prev => prev.map(m =>
                 m.id === updatedMarker.id
                   ? {
-                      ...m,
-                      photoCount: updatedMarker.photoCount,
-                      firstPhoto: updatedMarker.firstPhoto
-                    }
+                    ...m,
+                    photoCount: updatedMarker.photoCount,
+                    firstPhoto: updatedMarker.firstPhoto
+                  }
                   : m
               ));
 
@@ -279,10 +279,10 @@ export default function MarkerContextMenu({
                         const newMarkers = prev.map(m =>
                           m.id === currentMenu.marker.id
                             ? {
-                                ...m,
-                                photoCount: (m.photoCount || 0) + photos.length,
-                                firstPhoto: m.firstPhoto || newPhotos[0]
-                              }
+                              ...m,
+                              photoCount: (m.photoCount || 0) + photos.length,
+                              firstPhoto: m.firstPhoto || newPhotos[0]
+                            }
                             : m
                         );
                         return newMarkers;
@@ -303,7 +303,7 @@ export default function MarkerContextMenu({
                     input.type = 'file';
                     input.accept = 'image/*';
                     input.multiple = true;
-                    input.onchange = async (e) => {
+                    input.onchange = async e => {
                       const files = Array.from(e.target.files);
                       if (files.length === 0) return;
 
@@ -311,9 +311,9 @@ export default function MarkerContextMenu({
 
                       try {
                         const photoPromises = files.map(file => {
-                          return new Promise((resolve) => {
+                          return new Promise(resolve => {
                             const reader = new FileReader();
-                            reader.onload = (e) => {
+                            reader.onload = e => {
                               resolve({
                                 data: e.target.result,
                                 note: ''
@@ -343,10 +343,10 @@ export default function MarkerContextMenu({
                           const newMarkers = prev.map(m =>
                             m.id === updatedMarker.id
                               ? {
-                                  ...m,
-                                  photoCount: updatedMarker.photoCount,
-                                  firstPhoto: updatedMarker.firstPhoto
-                                }
+                                ...m,
+                                photoCount: updatedMarker.photoCount,
+                                firstPhoto: updatedMarker.firstPhoto
+                              }
                               : m
                           );
                           return newMarkers;

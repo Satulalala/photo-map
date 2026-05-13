@@ -87,7 +87,7 @@ export default function usePoster({ markers, user, stats }) {
     setDraggingPhotoUrl(url);
   }, []);
 
-  const handlePostcardDrop = useCallback((e) => {
+  const handlePostcardDrop = useCallback(e => {
     e.preventDefault();
     const url = e.dataTransfer.getData('text/plain') || draggingPhotoUrl;
     if (url) setPostcardDroppedPhoto(url);
@@ -95,7 +95,7 @@ export default function usePoster({ markers, user, stats }) {
     setDraggingPhotoUrl('');
   }, [draggingPhotoUrl]);
 
-  const handleTogglePosterPhoto = useCallback((url) => {
+  const handleTogglePosterPhoto = useCallback(url => {
     setSelectedPosterPhotos(prev => {
       if (prev.includes(url)) return prev.filter(i => i !== url);
       if (prev.length >= 5) return prev;
@@ -126,7 +126,7 @@ export default function usePoster({ markers, user, stats }) {
     const ctx = canvas.getContext('2d');
     if (!ctx) return;
 
-    const loadImage = (src) => new Promise((resolve, reject) => {
+    const loadImage = src => new Promise((resolve, reject) => {
       const img = new Image();
       img.crossOrigin = 'anonymous';
       img.onload = () => resolve(img);

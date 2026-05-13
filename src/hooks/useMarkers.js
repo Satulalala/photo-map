@@ -36,7 +36,7 @@ export function useMarkers() {
     }
   }, []);
 
-  const deleteMarkerById = useCallback(async (id) => {
+  const deleteMarkerById = useCallback(async id => {
     if (!window.confirm('确定要删除这个标记点吗？\n删除后无法恢复。')) return false;
     if (window.electronAPI) {
       await window.electronAPI.deleteMarker(id);

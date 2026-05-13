@@ -9,7 +9,7 @@ export function usePhotos() {
   const [noteEditor, setNoteEditor] = useState(null);
   const [notesPanel, setNotesPanel] = useState(null);
 
-  const getPhotoUrl = useCallback(async (photo) => {
+  const getPhotoUrl = useCallback(async photo => {
     if (!photo) return null;
     // 旧格式：直接是base64字符串
     if (typeof photo === 'string') return photo;
@@ -31,7 +31,7 @@ export function usePhotos() {
   }, []);
 
   // 同步获取照片URL（用于已缓存的情况）
-  const getPhotoUrlSync = useCallback((photo) => {
+  const getPhotoUrlSync = useCallback(photo => {
     if (!photo) return '';
     if (typeof photo === 'string') return photo;
     if (photo.data && photo.data.startsWith('data:')) return photo.data;
@@ -40,7 +40,7 @@ export function usePhotos() {
   }, []);
 
   // 获取照片备注
-  const getPhotoNote = useCallback((photo) => typeof photo === 'string' ? '' : (photo.note || ''), []);
+  const getPhotoNote = useCallback(photo => typeof photo === 'string' ? '' : (photo.note || ''), []);
 
   // 加载当前查看的照片
   useEffect(() => {

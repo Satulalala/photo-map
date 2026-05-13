@@ -42,7 +42,7 @@ export default function SearchBar({
           type="text"
           placeholder="搜索地点..."
           value={searchQuery}
-          onChange={(e) => onInputChange(e.target.value)}
+          onChange={e => onInputChange(e.target.value)}
           onFocus={onFocus}
           onKeyDown={onKeyDown}
           ref={searchInputRef}
@@ -51,7 +51,7 @@ export default function SearchBar({
           <button
             type="button"
             className="search-clear"
-            onClick={(e) => {
+            onClick={e => {
               e.preventDefault();
               onClear();
               searchInputRef.current?.focus();
@@ -65,7 +65,7 @@ export default function SearchBar({
         <div className="search-results">
           {isSearching ? (
             <div className="search-loading">
-              <span className="loading-spinner"></span>搜索中...
+              <span className="loading-spinner" />搜索中...
             </div>
           ) : searchQuery && searchResults.length > 0 ? (
             searchResults.map((result, i) => (

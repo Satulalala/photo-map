@@ -61,7 +61,7 @@ const LoginButtons = ({ onLogin, onSkip, onLogout, isLoggedIn, showButtons, user
   };
 
   // 邮箱登录/注册提交
-  const handleEmailSubmit = async (e) => {
+  const handleEmailSubmit = async e => {
     e.preventDefault();
     setError('');
     setSuccessMsg('');
@@ -105,7 +105,7 @@ const LoginButtons = ({ onLogin, onSkip, onLogout, isLoggedIn, showButtons, user
   };
 
   // 忘记密码提交
-  const handleForgotSubmit = async (e) => {
+  const handleForgotSubmit = async e => {
     e.preventDefault();
     setError('');
     setSuccessMsg('');

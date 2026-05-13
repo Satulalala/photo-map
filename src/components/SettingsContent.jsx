@@ -53,7 +53,7 @@ export default function SettingsContent({
                       {user.email ? user.email[0].toUpperCase() : 'U'}
                     </span>
                   ) : (
-                    <span style={{fontSize:'28px'}}>👤</span>
+                    <span style={{ fontSize:'28px' }}>👤</span>
                   )}
                 </div>
                 <div className="user-info">
@@ -63,7 +63,7 @@ export default function SettingsContent({
                   <div className="user-type">
                     {user.type === 'github' && <span className="badge badge-github">GitHub 账号</span>}
                     {user.type === 'email' && <span className="badge badge-email">📧 邮箱账号</span>}
-                    {(!user.type || user.type === 'guest') && <span className="badge" style={{background:'#f3f4f6',color:'#6b7280'}}>👤 游客</span>}
+                    {(!user.type || user.type === 'guest') && <span className="badge" style={{ background:'#f3f4f6',color:'#6b7280' }}>👤 游客</span>}
                   </div>
                   {user.email && <div className="user-email">{user.email}</div>}
                   {user.type === 'github' && user.username && <div className="user-email">@{user.username}</div>}
@@ -145,7 +145,7 @@ export default function SettingsContent({
                       checked={cloudSyncEnabled}
                       onChange={e => onCloudSyncChange(e.target.checked)}
                     />
-                    <span className="slider"></span>
+                    <span className="slider" />
                   </label>
                 </div>
                 <div className="setting-row">
@@ -156,7 +156,7 @@ export default function SettingsContent({
                   <input
                     style={{ width: '280px', maxWidth: '42%', minWidth: '180px', height: '34px', borderRadius: '8px', border: '1px solid #ddd', padding: '0 10px' }}
                     value={syncApiBase}
-                    onChange={(e) => onSyncApiBaseChange(e.target.value)}
+                    onChange={e => onSyncApiBaseChange(e.target.value)}
                   />
                 </div>
                 <div className="action-buttons">
@@ -234,8 +234,8 @@ export default function SettingsContent({
                 <span>平滑地图边缘，提升画质但会增加GPU负担</span>
               </div>
               <label className="switch">
-                <input type="checkbox" checked={tempSettings.antialias} onChange={e => onTempSettingsChange(s => ({...s, antialias: e.target.checked}))} />
-                <span className="slider"></span>
+                <input type="checkbox" checked={tempSettings.antialias} onChange={e => onTempSettingsChange(s => ({ ...s, antialias: e.target.checked }))} />
+                <span className="slider" />
               </label>
             </div>
           </div>
@@ -248,8 +248,8 @@ export default function SettingsContent({
                 <span>右键拖动可旋转地图视角</span>
               </div>
               <label className="switch">
-                <input type="checkbox" checked={tempSettings.dragRotate} onChange={e => onTempSettingsChange(s => ({...s, dragRotate: e.target.checked}))} />
-                <span className="slider"></span>
+                <input type="checkbox" checked={tempSettings.dragRotate} onChange={e => onTempSettingsChange(s => ({ ...s, dragRotate: e.target.checked }))} />
+                <span className="slider" />
               </label>
             </div>
             <div className="setting-row">
@@ -258,8 +258,8 @@ export default function SettingsContent({
                 <span>左右无限滚动，显示多个地球副本</span>
               </div>
               <label className="switch">
-                <input type="checkbox" checked={tempSettings.renderWorldCopies} onChange={e => onTempSettingsChange(s => ({...s, renderWorldCopies: e.target.checked}))} />
-                <span className="slider"></span>
+                <input type="checkbox" checked={tempSettings.renderWorldCopies} onChange={e => onTempSettingsChange(s => ({ ...s, renderWorldCopies: e.target.checked }))} />
+                <span className="slider" />
               </label>
             </div>
           </div>
@@ -272,7 +272,7 @@ export default function SettingsContent({
                 <span>数值越小可以看到越大范围</span>
               </div>
               <div className="range-control">
-                <input type="range" min="0" max="5" step="1" value={tempSettings.minZoom} onChange={e => onTempSettingsChange(s => ({...s, minZoom: Number(e.target.value)}))} />
+                <input type="range" min="0" max="5" step="1" value={tempSettings.minZoom} onChange={e => onTempSettingsChange(s => ({ ...s, minZoom: Number(e.target.value) }))} />
                 <span className="range-value">{tempSettings.minZoom}</span>
               </div>
             </div>
@@ -282,7 +282,7 @@ export default function SettingsContent({
                 <span>数值越大可以看到越详细</span>
               </div>
               <div className="range-control">
-                <input type="range" min="15" max="22" step="1" value={tempSettings.maxZoom} onChange={e => onTempSettingsChange(s => ({...s, maxZoom: Number(e.target.value)}))} />
+                <input type="range" min="15" max="22" step="1" value={tempSettings.maxZoom} onChange={e => onTempSettingsChange(s => ({ ...s, maxZoom: Number(e.target.value) }))} />
                 <span className="range-value">{tempSettings.maxZoom}</span>
               </div>
             </div>
@@ -303,7 +303,7 @@ export default function SettingsContent({
                 <span>地图瓦片加载时的淡入动画时长，0为立即显示</span>
               </div>
               <div className="range-control wide">
-                <input type="range" min="0" max="500" step="50" value={tempSettings.fadeDuration} onChange={e => onTempSettingsChange(s => ({...s, fadeDuration: Number(e.target.value)}))} />
+                <input type="range" min="0" max="500" step="50" value={tempSettings.fadeDuration} onChange={e => onTempSettingsChange(s => ({ ...s, fadeDuration: Number(e.target.value) }))} />
                 <span className="range-value">{tempSettings.fadeDuration}ms</span>
               </div>
             </div>
@@ -317,7 +317,7 @@ export default function SettingsContent({
                 <span>内存中缓存的地图瓦片数量，越大越流畅但占用更多内存</span>
               </div>
               <div className="range-control wide">
-                <input type="range" min="1000" max="6000" step="500" value={tempSettings.maxTileCacheSize} onChange={e => onTempSettingsChange(s => ({...s, maxTileCacheSize: Number(e.target.value)}))} />
+                <input type="range" min="1000" max="6000" step="500" value={tempSettings.maxTileCacheSize} onChange={e => onTempSettingsChange(s => ({ ...s, maxTileCacheSize: Number(e.target.value) }))} />
                 <span className="range-value">{tempSettings.maxTileCacheSize}</span>
               </div>
             </div>
@@ -339,11 +339,11 @@ export default function SettingsContent({
             <h3>应用信息</h3>
             <div className="setting-row">
               <div className="setting-label"><strong>应用名称</strong></div>
-              <span style={{color:'var(--text-secondary)',fontSize:'14px'}}>地图相册</span>
+              <span style={{ color:'var(--text-secondary)',fontSize:'14px' }}>地图相册</span>
             </div>
             <div className="setting-row">
               <div className="setting-label"><strong>当前版本</strong></div>
-              <span style={{color:'var(--text-secondary)',fontSize:'14px'}}>v1.0.0</span>
+              <span style={{ color:'var(--text-secondary)',fontSize:'14px' }}>v1.0.0</span>
             </div>
           </div>
 

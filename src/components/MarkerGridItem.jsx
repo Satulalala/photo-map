@@ -47,7 +47,7 @@ const MarkerGridItem = memo(function MarkerGridItem({ marker, onClick, batchMode
             {(hasMultiplePhotos || photoCount > 0) && (
               <button
                 className="grid-expand-btn"
-                onClick={(e) => {
+                onClick={e => {
                   e.stopPropagation();
                   setExpanded(!expanded);
                 }}
@@ -77,7 +77,7 @@ const MarkerGridItem = memo(function MarkerGridItem({ marker, onClick, batchMode
               >
                 <div
                   className="photo-item-inner"
-                  onClick={(e) => {
+                  onClick={e => {
                     e.stopPropagation();
                     if (batchMode) {
                       onPhotoSelect(marker.id, photo.id, photoIndex);
@@ -109,7 +109,7 @@ const MarkerGridItem = memo(function MarkerGridItem({ marker, onClick, batchMode
           {!batchMode && (
             <div
               className="photo-item-expanded photo-item-add"
-              onClick={(e) => { e.stopPropagation(); onAddPhoto && onAddPhoto(marker.id); }}
+              onClick={e => { e.stopPropagation(); onAddPhoto && onAddPhoto(marker.id); }}
               title="添加照片"
             >
               <span>＋</span>

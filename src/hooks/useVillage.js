@@ -19,7 +19,7 @@ export function useVillage(markers, user, showToast) {
     if (!user) return [];
 
     const byUser = new Map();
-    markers.forEach((marker) => {
+    markers.forEach(marker => {
       const ownerId = marker.userId || marker.ownerId || marker.createdBy || marker.username || marker.authorId;
       if (!ownerId || ownerId === user.id || ownerId === user.username || ownerId === user.email || hiddenFriendIds.includes(ownerId)) return;
       const prev = byUser.get(ownerId) || {
@@ -136,7 +136,7 @@ export function useVillage(markers, user, showToast) {
     setPendingFriendId('');
   }, [pendingFriendId, manualFriends, villageMembers]);
 
-  const handleChatFriend = useCallback((friendId) => {
+  const handleChatFriend = useCallback(friendId => {
     showToast('info', `暂未接入聊天服务：${friendId}`);
   }, [showToast]);
 

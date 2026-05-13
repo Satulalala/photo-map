@@ -95,7 +95,7 @@ function App() {
   });
 
   const { settingsTab, mapSettings, tempSettings, uiThemeStyle, cacheStats,
-    setSettingsTab, setTempSettings, setUiThemeStyle, setCacheStats,
+    setSettingsTab, setMapSettings, setTempSettings, setUiThemeStyle, setCacheStats,
     saveSettings, saveTheme } = useSettings();
   mapSettingsRef.current = mapSettings;
 
@@ -107,6 +107,12 @@ function App() {
   const [showSettings, setShowSettings] = useState(false);
   const [showSocial, setShowSocial] = useState(false);
   const [showLife, setShowLife] = useState(false);
+
+  const closeContextMenu = useCallback(() => {
+    setContextMenu(null);
+    setPreviewPin(null);
+  }, []);
+
   const {
     showMarkerList, markerListReady, markerListClosing, markerListRect,
     markerListContentHidden, markerBtnReveal, markerManageBtnRef,
@@ -157,13 +163,13 @@ function App() {
     runCloudSync,
   } = useSync({ showToast, setMarkers, cloudSyncEnabled });
 
-  const handleCloudSyncChange = useCallback((enabled) => {
+  const handleCloudSyncChange = useCallback(enabled => {
     setCloudSyncEnabled(enabled);
     syncService.setCloudSyncEnabled(enabled);
     if (enabled) runCloudSync();
   }, [setCloudSyncEnabled, runCloudSync]);
 
-  const handleSyncApiBaseChange = useCallback((url) => {
+  const handleSyncApiBaseChange = useCallback(url => {
     setSyncApiBase(url);
     syncService.setApiBase(url);
   }, [setSyncApiBase]);
@@ -204,7 +210,7 @@ function App() {
     }).catch(() => {});
 
     let hideTimer = null;
-    const unsubscribe = api.photos.onEmbeddingProgress?.((data) => {
+    const unsubscribe = api.photos.onEmbeddingProgress?.(data => {
       if (data.percent >= 100) {
         // 下载完成，2秒后隐藏
         clearTimeout(hideTimer);
@@ -225,7 +231,7 @@ function App() {
   // 数据库版本使用 photoCount 字段，旧版本使用 photos.length
   const totalPhotos = useMemo(() => 
     markers.reduce((sum, m) => sum + (m.photoCount ?? m.photos?.length ?? 0), 0), 
-    [markers]
+  [markers]
   );
 
   useEffect(() => {
@@ -270,7 +276,7 @@ function App() {
   }, [handleLogoutBase, setMapLoaded, setMapEntered]);
 
   // 包装 deleteMarkerById 添加 toast 提示
-  const deleteMarkerById = useCallback(async (id) => {
+  const deleteMarkerById = useCallback(async id => {
     const success = await deleteMarkerByIdBase(id);
     if (success) {
       showToast('success', '标记已删除');
@@ -286,7 +292,7 @@ function App() {
 
   // 全局快捷键
   useEffect(() => {
-    const handleKeyDown = (e) => {
+    const handleKeyDown = e => {
       // 忽略输入框中的按键
       if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return;
       
@@ -385,7 +391,7 @@ function App() {
               );
               const data = await res.json();
               if (data.features?.[0]) {
-                let place = data.features[0].place_name_zh || data.features[0].place_name || '';
+                const place = data.features[0].place_name_zh || data.features[0].place_name || '';
                 const name = place.replace(/\s*\d{5,6}\s*$/, '').replace(/,\s*$/, '');
                 // 更新数据库
                 window.electronAPI.updateMarker({ id: m.id, lat: m.lat, lng: m.lng, name });
@@ -489,7 +495,7 @@ function App() {
         const input = document.createElement('input');
         input.type = 'file';
         input.accept = '.json';
-        input.onchange = async (e) => {
+        input.onchange = async e => {
           try {
             const file = e.target.files[0];
             if (!file) return;
@@ -570,7 +576,7 @@ function App() {
     const timeoutId = setTimeout(() => controller.abort(), 1500); // 1.5秒超时
 
     // 使用高德 IP 定位 API
-    fetch(`https://restapi.amap.com/v3/ip?key=9fb3c3f43537ecacd6d0a082958a883c`, { signal: controller.signal })
+    fetch('https://restapi.amap.com/v3/ip?key=9fb3c3f43537ecacd6d0a082958a883c', { signal: controller.signal })
       .then(r => r.json())
       .then(d => {
         clearTimeout(timeoutId);
@@ -726,7 +732,7 @@ function App() {
           onSkip={handleSkipLogin}
           onLogout={handleLogout}
           isLoggedIn={false}
-          showButtons={true}
+          showButtons
         />
       </>
     );
@@ -740,7 +746,7 @@ function App() {
         <FilmLoader 
           onComplete={() => {}}
           onShowLogin={() => handleEnterMapFromLoader(setMapEntered)}
-          canEnter={true}
+          canEnter
         />
         {/* 右上角退出按钮 */}
         <LoginButtons
@@ -748,7 +754,7 @@ function App() {
           onSkip={handleSkipLogin}
           onLogout={handleLogout}
           user={user}
-          isLoggedIn={true}
+          isLoggedIn
           showButtons={false}
         />
       </>
@@ -760,7 +766,7 @@ function App() {
   // Web 版本样式已在 main-web.jsx 中导入
 
   return (
-      <div className={`app ${isWebVersion ? 'web-app' : ''} ui-theme-${uiThemeStyle}`}>
+    <div className={`app ${isWebVersion ? 'web-app' : ''} ui-theme-${uiThemeStyle}`}>
       
       {/* 无边框窗口拖拽区域 */}
       <div className="window-drag-region" />
@@ -854,7 +860,7 @@ function App() {
         </button>
       )}
 
-            {/* 标记列表面板 */}
+      {/* 标记列表面板 */}
       <MarkerListPanel
         markers={markers}
         show={showMarkerList}
@@ -902,14 +908,14 @@ function App() {
         onBatchMerge={handleMarkerListBatchMerge}
       />
 
-{/* 整合照片对话框 */}
+      {/* 整合照片对话框 */}
       <MergeDialog
         show={showMergeDialog}
         selectedPhotos={selectedPhotos}
         mergeTargetPhoto={mergeTargetPhoto}
         uiThemeStyle={uiThemeStyle}
         markers={markers}
-        onSelectTarget={(selected) => setMergeTargetPhoto(selected)}
+        onSelectTarget={selected => setMergeTargetPhoto(selected)}
         onClose={() => setShowMergeDialog(false)}
         onCancel={() => {
           setShowMergeDialog(false);
@@ -949,7 +955,7 @@ function App() {
         onClose={handleCloseVillage}
         onPendingFriendIdChange={setPendingFriendId}
         onFriendSearchChange={setFriendSearchQuery}
-        onFriendActionToggle={(id) => setFriendActionMenu(v => v === id ? '' : id)}
+        onFriendActionToggle={id => setFriendActionMenu(v => v === id ? '' : id)}
         onAddFriend={handleAddFriend}
         onChatFriend={handleChatFriend}
         onSetPinnedFriendIds={setPinnedFriendIds}

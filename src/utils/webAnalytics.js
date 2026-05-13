@@ -76,7 +76,7 @@ class WebAnalytics {
   }
 
   requestUserConsent() {
-    return new Promise((resolve) => {
+    return new Promise(resolve => {
       const consentModal = document.createElement('div');
       consentModal.innerHTML = `
         <div style="
@@ -161,7 +161,7 @@ class WebAnalytics {
       this.sessionData.viewportSize = `${window.innerWidth}x${window.innerHeight}`;
     });
 
-    window.addEventListener('error', (event) => {
+    window.addEventListener('error', event => {
       this.trackEvent('javascript_error', {
         message: event.message,
         filename: event.filename,
@@ -171,7 +171,7 @@ class WebAnalytics {
       });
     });
 
-    window.addEventListener('unhandledrejection', (event) => {
+    window.addEventListener('unhandledrejection', event => {
       this.trackEvent('unhandled_promise_rejection', {
         reason: event.reason?.toString(),
         stack: event.reason?.stack

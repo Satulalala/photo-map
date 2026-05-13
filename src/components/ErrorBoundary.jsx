@@ -220,7 +220,7 @@ class ErrorBoundary extends React.Component {
 
 // 高阶组件：为组件添加错误边界
 export const withErrorBoundary = (Component, errorBoundaryProps = {}) => {
-  const WrappedComponent = (props) => (
+  const WrappedComponent = props => (
     <ErrorBoundary {...errorBoundaryProps}>
       <Component {...props} />
     </ErrorBoundary>
@@ -268,7 +268,7 @@ export const AsyncErrorBoundary = ({ children, fallback, onError }) => {
   const [asyncError, setAsyncError] = useState(null);
 
   useEffect(() => {
-    const handleUnhandledRejection = (event) => {
+    const handleUnhandledRejection = event => {
       setAsyncError(event.reason);
       if (onError) {
         onError(event.reason, { type: 'unhandledRejection' });

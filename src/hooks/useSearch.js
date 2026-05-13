@@ -38,7 +38,7 @@ export function useSearch(mapRef) {
   const searchInputRef = useRef(null);
 
   // 保存搜索历史
-  const saveToHistory = useCallback((result) => {
+  const saveToHistory = useCallback(result => {
     setSearchHistory(prev => {
       const filtered = prev.filter(h => h.name !== result.name);
       const newHistory = [
@@ -57,7 +57,7 @@ export function useSearch(mapRef) {
   }, []);
 
   // 搜索地名 - 高德 POI 搜索 + 输入提示 + 地理编码
-  const searchPlace = useCallback(async (query) => {
+  const searchPlace = useCallback(async query => {
     if (!query.trim()) {
       setSearchResults([]);
       return;
@@ -167,7 +167,7 @@ export function useSearch(mapRef) {
   }, [deferredSearchQuery, searchPlace]);
 
   // 选择搜索结果
-  const selectSearchResult = useCallback((result) => {
+  const selectSearchResult = useCallback(result => {
     if (mapRef.current) {
       // 根据类型调整缩放级别
       let zoom = 17; // 默认：POI/地址级别
@@ -185,7 +185,7 @@ export function useSearch(mapRef) {
   }, [mapRef, saveToHistory]);
 
   // 搜索输入处理
-  const handleSearchInput = useCallback((value) => {
+  const handleSearchInput = useCallback(value => {
     setSearchQuery(value);
     setSelectedResultIndex(-1);
     if (value || searchHistory.length > 0) setShowSearchResults(true);
@@ -197,7 +197,7 @@ export function useSearch(mapRef) {
   }, [searchQuery, searchHistory.length]);
 
   // 键盘导航
-  const handleSearchKeyDown = useCallback((e) => {
+  const handleSearchKeyDown = useCallback(e => {
     const items = searchQuery ? searchResults : searchHistory;
     if (!items.length) return;
 

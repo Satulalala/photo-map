@@ -147,7 +147,7 @@ export default function MarkerListPanel({
               <div className="dropdown-wrapper">
                 <button
                   className={`toolbar-btn ${showSortMenu ? 'active' : ''}`}
-                  onClick={(e) => {
+                  onClick={e => {
                     e.stopPropagation();
                     onSortMenuToggle(!showSortMenu);
                     onLayoutMenuToggle(false);
@@ -157,7 +157,7 @@ export default function MarkerListPanel({
                   排序方式 ▾
                 </button>
                 {showSortMenu && (
-                  <div className="dropdown-menu" onClick={(e) => e.stopPropagation()}>
+                  <div className="dropdown-menu" onClick={e => e.stopPropagation()}>
                     <div
                       className={`dropdown-item ${markerListSort === 'time' ? 'active' : ''}`}
                       onClick={() => { onSort('time'); onSortMenuToggle(false); }}
@@ -176,7 +176,7 @@ export default function MarkerListPanel({
               <div className="dropdown-wrapper">
                 <button
                   className={`toolbar-btn ${showLayoutMenu ? 'active' : ''}`}
-                  onClick={(e) => {
+                  onClick={e => {
                     e.stopPropagation();
                     onLayoutMenuToggle(!showLayoutMenu);
                     onSortMenuToggle(false);
@@ -186,7 +186,7 @@ export default function MarkerListPanel({
                   布局方式 ▾
                 </button>
                 {showLayoutMenu && (
-                  <div className="dropdown-menu" onClick={(e) => e.stopPropagation()}>
+                  <div className="dropdown-menu" onClick={e => e.stopPropagation()}>
                     <div
                       className={`dropdown-item ${markerListLayout === 'list' ? 'active' : ''}`}
                       onClick={() => { onLayout('list'); onLayoutMenuToggle(false); }}
@@ -205,7 +205,7 @@ export default function MarkerListPanel({
               <div className="dropdown-wrapper">
                 <button
                   className={`toolbar-btn ${showTimeFilterMenu ? 'active' : ''}`}
-                  onClick={(e) => {
+                  onClick={e => {
                     e.stopPropagation();
                     onTimeFilterMenuToggle(!showTimeFilterMenu);
                     onSortMenuToggle(false);
@@ -215,7 +215,7 @@ export default function MarkerListPanel({
                   时间范围 ▾
                 </button>
                 {showTimeFilterMenu && (
-                  <div className="dropdown-menu time-filter-menu" onClick={(e) => e.stopPropagation()}>
+                  <div className="dropdown-menu time-filter-menu" onClick={e => e.stopPropagation()}>
                     <div
                       className={`dropdown-item ${markerListTimeFilter === 'all' ? 'active' : ''}`}
                       onClick={() => { onTimeFilter('all'); onTimeFilterMenuToggle(false); }}
@@ -247,7 +247,7 @@ export default function MarkerListPanel({
                       {markerListTimeFilter === 'custom' ? '✓ ' : ''}自定义时间范围
                     </div>
                     {markerListTimeFilter === 'custom' && (
-                      <div className="custom-date-range" onClick={(e) => e.stopPropagation()}>
+                      <div className="custom-date-range" onClick={e => e.stopPropagation()}>
                         <div className="date-field">
                           <label>从</label>
                           <input
@@ -289,10 +289,10 @@ export default function MarkerListPanel({
             {markersLoading ? (
               [1,2,3,4].map(i => (
                 <div key={i} className="skeleton-list-item">
-                  <div className="skeleton-list-thumb"></div>
+                  <div className="skeleton-list-thumb" />
                   <div className="skeleton-list-info">
-                    <div className="skeleton-text medium"></div>
-                    <div className="skeleton-text short"></div>
+                    <div className="skeleton-text medium" />
+                    <div className="skeleton-text short" />
                   </div>
                 </div>
               ))
@@ -318,7 +318,7 @@ export default function MarkerListPanel({
                 const displayedSemantic = dedupedSemantic.slice(0, 10);
                 const totalDisplayed = displayedMarkers.length + displayedNotes.length + displayedSemantic.length;
 
-                const handleSearchKeyDown = (e) => {
+                const handleSearchKeyDown = e => {
                   if (totalDisplayed === 0) return;
                   if (e.key === 'ArrowDown') {
                     e.preventDefault();
@@ -382,7 +382,7 @@ export default function MarkerListPanel({
                     {isNoteSearching ? (
                       <div className="result-group">
                         <div className="result-group-title">📝 备注</div>
-                        <div className="marker-list-empty"><span className="loading-spinner"></span> 搜索中...</div>
+                        <div className="marker-list-empty"><span className="loading-spinner" /> 搜索中...</div>
                       </div>
                     ) : hasNotes && (
                       <div className="result-group">
@@ -416,7 +416,7 @@ export default function MarkerListPanel({
                     {isSemanticSearching ? (
                       <div className="result-group">
                         <div className="result-group-title">🖼️ 内容匹配</div>
-                        <div className="marker-list-empty"><span className="loading-spinner"></span> 分析中...</div>
+                        <div className="marker-list-empty"><span className="loading-spinner" /> 分析中...</div>
                       </div>
                     ) : hasSemantic && (
                       <div className="result-group">

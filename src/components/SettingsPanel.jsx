@@ -44,7 +44,7 @@ function SettingsPanel({
                   checked={tempSettings.antialias}
                   onChange={e => setTempSettings(s => ({ ...s, antialias: e.target.checked }))}
                 />
-                <span className="slider"></span>
+                <span className="slider" />
               </label>
             </div>
           </div>

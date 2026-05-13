@@ -61,7 +61,7 @@ const MinimalLoader = ({ onComplete, onShowLogin, canEnter = true }) => {
             'horizon-blend': 0.02, 'space-color': 'rgb(11, 11, 25)', 'star-intensity': 0.6
           });
         });
-        map.on('error', (e) => {
+        map.on('error', e => {
           console.warn('Map error:', e);
           // 即使地图出错，也允许继续
           if (phase === 'loading') {
@@ -86,7 +86,7 @@ const MinimalLoader = ({ onComplete, onShowLogin, canEnter = true }) => {
   useEffect(() => {
     const duration = 2500;
     let start = null, frame = null;
-    const animate = (ts) => {
+    const animate = ts => {
       if (!start) start = ts;
       const p = Math.min((ts - start) / duration * 100, 100);
       setProgress(p);
