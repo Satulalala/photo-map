@@ -111,7 +111,23 @@ function App() {
     showMarkerList, markerListReady, markerListClosing, markerListRect,
     markerListContentHidden, markerBtnReveal, markerManageBtnRef,
     handleOpenMarkerList, handleCloseMarkerList, closeMarkerListWithAnimation,
-  } = useMarkerListUI();
+    markerListSort, markerListLayout, showSortMenu, showLayoutMenu,
+    markerListSearch, noteSearchResults, isNoteSearching,
+    semanticResults, isSemanticSearching,
+    embeddingProgress, setEmbeddingProgress,
+    searchFocusIndex, markerListTimeFilter, markerListTimeRange, showTimeFilterMenu,
+    handleMarkerListSearch, handleMarkerListSort, handleMarkerListLayout,
+    handleMarkerListTimeFilter, handleMarkerListTimeRangeChange,
+    handleMarkerListBatchToggle,
+    handleMarkerListSortMenuToggle, handleMarkerListLayoutMenuToggle,
+    handleMarkerListTimeFilterMenuToggle, handleMarkerListSearchFocusIndexChange,
+    handleMarkerListMarkerClick, handleMarkerListNoteClick, handleMarkerListSemanticClick,
+    handleMarkerListBatchDelete, handleMarkerListBatchMerge,
+  } = useMarkerListUI({
+    batchMode, setBatchMode, selectedPhotos, setSelectedPhotos,
+    showToast, setPhotoViewer, mapRef, setMarkerMenu,
+    refreshMarkers, setShowMergeDialog,
+  });
   const [showPhotoInfo, setShowPhotoInfo] = useState(false); // 是否显示照片信息面板
   const [notesEditing, setNotesEditing] = useState(false); // 备注面板是否处于编辑模式
   const [editingNotes, setEditingNotes] = useState([]); // 编辑中的备注临时数据
@@ -120,21 +136,6 @@ function App() {
   const [selectedPhotos, setSelectedPhotos] = useState([]); // 选中的照片 [{markerId, photoId, photoIndex}]
   const [showMergeDialog, setShowMergeDialog] = useState(false); // 整合对话框
   const [mergeTargetPhoto, setMergeTargetPhoto] = useState(null); // 整合目标照片
-  const [markerListSort, setMarkerListSort] = useState('time'); // 排序方式: time, name
-  const [markerListLayout, setMarkerListLayout] = useState('list'); // 布局方式: list, grid
-  const [showSortMenu, setShowSortMenu] = useState(false); // 显示排序菜单
-  const [showLayoutMenu, setShowLayoutMenu] = useState(false); // 显示布局菜单
-  const [markerListSearch, setMarkerListSearch] = useState(''); // 搜索关键词
-  const [noteSearchResults, setNoteSearchResults] = useState([]); // 备注搜索结果
-  const [isNoteSearching, setIsNoteSearching] = useState(false); // 是否正在搜索备注
-  const [semanticResults, setSemanticResults] = useState([]); // 语义搜索结果
-  const [isSemanticSearching, setIsSemanticSearching] = useState(false); // 语义搜索中
-  const [embeddingProgress, setEmbeddingProgress] = useState(null); // 模型下载进度
-  const [searchFocusIndex, setSearchFocusIndex] = useState(-1); // 搜索结果键盘焦点索引
-  const searchResultsRef = useRef(null); // 搜索结果容器 ref
-  const [markerListTimeFilter, setMarkerListTimeFilter] = useState('all'); // 时间过滤: all, week, month, year, custom
-  const [markerListTimeRange, setMarkerListTimeRange] = useState({ start: '', end: '' }); // 自定义时间范围
-  const [showTimeFilterMenu, setShowTimeFilterMenu] = useState(false); // 显示时间过滤菜单
   const [toast, setToast] = useState(null);
   const [cloudSyncEnabled, setCloudSyncEnabled] = useState(() => syncService.isCloudSyncEnabled());
 
@@ -683,194 +684,6 @@ function App() {
     }, 480);
   };
 
-
-  // MarkerListPanel callback functions
-  const handleMarkerListSearch = useCallback((val) => {
-    setMarkerListSearch(val);
-    // Note search
-    if (val.trim()) {
-      setIsNoteSearching(true);
-      api.photos.searchNotes(val).then(results => {
-        setNoteSearchResults(results || []);
-        setIsNoteSearching(false);
-      }).catch(() => {
-        setNoteSearchResults([]);
-        setIsNoteSearching(false);
-      });
-    } else {
-      setNoteSearchResults([]);
-    }
-    // Semantic search
-    if (val.trim()) {
-      setIsSemanticSearching(true);
-      api.photos.searchByContent(val, 20).then(results => {
-        setSemanticResults(results || []);
-        setIsSemanticSearching(false);
-      }).catch(() => {
-        setSemanticResults([]);
-        setIsSemanticSearching(false);
-      });
-    } else {
-      setSemanticResults([]);
-    }
-  }, []);
-
-  const handleMarkerListSort = useCallback((sortType) => {
-    setMarkerListSort(sortType);
-  }, []);
-
-  const handleMarkerListLayout = useCallback((layoutType) => {
-    setMarkerListLayout(layoutType);
-  }, []);
-
-  const handleMarkerListTimeFilter = useCallback((filter) => {
-    setMarkerListTimeFilter(filter);
-  }, []);
-
-  const handleMarkerListTimeRangeChange = useCallback((range) => {
-    setMarkerListTimeRange(range);
-  }, []);
-
-  const handleMarkerListBatchToggle = useCallback(() => {
-    setBatchMode(!batchMode);
-    setSelectedPhotos([]);
-  }, [batchMode]);
-
-  const handleMarkerListSortMenuToggle = useCallback((show) => {
-    setShowSortMenu(show);
-  }, []);
-
-  const handleMarkerListLayoutMenuToggle = useCallback((show) => {
-    setShowLayoutMenu(show);
-  }, []);
-
-  const handleMarkerListTimeFilterMenuToggle = useCallback((show) => {
-    setShowTimeFilterMenu(show);
-  }, []);
-
-  const handleMarkerListSearchFocusIndexChange = useCallback((indexOrFn) => {
-    if (typeof indexOrFn === 'function') {
-      setSearchFocusIndex(indexOrFn);
-    } else {
-      setSearchFocusIndex(indexOrFn);
-    }
-  }, []);
-
-  const handleMarkerListMarkerClick = useCallback(async (m) => {
-    if (batchMode) return; // Batch mode doesn't respond to clicks
-    handleCloseMarkerList();
-    if (mapRef.current) {
-      mapRef.current.flyTo({ center: [m.lng, m.lat], zoom: 15, duration: 1000 });
-      setTimeout(async () => {
-        const point = mapRef.current.project([m.lng, m.lat]);
-        let fullMarker = m;
-
-        // Load complete marker data
-        if (window.electronAPI?.getMarkerDetail) {
-          const detail = await window.electronAPI.getMarkerDetail(m.id);
-          if (detail) fullMarker = detail;
-        } else {
-          // Web environment
-          const photos = await api.photos.getByMarkerId(m.id);
-          const sorted = [...photos].sort((a, b) => (a.order ?? 9999) - (b.order ?? 9999));
-          fullMarker = {
-            ...m,
-            photos: sorted,
-            photoCount: sorted.length,
-            firstPhoto: sorted[0] || null
-          };
-        }
-
-        setMarkerMenu({ x: point.x, y: point.y, marker: fullMarker });
-      }, 1050);
-    }
-  }, [batchMode]);
-
-  const handleMarkerListNoteClick = useCallback(async (result) => {
-    handleCloseMarkerList();
-    if (mapRef.current) {
-      mapRef.current.flyTo({ center: [result.lng, result.lat], zoom: 15, duration: 1000 });
-    }
-    if (window.electronAPI?.getMarkerDetail) {
-      const detail = await window.electronAPI.getMarkerDetail(result.markerId);
-      if (detail) {
-        const photoIndex = detail.photos.findIndex(p => p.id === result.fileId);
-        setPhotoViewer({
-          photos: detail.photos,
-          index: photoIndex >= 0 ? photoIndex : 0,
-          markerId: result.markerId
-        });
-      }
-    }
-  }, []);
-
-  const handleMarkerListSemanticClick = useCallback(async (result) => {
-    handleCloseMarkerList();
-    if (mapRef.current) {
-      mapRef.current.flyTo({ center: [result.lng, result.lat], zoom: 15, duration: 1000 });
-    }
-    if (window.electronAPI?.getMarkerDetail) {
-      const detail = await window.electronAPI.getMarkerDetail(result.markerId);
-      if (detail) {
-        const photoIndex = detail.photos.findIndex(p => p.id === result.photoId);
-        setPhotoViewer({
-          photos: detail.photos,
-          index: photoIndex >= 0 ? photoIndex : 0,
-          markerId: result.markerId
-        });
-      }
-    }
-  }, []);
-
-  const handleMarkerListBatchDelete = useCallback(async () => {
-    if (!confirm(`确定要删除选中的 ${selectedPhotos.length} 张照片吗？`)) return;
-
-    try {
-      // Group by marker
-      const photosByMarker = {};
-      selectedPhotos.forEach(p => {
-        if (!photosByMarker[p.markerId]) photosByMarker[p.markerId] = [];
-        photosByMarker[p.markerId].push(p.photoId);
-      });
-
-      for (const [markerId, photoIds] of Object.entries(photosByMarker)) {
-        // Delete each photo
-        for (const photoId of photoIds) {
-          await api.photos.delete(markerId, photoId);
-        }
-        // Check if marker still has photos
-        const remaining = await api.photos.getByMarkerId(markerId);
-        if (remaining.length === 0) {
-          // No photos left, delete marker
-          await api.markers.delete(markerId);
-        } else {
-          // Update marker's photoCount and firstPhoto
-          const { webStorage } = await import('./api/index.js');
-          await webStorage.markers.update(markerId, {
-            photoCount: remaining.length,
-            firstPhoto: remaining[0] || null
-          });
-        }
-      }
-
-      // Reload markers
-      await refreshMarkers();
-      setSelectedPhotos([]);
-      setBatchMode(false);
-      showToast('success', `已删除 ${selectedPhotos.length} 张照片`);
-    } catch (err) {
-      console.error('批量删除失败:', err);
-      showToast('error', '删除失败: ' + err.message);
-    }
-  }, [selectedPhotos, refreshMarkers, showToast]);
-
-  const handleMarkerListBatchMerge = useCallback(() => {
-    if (selectedPhotos.length < 2) {
-      alert('请至少选择2张照片进行整合');
-      return;
-    }
-    setShowMergeDialog(true);
-  }, [selectedPhotos]);
 
   // 检测是否为 Web 版本 - 多重检测确保准确性
   const isWebVersion = !window.electronAPI || 
