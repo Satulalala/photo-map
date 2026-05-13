@@ -71,7 +71,6 @@ function App() {
 
   // 用于传递延迟定义的值给 useMap hook
   const mapSettingsRef = useRef(null);
-  const fetchPlaceNameRef = useRef(null);
 
   // 地图管理 Hook
   const {
@@ -80,6 +79,7 @@ function App() {
     mapContainerRef, mapRef, mapMarkersRef, userLocationRef,
     setMapboxReady, setMapEntered, setMapLoaded,
     setHeatmapMode,
+    fetchPlaceName,
     goToMyLocation, zoomIn, zoomOut,
     toggleMeasureMode, exitMeasureMode, clearMeasureLines,
   } = useMap({
@@ -87,7 +87,6 @@ function App() {
     newMarkerIds,
     mapSettingsRef,
     getPhotoUrl,
-    fetchPlaceNameRef,
     previewPin,
     setPreviewPin,
     setContextMenu,
@@ -556,66 +555,6 @@ function App() {
       console.log('✅ Web optimization features initialized');
     }
   }, [seo, analytics]);
-
-  // 获取地名（国内用高德，国外用 Mapbox）
-  const fetchPlaceName = useCallback(async (lat, lng) => {
-    const isInChina = lng >= 73 && lng <= 135 && lat >= 18 && lat <= 54;
-    
-    try {
-      if (isInChina) {
-        // 国内用高德 API
-        const res = await fetch(
-          `https://restapi.amap.com/v3/geocode/regeo?key=9fb3c3f43537ecacd6d0a082958a883c&location=${lng},${lat}&extensions=base`,
-          { signal: AbortSignal.timeout(5000) }
-        );
-        const data = await res.json();
-        if (data.status === '1' && data.regeocode?.formatted_address) {
-          return data.regeocode.formatted_address;
-        }
-      } else {
-        // 国外用 Mapbox API
-        // 先尝试中文
-        try {
-          const res = await fetch(
-            `https://api.mapbox.com/geocoding/v5/mapbox.places/${lng},${lat}.json?access_token=${window.mapboxgl?.accessToken}&language=zh-Hans&limit=1`,
-            { signal: AbortSignal.timeout(5000) }
-          );
-          const data = await res.json();
-          if (data.features?.[0]?.place_name) {
-            let place = data.features[0].place_name.replace(/\s*\d{5,6}\s*$/, '').replace(/,\s*$/, '').trim();
-            if (place && place.length > 0) {
-              return place;
-            }
-          }
-        } catch (err) {
-          console.log('中文地名获取失败，尝试英文:', err.message);
-        }
-        
-        // 如果中文失败，尝试英文
-        try {
-          const resEn = await fetch(
-            `https://api.mapbox.com/geocoding/v5/mapbox.places/${lng},${lat}.json?access_token=${window.mapboxgl?.accessToken}&limit=1`,
-            { signal: AbortSignal.timeout(5000) }
-          );
-          const dataEn = await resEn.json();
-          if (dataEn.features?.[0]?.place_name) {
-            let place = dataEn.features[0].place_name.replace(/\s*\d{5,6}\s*$/, '').replace(/,\s*$/, '').trim();
-            if (place && place.length > 0) {
-              return place;
-            }
-          }
-        } catch (err) {
-          console.log('英文地名获取失败:', err.message);
-        }
-      }
-    } catch (err) {
-      console.error('获取地名失败:', err);
-    }
-    
-    // 所有方法都失败，返回坐标
-    return `${lat.toFixed(4)}°, ${lng.toFixed(4)}°`;
-  }, []);
-  fetchPlaceNameRef.current = fetchPlaceName; // 同步 ref 供 useMap hook 使用
 
   // IP定位 - 快速超时
   useEffect(() => {
