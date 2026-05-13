@@ -2,7 +2,7 @@ services:
   frontend:
     build:
       context: .
-      dockerfile: Dockerfile.frontend
+      dockerfile: docker/Dockerfile.frontend
       args:
         VITE_MAPBOX_TOKEN: ${VITE_MAPBOX_TOKEN}
     ports:
@@ -15,7 +15,7 @@ services:
   backend:
     build:
       context: .
-      dockerfile: Dockerfile.backend
+      dockerfile: docker/Dockerfile.backend
     environment:
       - JWT_SECRET=${JWT_SECRET:-change-me-in-production}
     volumes:
