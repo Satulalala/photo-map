@@ -1,5 +1,5 @@
 import { useState, useCallback, useRef, useEffect } from 'react';
-import api from '../api/index.js';
+import api from '../../api/index.js';
 
 /**
  * 照片查看器组件

@@ -1,5 +1,5 @@
 import React from 'react';
-import LazyPhoto from '../LazyPhoto.jsx';
+import LazyPhoto from '../photos/LazyPhoto.jsx';
 
 export default function NotesPanel({
   notesPanel,

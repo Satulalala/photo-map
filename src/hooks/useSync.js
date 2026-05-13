@@ -1,5 +1,5 @@
 import { useState, useCallback, useEffect } from 'react';
-import syncService from '../services/syncService.js';
+import syncService from '../api/syncService.js';
 import api from '../api/index.js';
 
 export function useSync({ showToast, setMarkers, cloudSyncEnabled }) {

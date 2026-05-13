@@ -1,5 +1,5 @@
 import { useState, memo } from 'react';
-import LazyPhoto from './LazyPhoto.jsx';
+import LazyPhoto from '../photos/LazyPhoto.jsx';
 
 const MarkerGridItem = memo(function MarkerGridItem({ marker, onClick, batchMode, selectedPhotos, onPhotoSelect, allMarkers, onDeletePhoto, onSetCover, onAddPhoto }) {
   const [expanded, setExpanded] = useState(false);

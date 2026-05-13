@@ -1,7 +1,7 @@
 import React, { useRef } from 'react';
-import LazyPhoto from '../LazyPhoto.jsx';
-import MarkerListItem, { highlightText } from '../MarkerListItem.jsx';
-import MarkerGridItem from '../MarkerGridItem.jsx';
+import LazyPhoto from '../photos/LazyPhoto.jsx';
+import MarkerListItem, { highlightText } from './MarkerListItem.jsx';
+import MarkerGridItem from './MarkerGridItem.jsx';
 import { matchMarkerName } from '../../utils/searchUtils.js';
 
 export default function MarkerListPanel({

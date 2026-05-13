@@ -1,16 +1,16 @@
 import { useState, useEffect, useRef, useCallback, useMemo, memo, lazy, Suspense, useDeferredValue } from 'react';
 import { startPeriodicCleanup, stopPeriodicCleanup } from './utils/memoryManager.ts';
-import PhotoViewer from './components/PhotoViewer.jsx';
-import PhotoEditor from './components/PhotoEditor.jsx';
+import PhotoViewer from './components/photos/PhotoViewer.jsx';
+import PhotoEditor from './components/photos/PhotoEditor.jsx';
 import ErrorBoundary from './components/ErrorBoundary.jsx';
 import { useSEO } from './utils/seoManager.js';
 import { useAnalytics } from './utils/webAnalytics.js';
 import { usePWA } from './utils/pwaManager.js';
 import api from './api/index.js';
-import syncService from './services/syncService.js';
+import syncService from './api/syncService.js';
 import LoginButtons from './components/LoginButtons.jsx';
 import WebDownloadButton from './components/WebDownloadButton.jsx';
-import LazyPhoto from './components/LazyPhoto.jsx';
+import LazyPhoto from './components/photos/LazyPhoto.jsx';
 import { useMarkers } from './hooks/useMarkers.js';
 import { usePhotos } from './hooks/usePhotos.js';
 import { useSearch } from './hooks/useSearch.js';
@@ -25,11 +25,11 @@ import Toolbar from './components/map/Toolbar.jsx';
 import NoteEditor from './components/panels/NoteEditor.jsx';
 import MarkerListPanel from './components/panels/MarkerListPanel.jsx';
 import NotesPanel from './components/panels/NotesPanel.jsx';
-import MarkerContextMenu from './components/markers/MarkerContextMenu.jsx';
+import MarkerContextMenu from './components/MarkerContextMenu.jsx';
 import MergeDialog from './components/panels/MergeDialog.jsx';
 import VillageModal from './components/panels/VillageModal.jsx';
 import Toast from './components/Toast.jsx';
-import SettingsContent from './components/SettingsContent.jsx';
+import SettingsContent from './components/panels/SettingsContent.jsx';
 import { usePhotoOperations } from './hooks/usePhotoOperations.js';
 import { useKeyboard } from './hooks/useKeyboard.js';
 
@@ -47,9 +47,9 @@ const FilmLoader = ({ onComplete, onShowLogin, canEnter }) => {
 };
 
 // 懒加载组件 - 减少首屏 JS 体积，按需加载
-const SettingsPanel = lazy(() => import('./components/SettingsPanel.jsx'));
-const SocialPanel = lazy(() => import('./components/SocialPanel.jsx'));
-const LifePanel = lazy(() => import('./components/LifePanel.jsx'));
+const SettingsPanel = lazy(() => import('./components/panels/SettingsPanel.jsx'));
+const SocialPanel = lazy(() => import('./components/panels/SocialPanel.jsx'));
+const LifePanel = lazy(() => import('./components/panels/LifePanel.jsx'));
 
 function App() {
   // Web 优化功能 Hooks

@@ -1,6 +1,6 @@
 import { useState, memo, useCallback } from 'react';
-import LazyPhoto from './LazyPhoto.jsx';
-import { getMatchRanges } from '../utils/searchUtils.js';
+import LazyPhoto from '../photos/LazyPhoto.jsx';
+import { getMatchRanges } from '../../utils/searchUtils.js';
 
 // 搜索高亮
 function highlightText(text, query) {
@@ -70,7 +70,7 @@ const MarkerListItem = memo(function MarkerListItem({ marker, onClick, batchMode
     try {
       let photos = marker.photos;
       if (!photos || photos.length === 0) {
-        const apiModule = await import('../api/index.js');
+        const apiModule = await import('../../api/index.js');
         const api = apiModule.default;
         photos = await api.photos.getByMarkerId(marker.id);
         const sorted = [...photos].sort((a, b) => (a.order ?? 9999) - (b.order ?? 9999));
