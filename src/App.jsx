@@ -108,6 +108,14 @@ function App() {
   const [showSettings, setShowSettings] = useState(false);
   const [showSocial, setShowSocial] = useState(false);
   const [showLife, setShowLife] = useState(false);
+  const [showPhotoInfo, setShowPhotoInfo] = useState(false);
+  const [notesEditing, setNotesEditing] = useState(false);
+  const [editingNotes, setEditingNotes] = useState([]);
+  const [photoTransformed, setPhotoTransformed] = useState(false);
+  const [batchMode, setBatchMode] = useState(false);
+  const [selectedPhotos, setSelectedPhotos] = useState([]);
+  const [showMergeDialog, setShowMergeDialog] = useState(false);
+  const [mergeTargetPhoto, setMergeTargetPhoto] = useState(null);
 
   const closeContextMenu = useCallback(() => {
     setContextMenu(null);
@@ -135,14 +143,6 @@ function App() {
     showToast, setPhotoViewer, mapRef, setMarkerMenu,
     refreshMarkers, setShowMergeDialog,
   });
-  const [showPhotoInfo, setShowPhotoInfo] = useState(false); // 是否显示照片信息面板
-  const [notesEditing, setNotesEditing] = useState(false); // 备注面板是否处于编辑模式
-  const [editingNotes, setEditingNotes] = useState([]); // 编辑中的备注临时数据
-  const [photoTransformed, setPhotoTransformed] = useState(false); // 照片是否被缩放/拖动
-  const [batchMode, setBatchMode] = useState(false); // 批量操作模式
-  const [selectedPhotos, setSelectedPhotos] = useState([]); // 选中的照片 [{markerId, photoId, photoIndex}]
-  const [showMergeDialog, setShowMergeDialog] = useState(false); // 整合对话框
-  const [mergeTargetPhoto, setMergeTargetPhoto] = useState(null); // 整合目标照片
   const [toast, setToast] = useState(null);
   const [cloudSyncEnabled, setCloudSyncEnabled] = useState(() => syncService.isCloudSyncEnabled());
 
