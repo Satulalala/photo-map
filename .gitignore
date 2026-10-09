@@ -24,7 +24,6 @@ server-java/target/
 .env.development.local
 .env.test.local
 .env.production.local
-.env.example
 
 # API Keys 和配置
 config/keys.js
@@ -56,7 +55,7 @@ logs/
 *.log
 
 # 用户数据（不要上传用户的照片和数据库）
-photos/
+/photos/
 thumbnails/
 placeholders/
 tile-cache/
@@ -72,13 +71,15 @@ tile-cache/
 coverage/
 .nyc_output/
 
-# Claude Code 本地设置
-.claude/settings.json
+# Claude Code 本机权限与个人设置；项目公共规则由 AGENTS.md 管理
+.claude/settings.local.json
 
 # 模型缓存（应用首次启动时自动下载，~1.6GB）
 .model-cache/
 
 # 其他
 .cache/
+playwright-report/
+test-results/
 # Local Netlify folder
 .netlify
