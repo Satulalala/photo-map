@@ -1,0 +1,212 @@
+/* Keep the interactive globe separate from the account and map entry controls. */
+.globe-split {
+  background: #0b0b19;
+}
+.globe-split::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 1;
+  background: linear-gradient(to right, #0b0b1940, #0b0b1920 32%, transparent 60%);
+  transition: opacity 500ms ease;
+}
+.globe-split .globe-map-container {
+  inset: 0;
+  width: 100%;
+  height: 100%;
+}
+.globe-split .globe-bottom-gradient {
+  display: none;
+}
+.globe-split .globe-content {
+  top: 0;
+  bottom: 0;
+  left: clamp(32px, 6vw, 112px);
+  right: auto;
+  width: min(360px, 32vw);
+  padding: 40px 0;
+  align-items: stretch;
+  justify-content: center;
+  gap: 28px;
+  text-align: left;
+  transition:
+    opacity 400ms ease,
+    transform 500ms ease;
+}
+.globe-split.is-entering .globe-content {
+  opacity: 0;
+  transform: translateX(-16px);
+  pointer-events: none;
+}
+.globe-split.is-entering::before {
+  opacity: 0;
+}
+.globe-split .globe-header {
+  margin: 0;
+  text-align: left;
+}
+.globe-split .globe-title {
+  margin: 0 0 18px;
+  font-size: clamp(32px, 3.2vw, 48px);
+  font-weight: 600;
+  letter-spacing: -0.04em;
+  line-height: 1.15;
+  color: #f8fafc;
+  text-shadow: none;
+}
+.globe-split .globe-subtitle {
+  margin: 0;
+  font-size: 16px;
+  line-height: 1.6;
+  color: #e2e8f0;
+}
+.globe-split .globe-description {
+  margin: 10px 0 0;
+  font-size: 13px;
+  line-height: 1.8;
+  color: #94a3b8;
+  max-width: 28em;
+}
+.globe-split .login-buttons-container {
+  position: static;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+  width: 100%;
+  max-width: none;
+  transform: none;
+}
+.globe-split .login-drop-btn {
+  width: 100%;
+  min-width: 0;
+  padding: 0 12px;
+  height: 44px;
+  border-radius: 10px;
+}
+.globe-split .login-drop-btn.primary {
+  background: #f1f5f9;
+  color: #0f172a;
+  border-color: #f1f5f9;
+}
+.globe-split .login-drop-btn.primary:hover:not(:disabled) {
+  background: #fff;
+  border-color: #fff;
+}
+.globe-split .login-drop-btn.tertiary {
+  background: transparent;
+  border-color: #ffffff30;
+}
+.globe-split .login-drop-btn.secondary {
+  grid-column: 1 / -1;
+  justify-self: start;
+  justify-content: flex-start;
+  width: auto;
+  height: 36px;
+  padding: 0;
+}
+.globe-split .logged-in-bar {
+  position: static;
+  width: 100%;
+  transform: none;
+  padding: 0;
+  gap: 10px;
+  background: transparent;
+  border: 0;
+  box-shadow: none;
+  animation: none;
+}
+.globe-split .user-avatar {
+  width: 32px;
+  height: 32px;
+  flex: 0 0 32px;
+  background: #ffffff0d;
+  border: 1px solid #ffffff26;
+  color: #cbd5e1;
+  font-size: 13px;
+}
+.globe-split .user-avatar .map-icon {
+  width: 16px;
+  height: 16px;
+}
+.globe-split .logged-in-name {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  color: #cbd5e1;
+  font-size: 13px;
+}
+.globe-split .logout-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px;
+  border: 0;
+  background: transparent;
+  color: #94a3b8;
+  font-size: 12px;
+  box-shadow: none;
+}
+.globe-split .logout-btn:hover {
+  color: #f8fafc;
+  background: #ffffff0d;
+  transform: none;
+}
+.globe-split .logout-btn .map-icon {
+  width: 16px;
+  height: 16px;
+}
+@media (max-width: 760px) and (max-height: 600px) {
+  .globe-split .globe-description {
+    display: none;
+  }
+}
+.globe-split .globe-action {
+  width: 100%;
+  max-width: none;
+  margin: 0;
+}
+.globe-split .globe-bar-hint {
+  text-align: left;
+  font-size: 12px;
+  line-height: 1.5;
+  margin: 12px 0 0;
+}
+@media (max-width: 760px) {
+  .globe-split {
+    overflow-y: auto;
+  }
+  .globe-split::before {
+    background: linear-gradient(to bottom, transparent 28%, #0b0b1940 48%, #0b0b1960);
+  }
+  .globe-split .globe-content {
+    top: max(150px, 38dvh);
+    bottom: auto;
+    left: 0;
+    width: 100%;
+    max-width: 440px;
+    right: 0;
+    margin: 0 auto;
+    padding: 16px 24px 24px;
+    gap: 18px;
+  }
+  .globe-split .globe-title {
+    font-size: 32px;
+    margin-bottom: 10px;
+  }
+  .globe-split .globe-subtitle {
+    font-size: 14px;
+  }
+  .globe-split .globe-description {
+    margin-top: 6px;
+    font-size: 12px;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .globe-split .globe-content,
+  .globe-split::before {
+    transition: none;
+  }
+}

@@ -1,0 +1,286 @@
+.app .map-bottom-actions {
+  position: fixed;
+  right: 20px;
+  bottom: max(20px, calc(env(safe-area-inset-bottom) + 12px));
+  z-index: var(--z-sticky);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.app .marker-count-btn {
+  position: relative;
+  inset: auto;
+  min-width: 0;
+  min-height: 48px;
+  width: 176px;
+  padding: 7px 10px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  border-radius: 12px;
+  color: var(--text-primary);
+}
+
+.app .marker-count-btn:hover {
+  border-color: var(--accent);
+  background: var(--accent-light);
+  box-shadow: var(--control-shadow-hover);
+  transform: translateY(-1px);
+}
+
+.app .marker-count-btn:active {
+  box-shadow: var(--shadow-sm);
+  transform: translateY(1px) scale(0.98);
+}
+
+.app .marker-count-btn .map-icon {
+  width: 16px;
+  height: 16px;
+  color: var(--accent);
+}
+
+.app .marker-count-btn .album-button-content {
+  min-width: 0;
+  flex: 1;
+  text-align: left;
+}
+
+.app .album-button-icon {
+  display: grid;
+  place-items: center;
+  width: 30px;
+  height: 30px;
+  border-radius: 8px;
+  background: var(--accent-light);
+}
+
+.app .life-entry-btn {
+  min-height: 48px;
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  padding: 0 12px;
+  border: 1px solid var(--surface-elevated-border);
+  border-radius: 12px;
+  background: var(--surface-elevated);
+  color: var(--text-secondary);
+  box-shadow: var(--control-shadow);
+  backdrop-filter: blur(16px);
+  font-size: 13px;
+  transition:
+    background 150ms ease,
+    border-color 150ms ease,
+    transform 150ms ease;
+}
+
+.app .life-entry-btn .map-icon {
+  width: 18px;
+  height: 18px;
+  color: var(--accent);
+}
+.app .life-entry-btn:hover,
+.app .life-entry-btn[aria-pressed="true"] {
+  background: var(--accent-light);
+  border-color: var(--accent);
+  color: var(--accent);
+}
+.app .life-entry-btn:hover {
+  transform: translateY(-1px);
+}
+.app .life-entry-btn:active {
+  transform: scale(0.97);
+}
+
+.app .album-button-title {
+  color: var(--text-primary);
+  font-size: 13px;
+  font-weight: var(--weight-semibold);
+}
+
+.app .marker-stats {
+  gap: 6px;
+  color: var(--text-secondary);
+}
+
+.app .stat-item {
+  gap: 2px;
+  font-size: 11px;
+}
+
+.app .stat-num {
+  color: var(--text-primary);
+  font-family: var(--font-mono);
+  font-weight: var(--weight-semibold);
+}
+
+.app .marker-count-btn.origin-hidden {
+  pointer-events: none;
+  opacity: 0;
+  transform: translateY(10px) scale(0.94);
+}
+
+.app .marker-count-btn.reveal-on-close {
+  pointer-events: auto;
+  opacity: 1;
+  transform: translateY(0) scale(1);
+}
+
+.app .measure-hint {
+  position: fixed;
+  top: max(16px, env(safe-area-inset-top));
+  left: 50%;
+  z-index: var(--z-sticky);
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 40px;
+  padding: 0 14px;
+  transform: translateX(-50%);
+  border: 1px solid var(--surface-elevated-border);
+  border-radius: 999px;
+  background: var(--surface-elevated);
+  color: var(--text-primary);
+  box-shadow: var(--control-shadow);
+  backdrop-filter: blur(16px);
+  animation: map-header-in 240ms ease both;
+}
+
+.app .measure-hint .map-icon {
+  width: 17px;
+  height: 17px;
+  color: var(--accent);
+}
+
+.app .measure-toolbar {
+  position: fixed;
+  right: 24px;
+  bottom: 24px;
+  z-index: var(--z-sticky);
+  display: flex;
+  gap: 8px;
+}
+
+.app .measure-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  min-height: var(--control-height);
+  padding: 0 14px;
+  border: 1px solid var(--surface-elevated-border);
+  border-radius: var(--control-radius);
+  background: var(--surface-elevated);
+  color: var(--text-primary);
+  box-shadow: var(--control-shadow);
+  transition:
+    background var(--transition-fast),
+    border-color var(--transition-fast),
+    box-shadow var(--transition-fast),
+    transform var(--transition-fast);
+}
+
+.app .measure-btn:hover {
+  border-color: var(--accent);
+  background: var(--accent-light);
+  color: var(--accent);
+  transform: translateY(-2px);
+}
+
+.app .measure-btn:active {
+  transform: translateY(1px) scale(0.97);
+}
+
+.app .measure-btn.exit:hover {
+  border-color: var(--danger);
+  background: var(--danger-light);
+  color: var(--danger);
+}
+
+.app .map-unavailable {
+  position: fixed;
+  left: 50%;
+  bottom: 110px;
+  transform: translateX(-50%);
+  width: max-content;
+  max-width: calc(100vw - 32px);
+  padding: 14px 18px;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  background: var(--surface);
+  color: var(--text-secondary);
+  font-size: 13px;
+  line-height: 1.6;
+  box-shadow: var(--shadow-sm);
+}
+
+.app .map-unavailable button {
+  min-height: 36px;
+  margin-left: 8px;
+  padding: 0 8px;
+  border: 0;
+  background: transparent;
+  color: var(--accent);
+}
+
+@media (max-width: 768px) {
+  .map-header {
+    top: max(12px, env(safe-area-inset-top));
+    width: calc(100vw - 24px);
+  }
+
+  .app .toolbar-left,
+  .app .toolbar-right {
+    top: 84px;
+  }
+
+  .app .toolbar-left {
+    left: 12px;
+  }
+
+  .app .toolbar-right {
+    right: 12px;
+  }
+
+  .map-header .web-download-beside-search {
+    display: none;
+  }
+
+  .app .map-bottom-actions {
+    right: 16px;
+    bottom: max(16px, calc(env(safe-area-inset-bottom) + 12px));
+  }
+
+  .app .measure-toolbar {
+    right: 12px;
+    bottom: max(16px, calc(env(safe-area-inset-bottom) + 12px));
+    left: 12px;
+    justify-content: flex-end;
+    flex-wrap: wrap;
+  }
+
+  .app .measure-btn {
+    min-height: 42px;
+  }
+}
+
+@media (max-width: 374px) {
+  .map-header .search-bar input {
+    font-size: 14px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .map-header,
+  .app .toolbar,
+  .map-header .search-results,
+  .map-header .search-clear {
+    animation: none !important;
+  }
+
+  .app *,
+  .app *::before,
+  .app *::after {
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}

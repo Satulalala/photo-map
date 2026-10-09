@@ -1,5 +1,6 @@
 import { useState, useCallback, useRef, useEffect } from 'react';
 import api from '../api/index.js';
+import { hasMapSession } from '../api/auth.js';
 
 /**
  * 地图管理 Hook
@@ -14,11 +15,13 @@ export function useMap({
   setPreviewPin,
   setContextMenu,
   setPlaceName,
+  markerMenu,
   setMarkerMenu,
 }) {
   // ---- 状态 ----
   const [mapboxReady, setMapboxReady] = useState(false);
-  const [mapEntered, setMapEntered] = useState(false);
+  const [mapboxAvailable, setMapboxAvailable] = useState(false);
+  const [mapEntered, setMapEntered] = useState(hasMapSession);
   const [mapLoaded, setMapLoaded] = useState(false);
   const [isDragging, setIsDragging] = useState(false);
   const [heatmapMode, setHeatmapMode] = useState(false);
@@ -35,17 +38,22 @@ export function useMap({
   const measureModeRef = useRef(false);
   const measureStartRef = useRef(null);
   const previewMarkerRef = useRef(null);
+  const markerMenuRef = useRef(markerMenu);
+  markerMenuRef.current = markerMenu;
 
   // ---- Mapbox 加载检查 ----
   useEffect(() => {
+    let timer;
     const checkMapbox = () => {
       if (typeof window !== 'undefined' && window.mapboxgl) {
+        setMapboxAvailable(true);
         setMapboxReady(true);
       } else {
-        setTimeout(checkMapbox, 100);
+        timer = setTimeout(checkMapbox, 250);
       }
     };
     checkMapbox();
+    return () => clearTimeout(timer);
   }, []);
 
   // ---- 获取地名（国内用高德，国外用 Mapbox）----
@@ -109,7 +117,7 @@ export function useMap({
 
   // ---- 地图初始化 ----
   useEffect(() => {
-    if (!mapEntered || !mapContainerRef.current || mapRef.current || !mapboxReady) return;
+    if (!mapEntered || !mapContainerRef.current || mapRef.current || !mapboxAvailable) return;
 
     if (!window.mapboxgl) {
       console.error('Mapbox GL JS 未加载');
@@ -132,7 +140,13 @@ export function useMap({
         return;
       }
 
-      const map = new window.mapboxgl.Map({
+      setMapLoaded(false);
+      let flyTimer;
+      const entryMap = window.__entryMap;
+      delete window.__entryMap;
+      window.mapboxgl.accessToken = import.meta.env.VITE_MAPBOX_TOKEN || '';
+      window.mapboxgl.prewarm?.();
+      const map = entryMap || new window.mapboxgl.Map({
         container: mapContainerRef.current,
         style: 'mapbox://styles/mapbox/streets-v12',
         center: userLocation,
@@ -142,13 +156,13 @@ export function useMap({
         language: 'zh-Hans',
         antialias: mapSettingsRef.current?.antialias ?? true,
         fadeDuration: mapSettingsRef.current?.fadeDuration ?? 200,
-        maxTileCacheSize: mapSettingsRef.current?.maxTileCacheSize ?? 4000,
+        maxTileCacheSize: mapSettingsRef.current?.maxTileCacheSize ?? undefined,
         dragRotate: mapSettingsRef.current?.dragRotate ?? false,
         renderWorldCopies: mapSettingsRef.current?.renderWorldCopies ?? false,
         maxZoom: mapSettingsRef.current?.maxZoom ?? 18,
         minZoom: mapSettingsRef.current?.minZoom ?? 0,
         trackResize: true,
-        refreshExpiredTiles: false,
+        refreshExpiredTiles: true,
         scrollZoom: true,
         pitchWithRotate: false,
         crossSourceCollisions: false,
@@ -156,6 +170,20 @@ export function useMap({
         preserveDrawingBuffer: false,
         failIfMajorPerformanceCaveat: false,
       });
+      if (entryMap) {
+        mapContainerRef.current.appendChild(map.getContainer());
+        map.resize();
+        map.scrollZoom.enable();
+        map.doubleClickZoom.enable();
+        map.boxZoom.enable();
+        map.keyboard.enable();
+        map.touchZoomRotate.enable();
+        map.dragPan.enable();
+        if (mapSettingsRef.current?.dragRotate) map.dragRotate.enable();
+        else map.dragRotate.disable();
+        map.setMinZoom(mapSettingsRef.current?.minZoom ?? 0);
+        map.setMaxZoom(mapSettingsRef.current?.maxZoom ?? 18);
+      }
 
       // 设置地球大气层效果
       map.on('style.load', () => {
@@ -174,6 +202,12 @@ export function useMap({
 
       // 点击事件
       map.on('click', e => {
+        if (markerMenuRef.current) {
+          setMarkerMenu(null);
+          setContextMenu(null);
+          setPreviewPin(null);
+          return;
+        }
         // 创建涟漪效果
         const ripple = document.createElement('div');
         ripple.className = 'click-ripple';
@@ -220,8 +254,7 @@ export function useMap({
       });
 
       // 加载完成后飞到用户位置
-      map.on('load', () => {
-        setMapLoaded(true);
+      const initializeLayers = () => {
 
         // 添加热力图数据源和图层
         map.addSource('markers-heatmap', {
@@ -259,18 +292,26 @@ export function useMap({
           }
         });
 
-        setTimeout(() => {
-          if (userLocationRef.current) {
+        setMapLoaded(true);
+        if (!entryMap && !finalState.center) flyTimer = setTimeout(() => {
+          if (mapRef.current === map && userLocationRef.current) {
             map.flyTo({ center: userLocationRef.current, zoom: 13, duration: 2000 });
           }
         }, 800);
-      });
+      };
+      // The loader already completed 'load'. Pending destination tiles must not
+      // keep camera controls disabled while waiting for a second idle event.
+      if (entryMap) initializeLayers();
+      else map.once('load', initializeLayers);
 
       mapRef.current = map;
       return () => {
         if (previewMarkerRef.current) { previewMarkerRef.current.remove(); previewMarkerRef.current = null; }
+        clearTimeout(flyTimer);
         map.remove();
         mapRef.current = null;
+        mapMarkersRef.current = {};
+        setMapLoaded(false);
       };
     } catch (error) {
       console.error('地图初始化失败:', error);
@@ -283,7 +324,7 @@ export function useMap({
         mapContainerRef.current.style.fontSize = '14px';
       }
     }
-  }, [mapEntered, mapboxReady]);
+  }, [mapEntered, mapboxAvailable]);
 
   // ---- 简单距离计算（Haversine公式）----
   const turf_distance = (from, to) => {
@@ -339,7 +380,7 @@ export function useMap({
           <img src="" style="width:100%;height:100%;object-fit:cover;display:block;" />
           ${photoCount > 1 ? `<span style="position:absolute;top:2px;right:2px;background:rgba(0,0,0,0.6);color:white;font-size:10px;padding:1px 4px;border-radius:8px;">+${photoCount - 1}</span>` : ''}
         </div>
-        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="26" viewBox="0 0 24 32"><path d="M12 0C5.4 0 0 5.4 0 12c0 9 12 20 12 20s12-11 12-20C24 5.4 18.6 0 12 0z" fill="#ff6b6b"/><circle cx="12" cy="12" r="4" fill="white"/></svg>
+        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="26" viewBox="0 0 24 32"><path d="M12 0C5.4 0 0 5.4 0 12c0 9 12 20 12 20s12-11 12-20C24 5.4 18.6 0 12 0z" fill="#2563eb"/><circle cx="12" cy="12" r="4" fill="white"/></svg>
       `;
 
       const img = el.querySelector('img');
@@ -349,7 +390,7 @@ export function useMap({
         });
       }
     } else {
-      el.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="32" viewBox="0 0 24 32"><path d="M12 0C5.4 0 0 5.4 0 12c0 9 12 20 12 20s12-11 12-20C24 5.4 18.6 0 12 0z" fill="#ff6b6b"/><circle cx="12" cy="12" r="5" fill="white"/></svg>';
+      el.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="32" viewBox="0 0 24 32"><path d="M12 0C5.4 0 0 5.4 0 12c0 9 12 20 12 20s12-11 12-20C24 5.4 18.6 0 12 0z" fill="#2563eb"/><circle cx="12" cy="12" r="5" fill="white"/></svg>';
     }
     return el;
   }, []);
@@ -358,7 +399,7 @@ export function useMap({
   const createMarkerElement = useCallback((m, isNew) => {
     const el = document.createElement('div');
     el.className = 'marker-pin';
-    el.style.cssText = `cursor:pointer;display:flex;flex-direction:column;align-items:center;${isNew ? 'animation:markerDrop 0.5s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;' : ''}`;
+    el.style.cssText = 'cursor:pointer;display:flex;flex-direction:column;align-items:center;';
 
     const firstPhoto = m.firstPhoto;
     const photoCount = m.photoCount ?? 0;
@@ -370,7 +411,7 @@ export function useMap({
           <img src="" style="width:100%;height:100%;object-fit:cover;display:block;opacity:0;transition:opacity 0.2s;" />
           ${photoCount > 1 ? `<span style="position:absolute;top:2px;right:2px;background:rgba(0,0,0,0.6);color:white;font-size:10px;padding:1px 4px;border-radius:8px;">+${photoCount - 1}</span>` : ''}
         </div>
-        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="26" viewBox="0 0 24 32"><path d="M12 0C5.4 0 0 5.4 0 12c0 9 12 20 12 20s12-11 12-20C24 5.4 18.6 0 12 0z" fill="#ff6b6b"/><circle cx="12" cy="12" r="4" fill="white"/></svg>
+        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="26" viewBox="0 0 24 32"><path d="M12 0C5.4 0 0 5.4 0 12c0 9 12 20 12 20s12-11 12-20C24 5.4 18.6 0 12 0z" fill="#2563eb"/><circle cx="12" cy="12" r="4" fill="white"/></svg>
       `;
 
       const img = el.querySelector('img');
@@ -389,8 +430,14 @@ export function useMap({
         }
       }
     } else {
-      el.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="32" viewBox="0 0 24 32"><path d="M12 0C5.4 0 0 5.4 0 12c0 9 12 20 12 20s12-11 12-20C24 5.4 18.6 0 12 0z" fill="#ff6b6b"/><circle cx="12" cy="12" r="5" fill="white"/></svg>';
+      el.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="32" viewBox="0 0 24 32"><path d="M12 0C5.4 0 0 5.4 0 12c0 9 12 20 12 20s12-11 12-20C24 5.4 18.6 0 12 0z" fill="#2563eb"/><circle cx="12" cy="12" r="5" fill="white"/></svg>';
     }
+
+    // Mapbox owns the root transform; animate only its visual child.
+    const visual = document.createElement('div');
+    visual.className = `marker-visual${isNew ? ' marker-visual-new' : ''}`;
+    while (el.firstChild) visual.appendChild(el.firstChild);
+    el.appendChild(visual);
 
     el.addEventListener('click', async e => {
       e.stopPropagation();
@@ -446,6 +493,7 @@ export function useMap({
       const isNew = newMarkerIds.has(m.id);
       const el = createMarkerElement(m, isNew);
 
+      el.style.display = heatmapMode ? 'none' : 'flex';
       el.classList.add('marker-pin-hidden');
 
       const marker = new window.mapboxgl.Marker({
@@ -462,7 +510,7 @@ export function useMap({
       mapMarkersRef.current[m.id] = marker;
     });
     console.log('🗺️ renderMarkers: 新建了', created, '个标记');
-  }, [markers, newMarkerIds, createMarkerElement]);
+  }, [markers, newMarkerIds, createMarkerElement, heatmapMode]);
 
   // ---- 地图加载完成后渲染标记 ----
   useEffect(() => {
@@ -471,7 +519,7 @@ export function useMap({
 
   // ---- 更新热力图数据 ----
   useEffect(() => {
-    if (!mapRef.current || !mapLoaded) return;
+    if (!mapRef.current || !mapLoaded || !mapRef.current.isStyleLoaded()) return;
     const source = mapRef.current.getSource('markers-heatmap');
     if (!source) {
       console.error('热力图数据源不存在！');
@@ -488,7 +536,7 @@ export function useMap({
 
   // ---- 切换热力图显示 ----
   useEffect(() => {
-    if (!mapRef.current || !mapLoaded) return;
+    if (!mapRef.current || !mapLoaded || !mapRef.current.isStyleLoaded()) return;
     const layer = mapRef.current.getLayer('markers-heat');
     if (!layer) {
       console.error('热力图图层不存在！');
@@ -565,6 +613,7 @@ export function useMap({
   return {
     // 状态
     mapboxReady,
+    mapboxAvailable,
     mapEntered,
     mapLoaded,
     isDragging,

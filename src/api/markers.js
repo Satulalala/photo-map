@@ -164,8 +164,7 @@ export const photosApi = {
     if (isElectron()) {
       return window.electronAPI.searchPhotosByContent(text, topK);
     }
-    console.warn('[API] Web 版不支持语义搜索');
-    return [];
+    throw new Error('Web 版暂不支持图片内容搜索，请使用桌面版；地名和备注搜索仍可使用');
   },
 
   async batchGenerateEmbeddings() {

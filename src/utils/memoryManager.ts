@@ -93,10 +93,11 @@ export function getMemoryInfo(): {
   totalJSHeapSize?: number;
   jsHeapSizeLimit?: number;
 } | null {
-  // @ts-ignore - performance.memory 是非标准 API
-  if (typeof performance !== 'undefined' && performance.memory) {
-    // @ts-ignore
-    const memory = performance.memory;
+  const memory = typeof performance === 'undefined' ? undefined :
+    (performance as Performance & {
+      memory?: { usedJSHeapSize: number; totalJSHeapSize: number; jsHeapSizeLimit: number };
+    }).memory;
+  if (memory) {
     return {
       usedJSHeapSize: memory.usedJSHeapSize,
       totalJSHeapSize: memory.totalJSHeapSize,

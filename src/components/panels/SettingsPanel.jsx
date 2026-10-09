@@ -38,7 +38,7 @@ function SettingsPanel({
                 <strong>???</strong>
                 <span>??????</span>
               </div>
-              <label className="switch">
+              <label className="switch" aria-label="抗锯齿">
                 <input
                   type="checkbox"
                   checked={tempSettings.antialias}

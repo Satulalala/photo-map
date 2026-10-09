@@ -67,18 +67,6 @@ app.commandLine.appendSwitch('enable-gpu-rasterization');
 app.commandLine.appendSwitch('high-dpi-support', '1');
 app.commandLine.appendSwitch('disable-gpu-process-crash-limit');
 
-// 开发模式热更新
-const isDev = !app.isPackaged;
-if (isDev) {
-  try {
-    require('electron-reload')(__dirname, {
-      electron: path.join(__dirname, 'node_modules', '.bin', 'electron'),
-      hardResetMethod: 'exit',
-      forceHardReset: false,
-    });
-  } catch {}
-}
-
 let store;
 let mainWindow;
 
@@ -336,6 +324,7 @@ app.whenReady().then(async () => {
       log.info('[Embedding] 后台预加载语义搜索模型...');
 
       const embedding = getEmbedding();
+      let lastDownloadPercent = -1;
       embedding.setProgressCallback((progressData) => {
         // Transformers.js 的 progress_callback 会发送多种事件类型
         // 只有含有效 progress 字段的才是实际下载/加载进度
@@ -343,7 +332,9 @@ app.whenReady().then(async () => {
         if (!Number.isFinite(progressData.progress)) return;
 
         const { progress, loaded, total } = progressData;
-        const pct = Math.round(progress * 100);
+        const pct = Math.max(0, Math.min(100, Math.round(progress)));
+        if (pct === lastDownloadPercent) return;
+        lastDownloadPercent = pct;
         const loadedMb = (loaded / 1024 / 1024).toFixed(1);
         const totalMb = (total / 1024 / 1024).toFixed(1);
         log.info(`[Embedding] 下载中 ${pct}% (${loadedMb}MB / ${totalMb}MB)`);

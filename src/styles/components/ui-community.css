@@ -1,0 +1,111 @@
+.app .village-modal-shell {
+  position: relative;
+  inset: auto;
+  width: min(1080px, 100%);
+  height: min(720px, calc(100dvh - 48px));
+  transform: none;
+  opacity: 1;
+  padding: 24px;
+  gap: 24px;
+  will-change: auto;
+}
+.app .village-modal-shell.open {
+  animation: panel-in 220ms ease both;
+}
+.app .village-modal-left,
+.app .village-modal-right {
+  opacity: 1;
+  transform: none;
+  min-height: 0;
+  overflow: auto;
+  background: transparent;
+  color: var(--text-primary);
+  border: 0;
+  box-shadow: none;
+  animation: none;
+  padding: 0;
+}
+.app .village-modal-right {
+  border-left: 1px solid var(--border);
+  padding-left: 24px;
+}
+.app .village-modal-head h3,
+.app .village-modal-right h4 {
+  color: var(--text-primary);
+  font-size: 18px;
+}
+.app .village-title-icon {
+  display: inline-flex;
+  vertical-align: -3px;
+}
+.app .village-shell-close {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  opacity: 1;
+  transform: none;
+  animation: none;
+}
+.app .village-social-hero {
+  background: var(--surface-muted);
+  color: var(--text-primary);
+  border: 1px solid var(--border);
+  box-shadow: none;
+  border-radius: 12px;
+}
+.app .hero-main strong {
+  color: var(--text-primary);
+  font-size: 16px;
+}
+.app .hero-main span,
+.app .village-empty-state p {
+  color: var(--text-secondary);
+}
+.app .village-empty-state,
+.app .village-feed-card,
+.app .village-stats-grid {
+  background: var(--surface-muted);
+  color: var(--text-primary);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  box-shadow: none;
+}
+.app .village-empty-state h4 {
+  color: var(--text-primary);
+}
+.app .village-empty-badge {
+  background: var(--accent-light);
+  color: var(--accent);
+  border: 0;
+}
+.app .village-main-btn,
+.app .hero-post-btn,
+.app .village-friend-add button {
+  min-height: 40px;
+  border: 1px solid var(--border);
+  background: var(--surface-subtle);
+  color: var(--text-primary);
+  box-shadow: none;
+  border-radius: 8px;
+}
+.app .village-friend-add input,
+.app .village-friend-search {
+  min-height: 42px;
+  border: 1px solid var(--border);
+  background: var(--surface);
+  color: var(--text-primary);
+}
+.app .village-friend-item {
+  width: 100%;
+  text-align: left;
+  background: var(--surface-muted);
+  border: 1px solid var(--border);
+  color: var(--text-primary);
+}
+.app .village-friend-text strong,
+.app .village-feed-title {
+  color: var(--text-primary);
+}
+.app .village-friend-text span {
+  color: var(--text-secondary);
+}

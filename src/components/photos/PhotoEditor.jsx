@@ -1,365 +1,255 @@
-import { useState, useRef, useCallback, useEffect } from 'react';
+import { useState, useRef, useEffect } from 'react';
+import MapIcon from '../map/MapIcon.jsx';
+import { useDialogFocus } from '../../hooks/useDialogFocus.js';
+import { fitPhoto, normalizeRotation, exportPhoto } from './photoTransform.js';
 
-/**
- * 照片编辑器组件 - 现代化 UI
- * 裁剪和旋转在同一页面同时操作
- */
-function PhotoEditor({ 
-  photoEditor, 
-  setPhotoEditor, 
-  setPhotoViewer,
-  cropPhoto,
-  refreshMarkers
-}) {
+export default function PhotoEditor({ photoEditor, setPhotoEditor, setPhotoViewer }) {
   const [rotation, setRotation] = useState(0);
-  const [cropArea, setCropArea] = useState(null);
-  const [isDragging, setIsDragging] = useState(false);
-  const [dragType, setDragType] = useState(null); // 'new' | 'move' | 'tl' | 'tr' | 'bl' | 'br'
+  const [crop, setCrop] = useState(null);
+  const [natural, setNatural] = useState({ width: 0, height: 0 });
+  const [available, setAvailable] = useState({ width: 1, height: 1 });
   const [saving, setSaving] = useState(false);
-  const imgRef = useRef(null);
-  const containerRef = useRef(null);
-  const dragStartRef = useRef(null);
-  const loadedUrlRef = useRef(null);
+  const [error, setError] = useState('');
+  const stageRef = useRef(null);
+  const drag = useRef(null);
+  const pending = useRef(false);
+  const fit = natural.width
+    ? fitPhoto(natural.width, natural.height, rotation, available.width, available.height)
+    : null;
+  const hasCrop = crop && crop.width >= 10 && crop.height >= 10;
+  const changed = normalizeRotation(rotation) !== 0 || hasCrop;
 
-  // 重置状态
+  const close = () => {
+    if (pending.current) return;
+    if (photoEditor.returnToViewer) setPhotoViewer(photoEditor.returnToViewer);
+    setPhotoEditor(null);
+  };
+  useDialogFocus(true, '.photo-editor-overlay', close);
   useEffect(() => {
-    if (photoEditor) {
-      setRotation(0);
-      setCropArea(null);
-      loadedUrlRef.current = photoEditor.photoUrl;
-    }
-  }, [photoEditor?.photoUrl]);
-
-  // 组件卸载时清理
-  useEffect(() => {
-    return () => {
-      // 卸载时释放 Blob URL
-      if (loadedUrlRef.current?.startsWith('blob:')) {
-        try {
-          URL.revokeObjectURL(loadedUrlRef.current);
-        } catch {}
-      }
-    };
+    const stage = stageRef.current;
+    const observer = new ResizeObserver(() => {
+      setAvailable({
+        width: Math.max(1, stage.clientWidth - 48),
+        height: Math.max(1, stage.clientHeight - 80),
+      });
+      setCrop(null);
+    });
+    observer.observe(stage);
+    return () => observer.disconnect();
   }, []);
 
-  const handleClose = useCallback(() => {
-    if (photoEditor?.returnToViewer) {
-      setPhotoViewer(photoEditor.returnToViewer);
-    }
-    setPhotoEditor(null);
-  }, [photoEditor, setPhotoViewer, setPhotoEditor]);
-
-  // 获取容器边界
-  const getContainerBounds = () => {
-    const container = containerRef.current;
-    if (!container) return null;
-    return container.getBoundingClientRect();
-  };
-
-  // 裁剪开始
-  const handleMouseDown = e => {
-    if (e.target.closest('.crop-handle')) return; // 由 handle 自己处理
-    
-    const bounds = getContainerBounds();
-    if (!bounds) return;
-    
-    const x = e.clientX - bounds.left;
-    const y = e.clientY - bounds.top;
-    
-    // 检查是否点击在现有裁剪区域内（移动）
-    if (cropArea && 
-        x >= cropArea.x && x <= cropArea.x + cropArea.width &&
-        y >= cropArea.y && y <= cropArea.y + cropArea.height) {
-      setDragType('move');
-      dragStartRef.current = { x, y, cropArea: { ...cropArea } };
-    } else {
-      // 新建裁剪区域
-      setDragType('new');
-      dragStartRef.current = { x, y };
-      setCropArea(null);
-    }
-    setIsDragging(true);
-  };
-
-  // 角落拖拽开始
-  const handleCornerDown = (corner, e) => {
-    e.stopPropagation();
-    const bounds = getContainerBounds();
-    if (!bounds || !cropArea) return;
-    
-    setDragType(corner);
-    dragStartRef.current = { 
-      x: e.clientX - bounds.left, 
-      y: e.clientY - bounds.top,
-      cropArea: { ...cropArea }
+  const point = event => {
+    const bounds = event.currentTarget.getBoundingClientRect();
+    return {
+      x: Math.max(0, Math.min(bounds.width, event.clientX - bounds.left)),
+      y: Math.max(0, Math.min(bounds.height, event.clientY - bounds.top)),
     };
-    setIsDragging(true);
   };
-
-  // 鼠标移动
-  const handleMouseMove = e => {
-    if (!isDragging || !dragStartRef.current) return;
-    
-    const bounds = getContainerBounds();
-    if (!bounds) return;
-    
-    const x = Math.max(0, Math.min(bounds.width, e.clientX - bounds.left));
-    const y = Math.max(0, Math.min(bounds.height, e.clientY - bounds.top));
-    
-    if (dragType === 'new') {
-      const { x: sx, y: sy } = dragStartRef.current;
-      setCropArea({
-        x: Math.min(sx, x),
-        y: Math.min(sy, y),
-        width: Math.abs(x - sx),
-        height: Math.abs(y - sy)
+  const start = event => {
+    if (saving || !fit || event.button !== 0) return;
+    event.preventDefault();
+    event.currentTarget.setPointerCapture(event.pointerId);
+    const p = point(event);
+    const corner = event.target.dataset.corner;
+    const inside =
+      crop &&
+      p.x >= crop.x &&
+      p.x <= crop.x + crop.width &&
+      p.y >= crop.y &&
+      p.y <= crop.y + crop.height;
+    drag.current = { ...p, crop, kind: corner || (inside ? 'move' : 'new') };
+    if (!inside && !corner) setCrop(null);
+  };
+  const move = event => {
+    if (!drag.current || saving) return;
+    const p = point(event);
+    const { x, y, crop: original, kind } = drag.current;
+    if (kind === 'new') {
+      setCrop({
+        x: Math.min(x, p.x),
+        y: Math.min(y, p.y),
+        width: Math.abs(p.x - x),
+        height: Math.abs(p.y - y),
       });
-    } else if (dragType === 'move') {
-      const { x: sx, y: sy, cropArea: orig } = dragStartRef.current;
-      const dx = x - sx, dy = y - sy;
-      setCropArea({
-        x: Math.max(0, Math.min(bounds.width - orig.width, orig.x + dx)),
-        y: Math.max(0, Math.min(bounds.height - orig.height, orig.y + dy)),
-        width: orig.width,
-        height: orig.height
+    } else if (kind === 'move') {
+      setCrop({
+        ...original,
+        x: Math.max(0, Math.min(fit.width - original.width, original.x + p.x - x)),
+        y: Math.max(0, Math.min(fit.height - original.height, original.y + p.y - y)),
       });
     } else {
-      // 角落调整
-      const { cropArea: orig } = dragStartRef.current;
-      const newArea = { ...orig };
-      
-      if (dragType.includes('l')) {
-        newArea.width = orig.x + orig.width - x;
-        newArea.x = x;
-      }
-      if (dragType.includes('r')) {
-        newArea.width = x - orig.x;
-      }
-      if (dragType.includes('t')) {
-        newArea.height = orig.y + orig.height - y;
-        newArea.y = y;
-      }
-      if (dragType.includes('b')) {
-        newArea.height = y - orig.y;
-      }
-      
-      // 确保最小尺寸
-      if (newArea.width >= 20 && newArea.height >= 20) {
-        setCropArea(newArea);
-      }
+      const left = kind.includes('l')
+        ? Math.min(p.x, original.x + original.width - 10)
+        : original.x;
+      const top = kind.includes('t')
+        ? Math.min(p.y, original.y + original.height - 10)
+        : original.y;
+      const right = kind.includes('r')
+        ? Math.max(p.x, original.x + 10)
+        : original.x + original.width;
+      const bottom = kind.includes('b')
+        ? Math.max(p.y, original.y + 10)
+        : original.y + original.height;
+      setCrop({ x: left, y: top, width: right - left, height: bottom - top });
     }
   };
-
-  // 鼠标释放
-  const handleMouseUp = () => {
-    setIsDragging(false);
-    setDragType(null);
-    dragStartRef.current = null;
-  };
-
-  // 旋转 - 不使用模运算，避免动画绕圈
-  const rotateLeft = () => {
-    setRotation(r => r - 90);
-    setCropArea(null);
-  };
-  
-  const rotateRight = () => {
-    setRotation(r => r + 90);
-    setCropArea(null);
-  };
-
-  // 重置 - 直接设为0，CSS transition 会处理动画
-  const handleReset = () => {
-    setRotation(0);
-    setCropArea(null);
-  };
-  
-  // 获取实际旋转角度（0-360）
-  const getActualRotation = () => ((rotation % 360) + 360) % 360;
-
-  // 清除裁剪
-  const clearCrop = () => {
-    setCropArea(null);
-  };
-
-  // 保存
-  const handleSave = async () => {
-    const img = imgRef.current;
-    if (!img) return;
-    
+  const save = async () => {
+    if (pending.current || !changed || !fit) return;
+    pending.current = true;
     setSaving(true);
-
-    const canvas = document.createElement('canvas');
-    const ctx = canvas.getContext('2d');
-    
-    const tempImg = new Image();
-    tempImg.crossOrigin = 'anonymous';
-    
-    tempImg.onload = async () => {
-      const sw = tempImg.naturalWidth, sh = tempImg.naturalHeight;
-      const actualRotation = getActualRotation();
-      const isRotated = actualRotation % 180 !== 0;
-      
-      canvas.width = isRotated ? sh : sw;
-      canvas.height = isRotated ? sw : sh;
-      
-      ctx.save();
-      ctx.translate(canvas.width / 2, canvas.height / 2);
-      ctx.rotate((actualRotation * Math.PI) / 180);
-      ctx.drawImage(tempImg, -sw / 2, -sh / 2);
-      ctx.restore();
-      
-      if (cropArea && cropArea.width > 10 && cropArea.height > 10) {
-        const container = containerRef.current;
-        if (container) {
-          const displayRect = container.getBoundingClientRect();
-          const scaleX = canvas.width / displayRect.width;
-          const scaleY = canvas.height / displayRect.height;
-          
-          const cx = cropArea.x * scaleX;
-          const cy = cropArea.y * scaleY;
-          const cw = cropArea.width * scaleX;
-          const ch = cropArea.height * scaleY;
-          
-          const cropCanvas = document.createElement('canvas');
-          cropCanvas.width = cw;
-          cropCanvas.height = ch;
-          cropCanvas.getContext('2d').drawImage(canvas, cx, cy, cw, ch, 0, 0, cw, ch);
-          
-          canvas.width = cw;
-          canvas.height = ch;
-          ctx.drawImage(cropCanvas, 0, 0);
-        }
-      }
-      
-      canvas.toBlob(blob => {
-        if (!blob) { setSaving(false); return; }
-        const url = URL.createObjectURL(blob);
-        const link = document.createElement('a');
-        link.download = `edited_${Date.now()}.jpg`;
-        link.href = url;
-        link.click();
-        URL.revokeObjectURL(url);
-        setSaving(false);
-        handleClose();
-      }, 'image/jpeg', 0.92);
-    };
-    
-    tempImg.onerror = () => setSaving(false);
-    tempImg.src = photoEditor.photoUrl;
+    setError('');
+    try {
+      const blob = await exportPhoto(photoEditor.photoUrl, rotation, hasCrop ? crop : null, fit);
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.download = `edited_${Date.now()}.jpg`;
+      link.href = url;
+      link.click();
+      setTimeout(() => URL.revokeObjectURL(url), 1000);
+      pending.current = false;
+      close();
+    } catch {
+      setError('导出失败，请检查照片是否加载完成后重试。');
+    } finally {
+      pending.current = false;
+      setSaving(false);
+    }
   };
-
-  if (!photoEditor) return null;
-
-  const actualRotation = getActualRotation();
-  const hasChanges = actualRotation !== 0 || (cropArea && cropArea.width > 10 && cropArea.height > 10);
 
   return (
-    <div 
+    <div
       className="photo-editor-overlay"
-      onMouseMove={handleMouseMove}
-      onMouseUp={handleMouseUp}
-      onMouseLeave={handleMouseUp}
+      role="dialog"
+      aria-modal="true"
+      aria-label="编辑照片"
+      aria-busy={saving}
+      tabIndex={-1}
     >
       <div className="photo-editor-modern">
-        {/* 顶部栏 */}
         <div className="pe-header">
-          <button className="pe-btn pe-cancel" onClick={handleClose}>取消</button>
-          <span className="pe-title">编辑</span>
-          <button 
-            className={`pe-btn pe-done ${hasChanges ? 'active' : ''}`}
-            onClick={handleSave}
-            disabled={!hasChanges || saving}
+          <button type="button" className="pe-btn pe-cancel" onClick={close} disabled={saving}>
+            取消
+          </button>
+          <span className="pe-title">编辑照片</span>
+          <button
+            type="button"
+            className={`pe-btn pe-done ${changed ? 'active' : ''}`}
+            onClick={save}
+            disabled={!changed || saving}
           >
-            {saving ? '保存中...' : '完成'}
+            {saving ? '导出中…' : '导出副本'}
           </button>
         </div>
-
-        {/* 图片区域 */}
-        <div className="pe-canvas-area">
-          <div 
-            ref={containerRef}
+        <div className="pe-canvas-area" ref={stageRef}>
+          <div
             className="pe-image-container"
-            onMouseDown={handleMouseDown}
+            style={fit ? { width: fit.width, height: fit.height } : undefined}
+            onPointerDown={start}
+            onPointerMove={move}
+            onPointerUp={() => {
+              drag.current = null;
+            }}
+            onPointerCancel={() => {
+              drag.current = null;
+            }}
           >
-            <img 
-              ref={imgRef}
-              src={photoEditor.photoUrl} 
-              alt="编辑" 
+            <img
+              src={photoEditor.photoUrl}
+              alt="正在编辑的照片"
               draggable={false}
-              style={{ transform: `rotate(${rotation}deg)` }}
+              onLoad={event =>
+                setNatural({
+                  width: event.currentTarget.naturalWidth,
+                  height: event.currentTarget.naturalHeight,
+                })
+              }
+              onError={() => setError('照片加载失败。')}
+              style={
+                fit
+                  ? {
+                      width: fit.imageWidth,
+                      height: fit.imageHeight,
+                      transform: `translate(-50%, -50%) rotate(${rotation}deg)`,
+                    }
+                  : undefined
+              }
             />
-            
-            {/* 裁剪遮罩和选区 */}
-            {cropArea && cropArea.width > 5 && (
-              <>
-                <div className="pe-crop-overlay" />
-                <div 
-                  className="pe-crop-box"
-                  style={{
-                    left: cropArea.x,
-                    top: cropArea.y,
-                    width: cropArea.width,
-                    height: cropArea.height
-                  }}
-                >
-                  {/* 网格线 */}
-                  <div className="pe-grid">
-                    <div className="pe-grid-h" style={{ top: '33.33%' }} />
-                    <div className="pe-grid-h" style={{ top: '66.66%' }} />
-                    <div className="pe-grid-v" style={{ left: '33.33%' }} />
-                    <div className="pe-grid-v" style={{ left: '66.66%' }} />
-                  </div>
-                  {/* 角落手柄 */}
-                  <div className="crop-handle tl" onMouseDown={e => handleCornerDown('tl', e)} />
-                  <div className="crop-handle tr" onMouseDown={e => handleCornerDown('tr', e)} />
-                  <div className="crop-handle bl" onMouseDown={e => handleCornerDown('bl', e)} />
-                  <div className="crop-handle br" onMouseDown={e => handleCornerDown('br', e)} />
+            {crop && crop.width > 5 && (
+              <div
+                className="pe-crop-box"
+                style={{ left: crop.x, top: crop.y, width: crop.width, height: crop.height }}
+              >
+                <div className="pe-grid">
+                  <div className="pe-grid-h" style={{ top: '33.33%' }} />
+                  <div className="pe-grid-h" style={{ top: '66.66%' }} />
+                  <div className="pe-grid-v" style={{ left: '33.33%' }} />
+                  <div className="pe-grid-v" style={{ left: '66.66%' }} />
                 </div>
-              </>
+                {['tl', 'tr', 'bl', 'br'].map(corner => (
+                  <span key={corner} data-corner={corner} className={`crop-handle ${corner}`} />
+                ))}
+              </div>
             )}
           </div>
-          
-          {/* 右侧复原按钮 */}
-          {hasChanges && (
-            <button className="pe-reset-btn" onClick={handleReset} title="重置全部">
-              <svg viewBox="0 0 24 24"><path d="M12 5V1L7 6l5 5V7c3.31 0 6 2.69 6 6s-2.69 6-6 6-6-2.69-6-6H4c0 4.42 3.58 8 8 8s8-3.58 8-8-3.58-8-8-8z"/></svg>
-            </button>
-          )}
-          
-          {/* 提示文字 */}
-          {!cropArea && !hasChanges && (
-            <div className="pe-hint">拖拽选择裁剪区域</div>
-          )}
-          
-          {/* 状态指示 */}
-          {hasChanges && (
-            <div className="pe-status">
-              {actualRotation !== 0 && <span className="pe-status-item">旋转 {actualRotation}°</span>}
-              {cropArea && cropArea.width > 10 && (
-                <span className="pe-status-item">{Math.round(cropArea.width)} × {Math.round(cropArea.height)}</span>
-              )}
-            </div>
+          {!crop && <p className="pe-hint">拖动鼠标或手指选择裁剪区域</p>}
+          {error && (
+            <p className="pe-status" role="alert">
+              {error}
+            </p>
           )}
         </div>
-
-        {/* 底部工具栏 - 固定布局 */}
         <div className="pe-toolbar">
-          <button className="pe-tool" onClick={rotateLeft} title="逆时针旋转">
-            <svg viewBox="0 0 24 24"><path d="M7.11 8.53L5.7 7.11C4.8 8.27 4.24 9.61 4.07 11h2.02c.14-.87.49-1.72 1.02-2.47zM6.09 13H4.07c.17 1.39.72 2.73 1.62 3.89l1.41-1.42c-.52-.75-.87-1.59-1.01-2.47zm1.01 5.32c1.16.9 2.51 1.44 3.9 1.61V17.9c-.87-.15-1.71-.49-2.46-1.03L7.1 18.32zM13 4.07V1L8.45 5.55 13 10V6.09c2.84.48 5 2.94 5 5.91s-2.16 5.43-5 5.91v2.02c3.95-.49 7-3.85 7-7.93s-3.05-7.44-7-7.93z"/></svg>
+          <button
+            type="button"
+            className="pe-tool"
+            disabled={saving || !fit}
+            aria-label="逆时针旋转"
+            title="逆时针旋转"
+            onClick={() => {
+              setRotation(value => value - 90);
+              setCrop(null);
+            }}
+          >
+            <MapIcon name="rotateLeft" />
           </button>
-          <button className="pe-tool" onClick={rotateRight} title="顺时针旋转">
-            <svg viewBox="0 0 24 24"><path d="M15.55 5.55L11 1v3.07C7.06 4.56 4 7.92 4 12s3.05 7.44 7 7.93v-2.02c-2.84-.48-5-2.94-5-5.91s2.16-5.43 5-5.91V10l4.55-4.45zM19.93 11c-.17-1.39-.72-2.73-1.62-3.89l-1.42 1.42c.54.75.88 1.6 1.02 2.47h2.02zM13 17.9v2.02c1.39-.17 2.74-.71 3.9-1.61l-1.44-1.44c-.75.54-1.59.89-2.46 1.03zm3.89-2.42l1.42 1.41c.9-1.16 1.45-2.5 1.62-3.89h-2.02c-.14.87-.48 1.72-1.02 2.48z"/></svg>
+          <button
+            type="button"
+            className="pe-tool"
+            disabled={saving || !fit}
+            aria-label="顺时针旋转"
+            title="顺时针旋转"
+            onClick={() => {
+              setRotation(value => value + 90);
+              setCrop(null);
+            }}
+          >
+            <MapIcon name="rotateRight" />
           </button>
-          {cropArea && (
-            <button className="pe-tool" onClick={clearCrop} title="清除裁剪">
-              <svg viewBox="0 0 24 24"><path d="M17 15h2V7c0-1.1-.9-2-2-2H9v2h8v8zM7 17V1H5v4H1v2h4v10c0 1.1.9 2 2 2h10v4h2v-4h4v-2H7z"/><path d="M2.5 3.5l18 18" stroke="currentColor" strokeWidth="2"/></svg>
-            </button>
-          )}
+          <button
+            type="button"
+            className="pe-tool"
+            disabled={saving || !crop}
+            aria-label="清除裁剪"
+            title="清除裁剪"
+            onClick={() => setCrop(null)}
+          >
+            <MapIcon name="crop" />
+          </button>
+          <button
+            type="button"
+            className="pe-tool"
+            disabled={saving || !changed}
+            aria-label="重置全部"
+            title="重置全部"
+            onClick={() => {
+              setRotation(0);
+              setCrop(null);
+            }}
+          >
+            <MapIcon name="refresh" />
+          </button>
         </div>
       </div>
     </div>
   );
 }
-
-export default PhotoEditor;

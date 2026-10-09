@@ -1,6 +1,8 @@
 import { useState } from 'react';
-import { v4 as uuidv4 } from 'uuid';
+import useMarkerMenuDrop from '../hooks/useMarkerMenuDrop.js';
 import api from '@/api/index.js';
+import MapIcon from './map/MapIcon.jsx';
+import { useDialogFocus } from '../hooks/useDialogFocus.js';
 
 export default function MarkerContextMenu({
   contextMenu,
@@ -23,6 +25,22 @@ export default function MarkerContextMenu({
 }) {
   const [isDragOver, setIsDragOver] = useState(false);
   const [isMarkerDragOver, setIsMarkerDragOver] = useState(false);
+  useDialogFocus(Boolean(contextMenu || markerMenu), '.context-menu', closeContextMenu);
+
+  const { handleContextDrop, handleMarkerDrop, processing } = useMarkerMenuDrop({
+    contextMenu,
+    setContextMenu,
+    markerMenu,
+    setMarkerMenu,
+    setPreviewPin,
+    setNewMarkerIds,
+    setMarkers,
+    refreshMarkers,
+    fetchPlaceName,
+    showToast,
+    setIsDragOver,
+    setIsMarkerDragOver,
+  });
 
   if (!contextMenu && !markerMenu) return null;
 
@@ -30,10 +48,15 @@ export default function MarkerContextMenu({
     <>
       {contextMenu && (
         <div
-          className={`context-menu ${isDragOver ? 'drag-over' : ''}`}
+          role="dialog"
+          aria-modal="true"
+          aria-label="添加地点照片"
+          tabIndex={-1}
+          aria-busy={processing}
+          className={`context-menu photo-add-menu ${isDragOver ? 'drag-over' : ''}`}
           style={{
-            left: Math.min(contextMenu.x, window.innerWidth - 280),
-            top: Math.min(contextMenu.y, window.innerHeight - 200),
+            left: Math.max(12, Math.min(contextMenu.x, window.innerWidth - 292)),
+            top: Math.max(12, Math.min(contextMenu.y, window.innerHeight - 220)),
           }}
           onDragEnter={e => {
             e.preventDefault();
@@ -53,76 +76,65 @@ export default function MarkerContextMenu({
               setIsDragOver(false);
             }
           }}
-          onDrop={async e => {
-            e.preventDefault();
-            e.stopPropagation();
-            setIsDragOver(false);
-
-            const files = Array.from(e.dataTransfer.files).filter(f =>
-              f.type.startsWith('image/')
-            );
-            if (files.length === 0) return;
-
-            const photos = await Promise.all(files.map(file => {
-              return new Promise(resolve => {
-                const reader = new FileReader();
-                reader.onload = async ev => {
-                  if (window.electronAPI) {
-                    const result = await window.electronAPI.savePhotoFromBase64(ev.target.result);
-                    resolve(result ? { id: result.id, note: '' } : null);
-                  } else {
-                    resolve({ data: ev.target.result, note: '' });
-                  }
-                };
-                reader.readAsDataURL(file);
-              });
-            }));
-
-            const validPhotos = photos.filter(p => p);
-            if (validPhotos.length === 0) return;
-
-            const name = await fetchPlaceName(contextMenu.latlng.lat, contextMenu.latlng.lng);
-
-            const newMarker = {
-              id: uuidv4(),
-              lat: contextMenu.latlng.lat,
-              lng: contextMenu.latlng.lng,
-              name,
-              photos: validPhotos,
-              createdAt: Date.now()
-            };
-            if (window.electronAPI) await window.electronAPI.addMarker(newMarker);
-            setNewMarkerIds(prev => new Set(prev).add(newMarker.id));
-            setTimeout(() => setNewMarkerIds(prev => { const s = new Set(prev); s.delete(newMarker.id); return s; }), 600);
-            refreshMarkers();
-            setContextMenu(null);
-            setPreviewPin(null);
-          }}
+          onDrop={handleContextDrop}
         >
-          <button className="menu-close" onClick={closeContextMenu}>✕</button>
+          <button
+            type="button"
+            aria-label="关闭地点菜单"
+            className="menu-close"
+            onClick={closeContextMenu}
+          >
+            <MapIcon name="close" />
+          </button>
           <div className="context-menu-header">
-            <div className="place-name">📍 {placeName}</div>
-            <div className="coords">🌐 {contextMenu.latlng.lat.toFixed(3)}°, {contextMenu.latlng.lng.toFixed(3)}°</div>
+            <p className="photo-add-label">添加照片</p>
+            <div className="place-name">
+              <MapIcon name="pin" />
+              <span className="photo-add-place" title={placeName}>
+                {placeName}
+              </span>
+            </div>
+            <div className="coords">
+              <MapIcon name="globe" />
+              <span>
+                {contextMenu.latlng.lat.toFixed(3)}°, {contextMenu.latlng.lng.toFixed(3)}°
+              </span>
+            </div>
           </div>
           <div className="menu-actions">
-            <div
+            <button
+              type="button"
+              disabled={processing}
               className={`add-photo-zone ${isDragOver ? 'drag-active' : ''}`}
               onClick={() => addPhotoMarker(contextMenu.latlng)}
             >
-              <span className="zone-icon">{isDragOver ? '📥' : '📷'}</span>
-              <span className="zone-text">点击选择照片</span>
-              <span className="zone-hint">或拖拽照片到这里</span>
-            </div>
+              <span className="zone-icon">
+                <MapIcon name={isDragOver ? 'download' : 'photo'} />
+              </span>
+              <span className="photo-add-copy">
+                <span className="zone-text">
+                  {processing ? '正在添加照片…' : isDragOver ? '松开即可添加' : '点击选择照片'}
+                </span>
+                <span className="zone-hint">
+                  {processing ? '请稍候' : isDragOver ? '照片会保存到此地点' : '或将照片拖到这里'}
+                </span>
+              </span>
+            </button>
           </div>
         </div>
       )}
 
       {markerMenu && (
         <div
+          role="dialog"
+          aria-modal="true"
+          aria-label="地点详情"
+          tabIndex={-1}
+          aria-busy={processing}
           className={`context-menu ${isMarkerDragOver ? 'drag-over' : ''}`}
           style={{
-            left: Math.min(markerMenu.x, window.innerWidth - 280),
-            top: Math.min(markerMenu.y, window.innerHeight - 320),
+            left: Math.max(12, Math.min(markerMenu.x, window.innerWidth - 292)),
+            top: Math.max(12, Math.min(markerMenu.y, window.innerHeight - 340)),
           }}
           onDragEnter={e => {
             e.preventDefault();
@@ -142,114 +154,49 @@ export default function MarkerContextMenu({
               setIsMarkerDragOver(false);
             }
           }}
-          onDrop={async e => {
-            e.preventDefault();
-            e.stopPropagation();
-            setIsMarkerDragOver(false);
-
-            const files = Array.from(e.dataTransfer.files).filter(f =>
-              f.type.startsWith('image/')
-            );
-            if (files.length === 0) return;
-
-            showToast('info', '正在处理照片...', 1000);
-
-            const photos = await Promise.all(files.map(file => {
-              return new Promise(resolve => {
-                const reader = new FileReader();
-                reader.onload = async ev => {
-                  if (window.electronAPI) {
-                    const result = await window.electronAPI.savePhotoFromBase64(ev.target.result);
-                    resolve(result ? { id: result.id, data: ev.target.result, note: '' } : null);
-                  } else {
-                    resolve({ data: ev.target.result, note: '' });
-                  }
-                };
-                reader.readAsDataURL(file);
-              });
-            }));
-
-            const validPhotos = photos.filter(p => p);
-            if (validPhotos.length === 0) return;
-
-            const currentMenu = markerMenu;
-            if (window.electronAPI) {
-              await window.electronAPI.addPhotosToMarker(currentMenu.marker.id, validPhotos);
-
-              setMarkers(prev => {
-                const newMarkers = prev.map(m =>
-                  m.id === currentMenu.marker.id
-                    ? {
-                      ...m,
-                      photoCount: (m.photoCount || 0) + validPhotos.length,
-                      firstPhoto: m.firstPhoto || validPhotos[0]
-                    }
-                    : m
-                );
-                return newMarkers;
-              });
-
-              const updatedMarker = {
-                ...currentMenu.marker,
-                photos: [...(currentMenu.marker.photos || []), ...validPhotos],
-                photoCount: (currentMenu.marker.photos?.length || 0) + validPhotos.length,
-                firstPhoto: currentMenu.marker.photos?.[0] || validPhotos[0]
-              };
-              setMarkerMenu({ ...currentMenu, marker: updatedMarker });
-
-              showToast('success', `已添加 ${validPhotos.length} 张照片`);
-            } else {
-              const savedPhotos = await api.photos.addBatch(currentMenu.marker.id, validPhotos);
-
-              const updatedMarker = {
-                ...currentMenu.marker,
-                photos: [...(currentMenu.marker.photos || []), ...savedPhotos],
-                photoCount: (currentMenu.marker.photos?.length || 0) + savedPhotos.length,
-                firstPhoto: currentMenu.marker.photos?.[0] || savedPhotos[0]
-              };
-
-              await api.markers.update(updatedMarker.id, {
-                photoCount: updatedMarker.photoCount,
-                firstPhoto: updatedMarker.firstPhoto
-              });
-
-              setMarkers(prev => prev.map(m =>
-                m.id === updatedMarker.id
-                  ? {
-                    ...m,
-                    photoCount: updatedMarker.photoCount,
-                    firstPhoto: updatedMarker.firstPhoto
-                  }
-                  : m
-              ));
-
-              setMarkerMenu({ ...currentMenu, marker: updatedMarker });
-
-              showToast('success', `已添加 ${savedPhotos.length} 张照片`);
-            }
-          }}
+          onDrop={handleMarkerDrop}
         >
-          <button className="menu-close" onClick={() => setMarkerMenu(null)}>✕</button>
+          <button
+            type="button"
+            aria-label="关闭地点菜单"
+            className="menu-close"
+            onClick={() => setMarkerMenu(null)}
+          >
+            <MapIcon name="close" />
+          </button>
           <div className="context-menu-header">
-            <div className="place-name">📍 {markerMenu.marker.name || `${markerMenu.marker.lat.toFixed(3)}°, ${markerMenu.marker.lng.toFixed(3)}°`}</div>
+            <div className="place-name">
+              <MapIcon name="pin" />{' '}
+              {markerMenu.marker.name ||
+                `${markerMenu.marker.lat.toFixed(3)}°, ${markerMenu.marker.lng.toFixed(3)}°`}
+            </div>
             <div className="meta-row">
-              <span className="coords">{markerMenu.marker.lat.toFixed(3)}°, {markerMenu.marker.lng.toFixed(3)}°</span>
-              <span className="photo-count">📷 {markerMenu.marker.photos?.length || 0} 张</span>
+              <span className="coords">
+                {markerMenu.marker.lat.toFixed(3)}°, {markerMenu.marker.lng.toFixed(3)}°
+              </span>
+              <span className="photo-count">
+                <MapIcon name="photo" /> {markerMenu.marker.photos?.length || 0} 张
+              </span>
             </div>
           </div>
           <div className="menu-actions">
             <div className="menu-actions-primary">
               {markerMenu.marker.photos?.length > 0 && (
-                <button className="menu-btn primary view" onClick={() => {
-                  setPhotoViewer({
-                    photos: markerMenu.marker.photos,
-                    index: 0,
-                    markerId: markerMenu.marker.id,
-                    returnToMenu: markerMenu
-                  });
-                  setMarkerMenu(null);
-                }}>
-                  <span className="btn-icon">🖼️</span>
+                <button
+                  className="menu-btn primary view"
+                  onClick={() => {
+                    setPhotoViewer({
+                      photos: markerMenu.marker.photos,
+                      index: 0,
+                      markerId: markerMenu.marker.id,
+                      returnToMenu: markerMenu,
+                    });
+                    setMarkerMenu(null);
+                  }}
+                >
+                  <span className="btn-icon">
+                    <MapIcon name="photo" />
+                  </span>
                   <span>查看照片</span>
                 </button>
               )}
@@ -269,7 +216,7 @@ export default function MarkerContextMenu({
                         currentMenu.marker.id,
                         photos.map(p => ({
                           id: p.id,
-                          note: ''
+                          note: '',
                         }))
                       );
 
@@ -279,10 +226,10 @@ export default function MarkerContextMenu({
                         const newMarkers = prev.map(m =>
                           m.id === currentMenu.marker.id
                             ? {
-                              ...m,
-                              photoCount: (m.photoCount || 0) + photos.length,
-                              firstPhoto: m.firstPhoto || newPhotos[0]
-                            }
+                                ...m,
+                                photoCount: (m.photoCount || 0) + photos.length,
+                                firstPhoto: m.firstPhoto || newPhotos[0],
+                              }
                             : m
                         );
                         return newMarkers;
@@ -292,7 +239,7 @@ export default function MarkerContextMenu({
                         ...currentMenu.marker,
                         photos: [...(currentMenu.marker.photos || []), ...newPhotos],
                         photoCount: (currentMenu.marker.photos?.length || 0) + photos.length,
-                        firstPhoto: currentMenu.marker.photos?.[0] || newPhotos[0]
+                        firstPhoto: currentMenu.marker.photos?.[0] || newPhotos[0],
                       };
                       setMarkerMenu({ ...currentMenu, marker: updatedMarker });
 
@@ -316,7 +263,7 @@ export default function MarkerContextMenu({
                             reader.onload = e => {
                               resolve({
                                 data: e.target.result,
-                                note: ''
+                                note: '',
                               });
                             };
                             reader.readAsDataURL(file);
@@ -325,28 +272,31 @@ export default function MarkerContextMenu({
 
                         const photosData = await Promise.all(photoPromises);
 
-                        const savedPhotos = await api.photos.addBatch(currentMenu.marker.id, photosData);
+                        const savedPhotos = await api.photos.addBatch(
+                          currentMenu.marker.id,
+                          photosData
+                        );
 
                         const updatedMarker = {
                           ...currentMenu.marker,
                           photos: [...(currentMenu.marker.photos || []), ...savedPhotos],
                           photoCount: (currentMenu.marker.photos?.length || 0) + savedPhotos.length,
-                          firstPhoto: currentMenu.marker.photos?.[0] || savedPhotos[0]
+                          firstPhoto: currentMenu.marker.photos?.[0] || savedPhotos[0],
                         };
 
                         await api.markers.update(updatedMarker.id, {
                           photoCount: updatedMarker.photoCount,
-                          firstPhoto: updatedMarker.firstPhoto
+                          firstPhoto: updatedMarker.firstPhoto,
                         });
 
                         setMarkers(prev => {
                           const newMarkers = prev.map(m =>
                             m.id === updatedMarker.id
                               ? {
-                                ...m,
-                                photoCount: updatedMarker.photoCount,
-                                firstPhoto: updatedMarker.firstPhoto
-                              }
+                                  ...m,
+                                  photoCount: updatedMarker.photoCount,
+                                  firstPhoto: updatedMarker.firstPhoto,
+                                }
                               : m
                           );
                           return newMarkers;
@@ -364,25 +314,40 @@ export default function MarkerContextMenu({
                   }
                 }}
               >
-                <span className="btn-icon">{isMarkerDragOver ? '📥' : '➕'}</span>
+                <span className="btn-icon">
+                  <MapIcon name={isMarkerDragOver ? 'download' : 'plus'} />
+                </span>
                 <span>添加照片</span>
               </button>
             </div>
             {markerMenu.marker.photos?.length > 0 && (
-              <button className="menu-btn note" onClick={() => {
-                setNotesPanel({
-                  markerId: markerMenu.marker.id,
-                  marker: markerMenu.marker,
-                  returnToMenu: markerMenu
-                });
-                setMarkerMenu(null);
-              }}>
-                <span className="btn-icon">📝</span>
+              <button
+                className="menu-btn note"
+                onClick={() => {
+                  setNotesPanel({
+                    markerId: markerMenu.marker.id,
+                    marker: markerMenu.marker,
+                    returnToMenu: markerMenu,
+                  });
+                  setMarkerMenu(null);
+                }}
+              >
+                <span className="btn-icon">
+                  <MapIcon name="edit" />
+                </span>
                 <span>备注</span>
               </button>
             )}
-            <button className="menu-btn danger" onClick={() => { deleteMarkerById(markerMenu.marker.id); setMarkerMenu(null); }}>
-              <span className="btn-icon">🗑️</span>
+            <button
+              className="menu-btn danger"
+              onClick={() => {
+                deleteMarkerById(markerMenu.marker.id);
+                setMarkerMenu(null);
+              }}
+            >
+              <span className="btn-icon">
+                <MapIcon name="trash" />
+              </span>
               <span>删除标记</span>
             </button>
           </div>

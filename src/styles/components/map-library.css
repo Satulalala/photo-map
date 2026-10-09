@@ -1,0 +1,278 @@
+.app .marker-list-panel {
+  width: min(960px, calc(100vw - 48px));
+  height: min(720px, calc(100dvh - 48px));
+  animation: panel-in 260ms cubic-bezier(0.2, 0.8, 0.2, 1) both;
+}
+
+.app .marker-list-panel-inner {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  background: var(--surface);
+}
+
+.app .marker-list-header {
+  min-height: 54px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 12px 18px;
+  border-bottom: 1px solid var(--border);
+  background: var(--surface);
+}
+
+.app .marker-list-header h3 {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  margin: 0;
+  color: var(--text-primary);
+  font-size: 15px;
+  font-weight: var(--weight-semibold);
+}
+
+.app .marker-list-toolbar {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 12px 18px;
+  border-bottom: 1px solid var(--border);
+  background: var(--surface-muted);
+}
+
+.app .marker-list-toolbar .marker-search {
+  min-width: 0;
+  flex: 1;
+  min-height: 40px;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  background: var(--surface);
+  color: var(--text-primary);
+}
+
+.app .marker-list-toolbar .toolbar-btn,
+.app .batch-toggle-btn,
+.app .panel-close {
+  min-height: 38px;
+  border: 1px solid var(--border);
+  border-radius: 9px;
+  background: var(--surface);
+  color: var(--text-secondary);
+  transition:
+    background var(--transition-fast),
+    border-color var(--transition-fast),
+    color var(--transition-fast),
+    transform var(--transition-fast);
+}
+
+.app .batch-toggle-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 0 12px;
+}
+
+.app .batch-toggle-btn .map-icon {
+  width: 16px;
+  height: 16px;
+}
+
+.app .marker-list-toolbar .toolbar-btn:hover,
+.app .batch-toggle-btn:hover,
+.app .panel-close:hover {
+  border-color: var(--accent);
+  background: var(--accent-light);
+  color: var(--accent);
+  transform: translateY(-1px);
+}
+
+.app .marker-list-toolbar .toolbar-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 0 10px;
+}
+
+.app .marker-list-toolbar .toolbar-btn .map-icon,
+.app .menu-check {
+  width: 15px;
+  height: 15px;
+}
+
+.app .menu-check {
+  color: var(--accent);
+  vertical-align: -3px;
+  margin-right: 5px;
+}
+
+.app .panel-close {
+  width: 38px;
+  padding: 0;
+  font-size: 0;
+}
+
+.app .panel-close::before {
+  display: none;
+}
+
+.app .panel-close .map-icon {
+  width: 18px;
+  height: 18px;
+}
+
+.app .marker-list-content {
+  min-height: 0;
+  flex: 1;
+  overflow: auto;
+  background: var(--surface);
+}
+
+.app .dropdown-menu {
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  background: var(--surface-elevated);
+  box-shadow: var(--control-shadow-hover);
+}
+
+.app .dropdown-item {
+  transition:
+    background var(--transition-fast),
+    color var(--transition-fast);
+}
+
+.app .dropdown-item:hover,
+.app .dropdown-item.active {
+  background: var(--accent-light);
+  color: var(--accent);
+}
+
+.app .result-group-title {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.app .result-group-title .map-icon {
+  width: 15px;
+  height: 15px;
+  color: var(--accent);
+}
+
+.app .empty-state {
+  min-height: 180px;
+  display: grid;
+  place-items: center;
+  align-content: center;
+  gap: 10px;
+}
+
+.app .empty-state .map-icon {
+  width: 28px;
+  height: 28px;
+  color: var(--text-muted);
+}
+
+.app .marker-list-meta .map-icon {
+  width: 13px;
+  height: 13px;
+  margin-right: 3px;
+  vertical-align: -2px;
+}
+
+.app .batch-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.app .batch-btn .map-icon {
+  width: 16px;
+  height: 16px;
+}
+
+@media (max-width: 768px) {
+  .app .settings-overlay,
+  .app .marker-list-overlay {
+    padding: 12px;
+  }
+
+  .app .settings-panel,
+  .app .marker-list-panel {
+    width: 100%;
+    height: calc(100dvh - 24px);
+    max-height: none;
+  }
+
+  .app .settings-panel {
+    flex-direction: column;
+  }
+
+  .app .settings-nav {
+    width: 100%;
+    flex: 0 0 auto;
+    padding: 8px;
+    border-right: 0;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .app .settings-nav-header {
+    display: none;
+  }
+
+  .app .settings-nav-items {
+    display: flex;
+    flex-direction: row;
+    gap: 4px;
+    overflow-x: auto;
+    padding: 0;
+  }
+
+  .app .settings-nav-items button {
+    flex: 1 0 0;
+    min-width: 84px;
+    justify-content: center;
+    padding: 0 8px;
+    white-space: nowrap;
+  }
+
+  .app .settings-content {
+    padding: 0;
+  }
+
+  .app .settings-scroll {
+    padding: 18px 14px 72px;
+  }
+
+  .app .settings-footer {
+    margin: 0;
+    padding: 10px 14px;
+  }
+
+  .app .marker-list-toolbar {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .app .marker-list-toolbar .toolbar-actions {
+    width: 100%;
+    display: flex;
+    overflow-x: auto;
+  }
+
+  .app .marker-list-toolbar .toolbar-btn {
+    flex: 1;
+    white-space: nowrap;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .app .settings-overlay,
+  .app .marker-list-overlay,
+  .app .settings-panel,
+  .app .marker-list-panel,
+  .app .settings-page {
+    animation: none !important;
+  }
+}

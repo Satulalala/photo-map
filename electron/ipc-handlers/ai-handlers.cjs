@@ -5,6 +5,27 @@ const fs = require('fs');
 
 module.exports = function registerAiHandlers(ctx) {
   const { getDb, getEmbedding, PHOTO_DIR, log } = ctx;
+  let indexingPromise = null;
+  const ensurePhotoIndex = () => {
+    if (indexingPromise) return indexingPromise;
+    indexingPromise = (async () => {
+      const db = getDb();
+      for (const marker of db.getAllMarkers()) {
+        for (const photo of db.getMarkerById(marker.id)?.photos || []) {
+          if (!photo.id || photo.id.startsWith('data:') || db.hasPhotoEmbedding(photo.id)) continue;
+          const photoPath = path.join(PHOTO_DIR, photo.id);
+          if (!fs.existsSync(photoPath)) continue;
+          const vector = await getEmbedding().getImageEmbedding(photoPath);
+          if (!vector) throw new Error('照片搜索索引生成失败，请检查模型加载状态');
+          // A photo may have been deleted during inference.
+          if (db.getMarkerById(marker.id)?.photos?.some(p => p.id === photo.id)) {
+            db.addPhotoEmbedding(photo.id, marker.id, Array.from(vector));
+          }
+        }
+      }
+    })().finally(() => { indexingPromise = null; });
+    return indexingPromise;
+  };
 
   ipcMain.handle('search-photos-by-content', async (_, { text, topK }) => {
     if (!text || !text.trim()) return [];
@@ -12,12 +33,13 @@ module.exports = function registerAiHandlers(ctx) {
     try {
       const start = Date.now();
       const embedding = getEmbedding();
-
-      const textVec = await Promise.race([
-        embedding.getTextEmbedding(text.trim()),
-        new Promise((_, reject) => setTimeout(() => reject(new Error('语义搜索超时')), 30000)),
-      ]);
-      if (!textVec) return [];
+      const status = embedding.getStatus();
+      if (!status.isLoaded) {
+        throw new Error(status.error || '图片描述搜索模型正在加载，请等待下载完成后重试');
+      }
+      const textVec = await embedding.getTextEmbedding(text.trim());
+      if (!textVec) throw new Error('图片描述编码失败，请重试');
+      await ensurePhotoIndex();
 
       log.info(`[语义搜索] 查询 "${text}" 耗时 ${Date.now() - start}ms`);
 
@@ -41,7 +63,7 @@ module.exports = function registerAiHandlers(ctx) {
       return enriched.filter(r => r.markerName || r.lat);
     } catch (e) {
       log.error('[语义搜索] 失败:', e.message);
-      return [];
+      throw e;
     }
   });
 

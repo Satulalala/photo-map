@@ -57,6 +57,7 @@ docs/
 ### 任务 1：根目录文件整理
 
 **文件：**
+
 - 移动：`append_social.js` → `scripts/append_social.js`
 - 移动：`start.bat` → `scripts/start.bat`
 - 移动：`upload-github.bat` → `scripts/upload-github.bat`
@@ -103,6 +104,7 @@ git commit -m "refactor: reorganize root directory files
 ### 任务 2：创建 useMarkers Hook
 
 **文件：**
+
 - 创建：`src/hooks/useMarkers.js`
 - 修改：`src/App.jsx`
 
@@ -169,11 +171,13 @@ export function useMarkers() {
 - [ ] **步骤 2：在 App.jsx 中导入并使用 useMarkers**
 
 在 App.jsx 顶部添加导入：
+
 ```javascript
 import { useMarkers } from './hooks/useMarkers.js';
 ```
 
 在 App 函数内部替换 markers 相关状态：
+
 ```javascript
 const {
   markers, markersLoading, newMarkerIds, markersStateRef,
@@ -201,6 +205,7 @@ git commit -m "refactor: extract useMarkers hook from App.jsx"
 ### 任务 3：创建 usePhotos Hook
 
 **文件：**
+
 - 创建：`src/hooks/usePhotos.js`
 - 修改：`src/App.jsx`
 
@@ -269,7 +274,6 @@ export function usePhotos() {
 ```
 
 - [ ] **步骤 2：在 App.jsx 中导入并使用 usePhotos**
-
 - [ ] **步骤 3：运行开发服务器验证**
 
 ```bash
@@ -288,6 +292,7 @@ git commit -m "refactor: extract usePhotos hook from App.jsx"
 ### 任务 4：创建 useSearch Hook
 
 **文件：**
+
 - 创建：`src/hooks/useSearch.js`
 - 修改：`src/App.jsx`
 
@@ -398,9 +403,7 @@ export function useSearch(mapRef) {
 ```
 
 - [ ] **步骤 2：在 App.jsx 中导入并使用 useSearch**
-
 - [ ] **步骤 3：运行开发服务器验证**
-
 - [ ] **步骤 4：Commit**
 
 ```bash
@@ -413,6 +416,7 @@ git commit -m "refactor: extract useSearch hook from App.jsx"
 ### 任务 5：创建 SearchBar 组件
 
 **文件：**
+
 - 创建：`src/components/map/SearchBar.jsx`
 - 修改：`src/App.jsx`
 
@@ -521,9 +525,7 @@ export default function SearchBar({
 ```
 
 - [ ] **步骤 2：在 App.jsx 中导入并使用 SearchBar**
-
 - [ ] **步骤 3：运行开发服务器验证**
-
 - [ ] **步骤 4：Commit**
 
 ```bash
@@ -536,6 +538,7 @@ git commit -m "refactor: extract SearchBar component from App.jsx"
 ### 任务 6：创建 Toolbar 组件
 
 **文件：**
+
 - 创建：`src/components/map/Toolbar.jsx`
 - 修改：`src/App.jsx`
 
@@ -606,9 +609,7 @@ export default function Toolbar({
 ```
 
 - [ ] **步骤 2：在 App.jsx 中导入并使用 Toolbar**
-
 - [ ] **步骤 3：运行开发服务器验证**
-
 - [ ] **步骤 4：Commit**
 
 ```bash
@@ -621,6 +622,7 @@ git commit -m "refactor: extract Toolbar component from App.jsx"
 ### 任务 7：创建 NoteEditor 组件
 
 **文件：**
+
 - 创建：`src/components/panels/NoteEditor.jsx`
 - 修改：`src/App.jsx`
 
@@ -659,9 +661,7 @@ export default function NoteEditor({
 ```
 
 - [ ] **步骤 2：在 App.jsx 中导入并使用 NoteEditor**
-
 - [ ] **步骤 3：运行开发服务器验证**
-
 - [ ] **步骤 4：Commit**
 
 ```bash
@@ -674,6 +674,7 @@ git commit -m "refactor: extract NoteEditor component from App.jsx"
 ### 任务 8：创建 MarkerListPanel 组件
 
 **文件：**
+
 - 创建：`src/components/panels/MarkerListPanel.jsx`
 - 修改：`src/App.jsx`
 
@@ -822,9 +823,7 @@ export default function MarkerListPanel({
 ```
 
 - [ ] **步骤 2：在 App.jsx 中导入并使用 MarkerListPanel**
-
 - [ ] **步骤 3：运行开发服务器验证**
-
 - [ ] **步骤 4：Commit**
 
 ```bash
@@ -837,6 +836,7 @@ git commit -m "refactor: extract MarkerListPanel component from App.jsx"
 ### 任务 9：创建 NotesPanel 组件
 
 **文件：**
+
 - 创建：`src/components/panels/NotesPanel.jsx`
 - 修改：`src/App.jsx`
 
@@ -910,9 +910,7 @@ export default function NotesPanel({
 ```
 
 - [ ] **步骤 2：在 App.jsx 中导入并使用 NotesPanel**
-
 - [ ] **步骤 3：运行开发服务器验证**
-
 - [ ] **步骤 4：Commit**
 
 ```bash
@@ -925,6 +923,7 @@ git commit -m "refactor: extract NotesPanel component from App.jsx"
 ### 任务 10：创建 MarkerContextMenu 组件
 
 **文件：**
+
 - 创建：`src/components/markers/MarkerContextMenu.jsx`
 - 修改：`src/App.jsx`
 
@@ -1008,9 +1007,7 @@ export default function MarkerContextMenu({
 ```
 
 - [ ] **步骤 2：在 App.jsx 中导入并使用 MarkerContextMenu**
-
 - [ ] **步骤 3：运行开发服务器验证**
-
 - [ ] **步骤 4：Commit**
 
 ```bash
@@ -1023,6 +1020,7 @@ git commit -m "refactor: extract MarkerContextMenu component from App.jsx"
 ### 任务 11：最终验证和清理
 
 **文件：**
+
 - 修改：`src/App.jsx`
 
 - [ ] **步骤 1：检查 App.jsx 行数**
@@ -1040,13 +1038,13 @@ npm run web:dev
 ```
 
 测试清单：
+
 - [ ] 地图正常加载
 - [ ] 搜索功能正常
 - [ ] 标记创建/删除正常
 - [ ] 照片查看/编辑正常
 - [ ] 备注管理正常
 - [ ] 工具栏功能正常
-
 - [ ] **步骤 3：运行 lint 检查**
 
 ```bash

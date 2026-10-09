@@ -1,3 +1,7 @@
+import ThemeControl from './ThemeControl.jsx';
+import MapIcon from '../map/MapIcon.jsx';
+import { useLayoutEffect, useRef } from 'react';
+
 export default function SettingsContent({
   settingsTab,
   user,
@@ -12,6 +16,7 @@ export default function SettingsContent({
   syncingNow,
   syncApiBase,
   onLogout,
+  onOpenLogin,
   onTempSettingsChange,
   onSaveSettings,
   onCloseSettings,
@@ -20,23 +25,15 @@ export default function SettingsContent({
   onRunCloudSync,
   onClearTileCache,
 }) {
+  const scrollRef = useRef(null);
+  useLayoutEffect(() => { if (scrollRef.current) scrollRef.current.scrollTop = 0; }, [settingsTab]);
   return (
     <div className="settings-content">
-      <button className="settings-close" onClick={() => {
-        const hasChanges = JSON.stringify(tempSettings) !== JSON.stringify(mapSettings);
-        if (hasChanges) {
-          if (window.confirm('设置已更改但未保存，是否保存？')) {
-            onSaveSettings(tempSettings);
-          } else {
-            onTempSettingsChange(mapSettings);
-          }
-        }
-        onCloseSettings();
-      }}>✕</button>
-
+      <button className="settings-close" onClick={onCloseSettings} aria-label="关闭设置"><MapIcon name="close" /></button>
+      <div className="settings-scroll" ref={scrollRef}>
       {settingsTab === 'user' && (
         <div className="settings-page">
-          <h2>👤 个人信息</h2>
+          <h2><MapIcon name="user" />个人信息</h2>
           <p className="page-desc">查看和管理您的账号信息及数据</p>
 
           {user ? (
@@ -53,7 +50,7 @@ export default function SettingsContent({
                       {user.email ? user.email[0].toUpperCase() : 'U'}
                     </span>
                   ) : (
-                    <span style={{ fontSize:'28px' }}>👤</span>
+                    <MapIcon name="user" />
                   )}
                 </div>
                 <div className="user-info">
@@ -62,8 +59,8 @@ export default function SettingsContent({
                   </h3>
                   <div className="user-type">
                     {user.type === 'github' && <span className="badge badge-github">GitHub 账号</span>}
-                    {user.type === 'email' && <span className="badge badge-email">📧 邮箱账号</span>}
-                    {(!user.type || user.type === 'guest') && <span className="badge" style={{ background:'#f3f4f6',color:'#6b7280' }}>👤 游客</span>}
+                    {user.type === 'email' && <span className="badge badge-email"><MapIcon name="info" />邮箱账号</span>}
+                    {(!user.type || user.type === 'guest') && <span className="badge" style={{ background:'#f3f4f6',color:'#6b7280' }}><MapIcon name="user" />游客</span>}
                   </div>
                   {user.email && <div className="user-email">{user.email}</div>}
                   {user.type === 'github' && user.username && <div className="user-email">@{user.username}</div>}
@@ -75,17 +72,17 @@ export default function SettingsContent({
                 <h3>数据统计</h3>
                 <div className="stats-grid">
                   <div className="stat-item">
-                    <div className="stat-icon">📍</div>
+                    <div className="stat-icon"><MapIcon name="pin" /></div>
                     <div className="stat-value">{markersCount}</div>
                     <div className="stat-label">标记点</div>
                   </div>
                   <div className="stat-item">
-                    <div className="stat-icon">📷</div>
+                    <div className="stat-icon"><MapIcon name="photo" /></div>
                     <div className="stat-value">{totalPhotos}</div>
                     <div className="stat-label">照片</div>
                   </div>
                   <div className="stat-item">
-                    <div className="stat-icon">📅</div>
+                    <div className="stat-icon"><MapIcon name="history" /></div>
                     <div className="stat-value">
                       {user.loginTime ? new Date(user.loginTime).toLocaleDateString('zh-CN') : '今天'}
                     </div>
@@ -96,22 +93,22 @@ export default function SettingsContent({
 
               {/* 存储管理 */}
               <div className="setting-group">
-                <h3>💾 存储管理</h3>
+                <h3><MapIcon name="photo" />存储管理</h3>
                 <div className="storage-cards">
                   <div className="storage-card">
-                    <div className="storage-icon">🗺️</div>
+                    <div className="storage-icon"><MapIcon name="map" /></div>
                     <div className="storage-value">{cacheStats.count}</div>
                     <div className="storage-label">缓存瓦片</div>
                   </div>
                   <div className="storage-card">
-                    <div className="storage-icon">📦</div>
+                    <div className="storage-icon"><MapIcon name="photo" /></div>
                     <div className="storage-value">{(cacheStats.size / 1024 / 1024).toFixed(1)}</div>
                     <div className="storage-label">MB 缓存</div>
                   </div>
                 </div>
                 <div className="action-buttons">
                   <button className="action-btn" onClick={onClearTileCache}>
-                    <span>🧹</span>
+                    <MapIcon name="trash" />
                     <div><strong>清除瓦片缓存</strong><small>释放磁盘空间，不影响标记数据</small></div>
                   </button>
                 </div>
@@ -122,7 +119,7 @@ export default function SettingsContent({
                 <h3>账号操作</h3>
                 <div className="action-buttons">
                   <button className="action-btn danger" onClick={onLogout}>
-                    <span>🚪</span>
+                    <MapIcon name="logout" />
                     <div>
                       <strong>退出登录</strong>
                       <small>退出当前账号</small>
@@ -133,13 +130,13 @@ export default function SettingsContent({
 
               {/* 云同步控制 */}
               <div className="setting-group">
-                <h3>☁️ 云端同步</h3>
+                <h3><MapIcon name="refresh" />云端同步</h3>
                 <div className="setting-row">
                   <div className="setting-label">
                     <strong>同步状态</strong>
                     <span>当前网络：{isOnline ? '在线' : '离线'}，队列：{syncQueueSize} 条</span>
                   </div>
-                  <label className="switch">
+                  <label className="switch" aria-label="启用云端同步">
                     <input
                       type="checkbox"
                       checked={cloudSyncEnabled}
@@ -161,7 +158,7 @@ export default function SettingsContent({
                 </div>
                 <div className="action-buttons">
                   <button className="action-btn" disabled={!cloudSyncEnabled || !isOnline || syncingNow} onClick={onRunCloudSync}>
-                    <span>🔄</span>
+                    <MapIcon name="refresh" />
                     <div>
                       <strong>{syncingNow ? '同步中...' : '立即同步'}</strong>
                       <small>将本地标记与照片元数据同步到云端并拉取最新数据</small>
@@ -172,7 +169,7 @@ export default function SettingsContent({
 
               {/* 数据同步提示 */}
               <div className="setting-tip">
-                <span>💡</span>
+                <MapIcon name="info" />
                 <p>离线时数据仍保存在本地，可继续使用。联网后自动同步；地球村功能需联网。</p>
               </div>
             </>
@@ -180,11 +177,11 @@ export default function SettingsContent({
             <>
               {/* 未登录状态 */}
               <div className="guest-card">
-                <div className="guest-icon">👤</div>
+                <div className="guest-icon"><MapIcon name="user" /></div>
                 <h3>游客模式</h3>
                 <p>您当前以游客身份使用，数据仅保存在本地设备。</p>
-                <button className="login-prompt-btn" onClick={onCloseSettings}>
-                  <span>🔐</span>
+                <button type="button" className="login-prompt-btn" onClick={onOpenLogin}>
+                    <MapIcon name="logout" />
                   <span>登录账号</span>
                 </button>
               </div>
@@ -194,21 +191,21 @@ export default function SettingsContent({
                 <h3>登录后可以</h3>
                 <div className="benefits-list">
                   <div className="benefit-item">
-                    <span className="benefit-icon">☁️</span>
+                    <span className="benefit-icon"><MapIcon name="refresh" /></span>
                     <div className="benefit-text">
                       <strong>云端同步</strong>
                       <small>在多个设备间同步数据</small>
                     </div>
                   </div>
                   <div className="benefit-item">
-                    <span className="benefit-icon">🔒</span>
+                    <span className="benefit-icon"><MapIcon name="settings" /></span>
                     <div className="benefit-text">
                       <strong>数据备份</strong>
                       <small>自动备份，永不丢失</small>
                     </div>
                   </div>
                   <div className="benefit-item">
-                    <span className="benefit-icon">🌐</span>
+                    <span className="benefit-icon"><MapIcon name="globe" /></span>
                     <div className="benefit-text">
                       <strong>跨平台访问</strong>
                       <small>随时随地访问您的相册</small>
@@ -223,8 +220,9 @@ export default function SettingsContent({
 
       {settingsTab === 'appearance' && (
         <div className="settings-page">
-          <h2>🎨 个性化&显示效果</h2>
+          <h2><MapIcon name="palette" />个性化与显示效果</h2>
           <p className="page-desc">统一调整视觉风格与地图显示体验</p>
+          <ThemeControl />
 
           <div className="setting-group">
             <h3>画质设置</h3>
@@ -233,7 +231,7 @@ export default function SettingsContent({
                 <strong>抗锯齿</strong>
                 <span>平滑地图边缘，提升画质但会增加GPU负担</span>
               </div>
-              <label className="switch">
+              <label className="switch" aria-label="抗锯齿">
                 <input type="checkbox" checked={tempSettings.antialias} onChange={e => onTempSettingsChange(s => ({ ...s, antialias: e.target.checked }))} />
                 <span className="slider" />
               </label>
@@ -247,7 +245,7 @@ export default function SettingsContent({
                 <strong>允许旋转</strong>
                 <span>右键拖动可旋转地图视角</span>
               </div>
-              <label className="switch">
+              <label className="switch" aria-label="允许旋转">
                 <input type="checkbox" checked={tempSettings.dragRotate} onChange={e => onTempSettingsChange(s => ({ ...s, dragRotate: e.target.checked }))} />
                 <span className="slider" />
               </label>
@@ -257,7 +255,7 @@ export default function SettingsContent({
                 <strong>世界副本</strong>
                 <span>左右无限滚动，显示多个地球副本</span>
               </div>
-              <label className="switch">
+              <label className="switch" aria-label="世界副本">
                 <input type="checkbox" checked={tempSettings.renderWorldCopies} onChange={e => onTempSettingsChange(s => ({ ...s, renderWorldCopies: e.target.checked }))} />
                 <span className="slider" />
               </label>
@@ -292,7 +290,7 @@ export default function SettingsContent({
 
       {settingsTab === 'performance' && (
         <div className="settings-page">
-          <h2>🚀 性能优化</h2>
+          <h2><MapIcon name="performance" />性能优化</h2>
           <p className="page-desc">调整性能参数以获得更流畅的体验</p>
 
           <div className="setting-group">
@@ -313,18 +311,18 @@ export default function SettingsContent({
             <h3>缓存设置</h3>
             <div className="setting-row">
               <div className="setting-label">
-                <strong>瓦片缓存数量</strong>
-                <span>内存中缓存的地图瓦片数量，越大越流畅但占用更多内存</span>
+                <strong>瓦片缓存上限</strong>
+                <span>自动按当前窗口分配缓存；手动数值仅限制上限，不会预先加载对应数量</span>
               </div>
               <div className="range-control wide">
-                <input type="range" min="1000" max="6000" step="500" value={tempSettings.maxTileCacheSize} onChange={e => onTempSettingsChange(s => ({ ...s, maxTileCacheSize: Number(e.target.value) }))} />
-                <span className="range-value">{tempSettings.maxTileCacheSize}</span>
+                <input type="range" min="0" max="6000" step="500" value={tempSettings.maxTileCacheSize ?? 0} onChange={e => onTempSettingsChange(s => ({ ...s, maxTileCacheSize: Number(e.target.value) || null }))} aria-label="瓦片缓存上限，0 为自动" />
+                <span className="range-value">{tempSettings.maxTileCacheSize || '自动'}</span>
               </div>
             </div>
           </div>
 
           <div className="setting-tip">
-            <span>💡</span>
+            <MapIcon name="info" />
             <p>性能设置修改后需要重启应用才能生效。如果地图卡顿，可以尝试降低瓦片缓存数量。</p>
           </div>
         </div>
@@ -332,7 +330,7 @@ export default function SettingsContent({
 
       {settingsTab === 'about' && (
         <div className="settings-page">
-          <h2>ℹ️ 关于</h2>
+          <h2><MapIcon name="info" />关于</h2>
           <p className="page-desc">地图相册 - 在地图上记录你的旅行回忆</p>
 
           <div className="setting-group">
@@ -350,23 +348,24 @@ export default function SettingsContent({
           <div className="setting-group">
             <h3>核心功能</h3>
             <div className="feature-inline-grid">
-              <div className="feature-inline-item"><span className="fi-icon">🗺️</span><span className="fi-name">交互式地图</span></div>
-              <div className="feature-inline-item"><span className="fi-icon">📷</span><span className="fi-name">照片管理</span></div>
-              <div className="feature-inline-item"><span className="fi-icon">🔍</span><span className="fi-name">智能搜索</span></div>
-              <div className="feature-inline-item"><span className="fi-icon">💾</span><span className="fi-name">本地存储</span></div>
-              <div className="feature-inline-item"><span className="fi-icon">🔥</span><span className="fi-name">热力图</span></div>
-              <div className="feature-inline-item"><span className="fi-icon">📏</span><span className="fi-name">距离测量</span></div>
+              <div className="feature-inline-item"><span className="fi-icon"><MapIcon name="map" /></span><span className="fi-name">交互式地图</span></div>
+              <div className="feature-inline-item"><span className="fi-icon"><MapIcon name="photo" /></span><span className="fi-name">照片管理</span></div>
+              <div className="feature-inline-item"><span className="fi-icon"><MapIcon name="search" /></span><span className="fi-name">智能搜索</span></div>
+              <div className="feature-inline-item"><span className="fi-icon"><MapIcon name="download" /></span><span className="fi-name">本地存储</span></div>
+              <div className="feature-inline-item"><span className="fi-icon"><MapIcon name="heatmap" /></span><span className="fi-name">热力图</span></div>
+              <div className="feature-inline-item"><span className="fi-icon"><MapIcon name="ruler" /></span><span className="fi-name">距离测量</span></div>
             </div>
           </div>
 
           <div className="setting-tip">
-            <span>❤️</span>
+            <MapIcon name="check" />
             <p>感谢使用地图相册！如有问题或建议，欢迎反馈。</p>
           </div>
         </div>
       )}
 
       {/* 底部保存按钮 - 仅在地图和性能设置页显示 */}
+      </div>
       {(settingsTab === 'performance' || settingsTab === 'appearance') && (
         <div className="settings-footer">
           <button

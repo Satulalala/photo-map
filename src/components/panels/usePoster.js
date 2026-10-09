@@ -200,7 +200,7 @@ export default function usePoster({ markers, user, stats }) {
     ctx.font = `700 ${Math.round(width * 0.038)}px "Microsoft YaHei"`;
     ctx.fillText(`${user?.username || user?.email || '我的'} · 全球足迹海报`, width * 0.05, height * 0.84);
 
-    const chips = [`国土覆盖 ${stats.homelandCoverage}%`, `全球覆盖 ${stats.globalCoverage}%`, `到访国家 ${stats.visitedCountryCount}`];
+    const chips = [`省份覆盖 ${stats.homelandCoverage}%`, `照片记录 ${stats.totalPhotos} 张`, `到访国家 ${stats.visitedCountryCount}`];
     ctx.font = `600 ${Math.round(width * 0.015)}px "Microsoft YaHei"`;
     let chipX = width * 0.05;
     const chipY = height * 0.88;

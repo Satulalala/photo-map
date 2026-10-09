@@ -1,0 +1,195 @@
+.app .context-menu {
+  width: min(280px, calc(100vw - 24px));
+  max-height: calc(100dvh - 24px);
+  overflow: auto;
+  padding: 18px;
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  background: var(--surface-elevated);
+  color: var(--text-primary);
+  box-shadow: var(--control-shadow-hover);
+  backdrop-filter: blur(16px);
+  animation: content-in 180ms ease both;
+}
+.app .context-menu-header {
+  background: transparent;
+  border-bottom: 1px solid var(--border);
+}
+.app .place-name {
+  color: var(--text-primary);
+  font-size: 14px;
+  font-weight: 600;
+  padding-right: 24px;
+}
+.app .place-name .map-icon,
+.app .coords .map-icon,
+.app .photo-count .map-icon {
+  width: 14px;
+  height: 14px;
+  vertical-align: -2px;
+}
+.app .menu-close,
+.app .life-close-btn,
+.app .village-shell-close {
+  display: grid;
+  place-items: center;
+  width: 40px;
+  height: 40px;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  background: var(--surface-muted);
+  color: var(--text-secondary);
+}
+.app .menu-close {
+  top: 10px;
+  right: 10px;
+  width: 32px;
+  height: 32px;
+}
+.app .add-photo-zone {
+  width: 100%;
+  background: var(--surface-muted);
+  color: var(--text-secondary);
+  border: 1px dashed var(--border);
+  border-radius: 12px;
+}
+.app .add-photo-zone:hover,
+.app .add-photo-zone.drag-active {
+  border-color: var(--accent);
+  background: var(--accent-light);
+}
+.app .zone-icon .map-icon {
+  width: 28px;
+  height: 28px;
+  color: var(--accent);
+}
+
+/* A compact location header and one upload target for new map points. */
+.app .photo-add-menu {
+  padding: 14px;
+}
+.app .photo-add-menu .context-menu-header {
+  padding: 0 28px 0 0;
+  margin-bottom: 12px;
+  border-bottom: none;
+}
+.app .photo-add-label {
+  margin: 0 0 8px;
+  color: var(--text-muted);
+  font-size: 11px;
+  font-weight: 500;
+}
+.app .photo-add-menu .place-name {
+  display: flex;
+  align-items: flex-start;
+  gap: 6px;
+  padding: 0;
+  line-height: 1.5;
+}
+.app .photo-add-menu .place-name .map-icon {
+  margin-top: 3px;
+  flex: 0 0 14px;
+}
+.app .photo-add-place {
+  display: -webkit-box;
+  min-width: 0;
+  overflow: hidden;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+}
+.app .photo-add-menu .coords {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: 5px;
+  font-size: 11px;
+}
+.app .photo-add-menu .menu-actions {
+  padding: 0;
+}
+.app .photo-add-menu .menu-close {
+  border-color: transparent;
+  background: transparent;
+  opacity: 1;
+}
+.app .photo-add-menu .menu-close:hover {
+  background: var(--surface-muted);
+  color: var(--text-primary);
+  transform: none;
+}
+.app .photo-add-menu .add-photo-zone {
+  min-height: 84px;
+  margin: 0;
+  padding: 14px;
+  flex-direction: row;
+  justify-content: flex-start;
+  gap: 12px;
+  text-align: left;
+  transition:
+    background-color 150ms ease,
+    border-color 150ms ease;
+}
+.app .photo-add-menu .add-photo-zone:hover,
+.app .photo-add-menu .add-photo-zone.drag-active {
+  transform: none;
+  animation: none;
+}
+.app .photo-add-menu .add-photo-zone:disabled {
+  cursor: wait;
+}
+.app .photo-add-menu .zone-icon {
+  display: grid;
+  place-items: center;
+  width: 36px;
+  height: 36px;
+  flex: 0 0 36px;
+  border-radius: 9px;
+  background: var(--accent-light);
+}
+.app .photo-add-menu .zone-icon .map-icon {
+  width: 20px;
+  height: 20px;
+}
+.app .photo-add-menu .add-photo-zone:hover .zone-icon {
+  transform: none;
+}
+.app .photo-add-copy {
+  display: grid;
+  gap: 3px;
+}
+.app .photo-add-menu .zone-text {
+  color: var(--text-primary);
+  font-size: 13px;
+}
+.app .photo-add-menu .zone-hint {
+  font-size: 11px;
+  font-weight: 400;
+}
+@media (prefers-reduced-motion: reduce) {
+  .app .photo-add-menu,
+  .app .photo-add-menu .add-photo-zone,
+  .app .photo-add-menu .zone-icon {
+    animation: none;
+    transition: none;
+  }
+}
+.app .menu-btn {
+  min-height: 42px;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  background: var(--surface-muted);
+  color: var(--text-primary);
+  box-shadow: none;
+}
+.app .menu-btn:hover {
+  border-color: var(--accent);
+  background: var(--accent-light);
+  color: var(--accent);
+}
+.app .menu-btn.danger {
+  color: var(--danger);
+}
+.app .menu-btn.danger:hover {
+  border-color: var(--danger);
+  background: var(--danger-light);
+}

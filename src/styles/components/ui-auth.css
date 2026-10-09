@@ -1,0 +1,354 @@
+/* Quiet account actions leave the globe as the page's visual focus. */
+.login-buttons-container {
+  position: fixed;
+  z-index: 10000;
+  top: max(20px, env(safe-area-inset-top));
+  right: 24px;
+  left: auto;
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 8px;
+  width: max-content;
+  max-width: calc(100vw - 24px);
+  transform: none;
+  animation: auth-choice-in 180ms ease-out both;
+}
+
+@keyframes auth-choice-in {
+  from {
+    opacity: 0;
+  }
+
+  to {
+    opacity: 1;
+  }
+}
+
+.login-drop-btn {
+  box-sizing: border-box;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  min-width: 0;
+  height: 44px;
+  min-height: 44px;
+  padding: 9px 12px;
+  border: 1px solid rgb(255 255 255 / 18%);
+  border-radius: 8px;
+  background: rgb(15 23 42 / 42%);
+  color: #f1f5f9;
+  box-shadow: none;
+  font: inherit;
+  font-size: 14px;
+  font-weight: 500;
+  white-space: nowrap;
+  cursor: pointer;
+  transition:
+    background-color 150ms ease,
+    border-color 150ms ease,
+    box-shadow 150ms ease,
+    transform 150ms ease;
+}
+
+.login-buttons-container .login-drop-btn.primary,
+.login-buttons-container .login-drop-btn.tertiary {
+  padding: 9px 12px;
+  font-size: 14px;
+  line-height: 1.2;
+}
+
+.login-drop-btn::before,
+.login-drop-btn::after {
+  display: none;
+}
+
+.login-drop-btn svg,
+.login-drop-btn .map-icon {
+  display: block;
+  flex: 0 0 18px;
+  width: 18px;
+  height: 18px;
+}
+
+.login-drop-btn.primary {
+  background: rgb(255 255 255 / 5%);
+  border-color: rgb(255 255 255 / 30%);
+  color: #fff;
+}
+
+.login-drop-btn.secondary {
+  width: max-content;
+  max-width: 100%;
+  height: 36px;
+  min-height: 36px;
+  padding: 6px 12px;
+  border-color: transparent;
+  background: transparent;
+  color: rgb(226 232 240 / 62%);
+  box-shadow: none;
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+  cursor: not-allowed;
+  opacity: 1;
+}
+
+.login-drop-btn.secondary small {
+  color: rgb(226 232 240 / 50%);
+  font-size: 11px;
+  font-weight: 500;
+}
+
+.login-drop-btn.tertiary {
+  border-color: transparent;
+  background: transparent;
+  color: #e2e8f0;
+}
+
+.login-drop-btn:not(:disabled):hover {
+  background: rgb(255 255 255 / 8%);
+  border-color: rgb(255 255 255 / 30%);
+  transform: translateY(-1px);
+}
+
+.login-drop-btn.primary:not(:disabled):hover {
+  background: rgb(255 255 255 / 8%);
+  border-color: rgb(255 255 255 / 50%);
+}
+
+.login-buttons-container .login-drop-btn.tertiary:hover:not(:disabled) {
+  background: rgb(255 255 255 / 8%);
+  border-color: rgb(255 255 255 / 30%);
+  transform: translateY(-1px);
+}
+
+.login-drop-btn:not(:disabled):active {
+  transform: translateY(0);
+}
+
+.login-drop-btn:focus-visible,
+.globe-action.is-ready .globe-bar:focus-visible {
+  outline: 2px solid #fff;
+  outline-offset: 3px;
+  box-shadow: 0 0 0 5px rgb(15 23 42 / 82%);
+}
+
+.email-form-modal button:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: -3px;
+  box-shadow: none;
+}
+
+/* The map action adopts the same solid, readable treatment once enabled. */
+.globe-action.is-ready .globe-bar {
+  box-sizing: border-box;
+  width: 100%;
+  height: 44px;
+  min-height: 44px;
+  padding: 0 16px;
+  border: 1px solid var(--accent);
+  border-radius: 12px;
+  background: var(--accent);
+  color: var(--on-accent);
+  box-shadow: var(--shadow-md);
+  font-family: var(--font-sans);
+  transition:
+    background-color 150ms ease,
+    border-color 150ms ease,
+    box-shadow 150ms ease,
+    transform 150ms ease;
+}
+
+.globe-action.is-ready .globe-bar-fill {
+  background: transparent;
+}
+
+.globe-action.is-ready .globe-bar-text {
+  color: var(--on-accent);
+  font-size: 14px;
+  font-weight: 600;
+  letter-spacing: 0;
+}
+
+.globe-action.is-ready .globe-bar:hover:not(:disabled) {
+  background: var(--accent-hover);
+  border-color: var(--accent-hover);
+  transform: translateY(-1px);
+}
+
+.globe-action.is-ready .globe-bar:active:not(:disabled) {
+  transform: translateY(0);
+}
+
+/* Dialog surfaces and fields use the existing theme tokens. */
+.email-form-overlay {
+  padding: 16px;
+  background: var(--overlay);
+  backdrop-filter: blur(10px);
+}
+
+.email-form-modal {
+  width: min(420px, 100%);
+  max-height: calc(100dvh - 32px);
+  overflow: auto;
+  border: 1px solid var(--surface-elevated-border);
+  border-radius: 20px;
+  background: var(--surface-elevated);
+  color: var(--text-primary);
+  box-shadow: var(--shadow-xl);
+  animation: panel-in 220ms ease both;
+}
+
+.email-form-tabs {
+  border-color: var(--border);
+  background: var(--surface-muted);
+}
+
+.tab-btn {
+  min-height: 44px;
+  background: transparent;
+  color: var(--text-secondary);
+}
+
+.tab-btn.active {
+  color: var(--accent);
+}
+
+.email-form input {
+  min-height: 46px;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  background: var(--surface-muted);
+  color: var(--text-primary);
+}
+
+.email-form input:focus {
+  border-color: var(--accent);
+  box-shadow: var(--focus-ring);
+}
+
+.email-form .form-field label {
+  color: var(--text-secondary);
+  font-size: 13px;
+}
+
+.password-toggle {
+  width: 44px;
+  min-height: 44px;
+  color: var(--text-secondary);
+  font-size: 12px;
+}
+
+.form-submit-btn {
+  min-height: 46px;
+  border-radius: 10px;
+  background: var(--accent);
+  color: var(--on-accent);
+}
+
+.form-submit-btn:hover:not(:disabled) {
+  background: var(--accent-hover);
+  transform: none;
+  box-shadow: none;
+}
+
+.email-form .form-hint {
+  color: var(--text-muted);
+  font-size: 12px;
+  text-align: center;
+}
+
+.email-form-tabs .close-btn {
+  display: grid;
+  place-items: center;
+  width: 44px;
+  height: 44px;
+  color: var(--text-secondary);
+}
+
+.form-message.error {
+  border: 1px solid var(--danger);
+  background: var(--danger-light);
+  color: var(--danger);
+}
+
+.logged-in-bar {
+  border: 1px solid var(--surface-elevated-border);
+  border-radius: 12px;
+  background: var(--surface-elevated);
+  box-shadow: var(--shadow-md);
+}
+
+.logout-btn {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  color: var(--text-secondary);
+  background: transparent;
+}
+
+@media (max-width: 640px) {
+  .login-buttons-container {
+    top: max(16px, env(safe-area-inset-top));
+    right: 12px;
+    display: grid;
+    grid-template-columns: repeat(2, max-content);
+    gap: 4px 8px;
+  }
+
+  .login-drop-btn.secondary {
+    grid-column: 1 / -1;
+    justify-self: end;
+  }
+}
+
+@media (max-width: 359px) {
+  .login-buttons-container {
+    gap: 4px;
+  }
+
+  .login-drop-btn {
+    gap: 6px;
+    padding-inline: 8px;
+  }
+
+  .login-drop-btn.secondary {
+    height: 36px;
+    padding-inline: 8px;
+  }
+
+  .login-buttons-container .login-drop-btn.primary,
+  .login-buttons-container .login-drop-btn.tertiary {
+    padding-inline: 8px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .login-buttons-container,
+  .email-form-overlay,
+  .email-form-modal {
+    animation: none;
+  }
+
+  .login-drop-btn,
+  .email-form-overlay,
+  .email-form-modal,
+  .globe-action.is-ready .globe-bar {
+    transition: none;
+    transform: none;
+  }
+
+  .globe-action.is-ready .globe-bar-fill {
+    transition: none;
+  }
+
+  .login-buttons-container .login-drop-btn.primary:hover:not(:disabled),
+  .login-buttons-container .login-drop-btn.primary:active:not(:disabled),
+  .login-buttons-container .login-drop-btn.tertiary:hover:not(:disabled),
+  .login-buttons-container .login-drop-btn.tertiary:active:not(:disabled),
+  .globe-action.is-ready .globe-bar:hover:not(:disabled),
+  .globe-action.is-ready .globe-bar:active:not(:disabled) {
+    transform: none;
+  }
+}

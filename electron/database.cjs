@@ -362,6 +362,10 @@ function getEmbeddingCount() {
   return vec.getEmbeddingCount(db);
 }
 
+function hasPhotoEmbedding(photoId) {
+  return !!db.prepare('SELECT 1 FROM photo_embedding_meta WHERE photo_id = ?').get(photoId);
+}
+
 // ========== 关闭数据库 ==========
 function closeDatabase() {
   clearFlushTimer();
@@ -397,4 +401,5 @@ module.exports = {
   searchByEmbedding,
   hasEmbeddingTable,
   getEmbeddingCount,
+  hasPhotoEmbedding,
 };

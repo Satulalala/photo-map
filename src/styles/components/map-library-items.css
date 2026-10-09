@@ -1,0 +1,136 @@
+.app .marker-open {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex: 1;
+  min-width: 0;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: var(--text-primary);
+  text-align: left;
+}
+
+.app .marker-info,
+.app .marker-grid-info {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.app .marker-meta,
+.app .marker-grid-meta {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  color: var(--text-secondary);
+}
+.app .marker-meta .map-icon,
+.app .marker-grid-meta .map-icon {
+  width: 14px;
+  height: 14px;
+}
+.app .marker-thumb {
+  width: 48px;
+  height: 48px;
+  object-fit: cover;
+  flex-shrink: 0;
+  border-radius: 10px;
+}
+.app .marker-list-item {
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  background: var(--surface);
+  box-shadow: none;
+  padding: 10px 12px;
+}
+.app .marker-list-item:hover {
+  background: var(--surface-muted);
+  border-color: var(--accent);
+  transform: none;
+}
+.app .marker-list-item.selected {
+  background: var(--accent-light);
+  border-color: var(--accent);
+}
+.app .marker-name,
+.app .marker-grid-name {
+  color: var(--text-primary);
+  font-size: 14px;
+}
+
+.app .marker-meta,
+.app .marker-grid-meta {
+  font-size: 12px;
+}
+.app .marker-grid-item {
+  position: relative;
+  padding: 0;
+  border: 1px solid var(--border);
+  background: var(--surface);
+}
+.app .grid-open {
+  width: 100%;
+  flex-direction: column;
+  gap: 0;
+  align-items: stretch;
+}
+.app .marker-grid-info {
+  padding: 12px;
+}
+.app .grid-expand-btn {
+  position: absolute;
+  right: 8px;
+  bottom: 8px;
+}
+.app .expand-btn,
+.app .grid-expand-btn {
+  display: grid;
+  place-items: center;
+  min-width: 40px;
+  min-height: 40px;
+  padding: 0;
+  color: var(--text-secondary);
+  border: 1px solid var(--border);
+  background: var(--surface-muted);
+  border-radius: 8px;
+}
+.app .expand-btn .map-icon,
+.app .grid-expand-btn .map-icon {
+  transition: transform 150ms ease;
+}
+.app .expand-btn[aria-expanded="true"] .map-icon,
+.app .grid-expand-btn[aria-expanded="true"] .map-icon {
+  transform: rotate(180deg);
+}
+.app .photo-item-inner {
+  display: block;
+  width: 100%;
+  height: 100%;
+  padding: 0;
+  border: 0;
+  background: var(--surface-muted);
+}
+.app .photo-item-expanded {
+  position: relative;
+}
+.app .photo-item-menu {
+  background: var(--surface);
+  border-color: var(--border);
+}
+.app .photo-item-menu button {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  color: var(--text-primary);
+  min-height: 40px;
+}
+.app .photo-item-menu button.danger {
+  color: var(--danger);
+}
+.app .photo-item-add {
+  display: grid;
+  place-items: center;
+  background: var(--surface-muted);
+  border: 1px dashed var(--border);
+  color: var(--text-secondary);
+}

@@ -1,6 +1,22 @@
 const TOKEN_KEY = 'auth_token';
 const USER_KEY = 'auth_user';
+const MAP_SESSION_KEY = 'photo_map_entered';
 const API_BASE = 'http://localhost:8080';
+
+// Navigation preference only; account permissions still depend on the auth token.
+export function hasMapSession() {
+  try {
+    return localStorage.getItem(MAP_SESSION_KEY) === '1';
+  } catch {
+    return false;
+  }
+}
+
+export function rememberMapSession() {
+  try {
+    localStorage.setItem(MAP_SESSION_KEY, '1');
+  } catch {}
+}
 
 export function getToken() {
   try {
@@ -76,6 +92,9 @@ export async function login(email, password) {
 export function logout() {
   removeToken();
   removeCurrentUser();
+  try {
+    localStorage.removeItem(MAP_SESSION_KEY);
+  } catch {}
 }
 
 export function authFetch(url, options = {}) {

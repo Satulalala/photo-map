@@ -2,6 +2,7 @@
  * Web 版本适配器
  * 提供与 Electron API 兼容的接口，但使用 Web API 实现
  */
+import { webStorage } from '../src/api/webStorage.js';
 
 // 模拟 Electron API 的 Web 实现
 class WebElectronAPI {
@@ -99,43 +100,42 @@ class WebElectronAPI {
 
   // 存储照片到 IndexedDB
   async storePhoto(photo) {
+    const transaction = await webStorage.getTransaction('photos', 'readwrite');
     return new Promise((resolve, reject) => {
-      const request = indexedDB.open('PhotoMapDB', 1);
-      
-      request.onerror = () => reject(request.error);
-      request.onsuccess = () => {
-        const db = request.result;
-        const transaction = db.transaction(['photos'], 'readwrite');
-        const store = transaction.objectStore('photos');
-        
-        store.put(photo);
-        transaction.oncomplete = () => resolve(true);
-        transaction.onerror = () => reject(transaction.error);
-      };
-      
-      request.onupgradeneeded = () => {
-        const db = request.result;
-        if (!db.objectStoreNames.contains('photos')) {
-          db.createObjectStore('photos', { keyPath: 'id' });
-        }
-      };
+      transaction.objectStore('photos').put(photo);
+      transaction.oncomplete = () => resolve(true);
+      transaction.onerror = () => reject(transaction.error);
+      transaction.onabort = () => reject(transaction.error);
     });
   }
 
   // 从 IndexedDB 获取照片
   async getStoredPhoto(photoId) {
+    const transaction = await webStorage.getTransaction('photos');
+    const photo = await new Promise((resolve, reject) => {
+      const request = transaction.objectStore('photos').get(photoId);
+      request.onsuccess = () => resolve(request.result);
+      request.onerror = () => reject(request.error);
+    });
+    if (photo) return photo;
+    // Keep legacy photos readable without deleting or replacing the old database.
     return new Promise((resolve, reject) => {
       const request = indexedDB.open('PhotoMapDB', 1);
       
       request.onerror = () => reject(request.error);
       request.onsuccess = () => {
         const db = request.result;
+        if (!db.objectStoreNames.contains('photos')) {
+          db.close();
+          resolve(null);
+          return;
+        }
         const transaction = db.transaction(['photos'], 'readonly');
         const store = transaction.objectStore('photos');
         const getRequest = store.get(photoId);
         
-        getRequest.onsuccess = () => resolve(getRequest.result);
-        getRequest.onerror = () => reject(getRequest.error);
+        getRequest.onsuccess = () => { db.close(); resolve(getRequest.result); };
+        getRequest.onerror = () => { db.close(); reject(getRequest.error); };
       };
     });
   }
@@ -319,7 +319,7 @@ class WebElectronAPI {
         
         // 存储照片数据
         for (const photo of photos) {
-          await this.storePhoto(photo);
+          await this.storePhoto({ ...photo, markerId });
         }
       }
       return true;

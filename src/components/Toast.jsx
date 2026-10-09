@@ -1,9 +1,15 @@
+import MapIcon from './map/MapIcon.jsx';
+
 export default function Toast({ toast }) {
   if (!toast) return null;
+  const iconName = toast.type === 'success' ? 'check' : toast.type === 'error' ? 'close' : 'info';
   return (
-    <div className={`feedback-toast ${toast.type}`}>
+    <div
+      role={toast.type === 'error' ? 'alert' : 'status'}
+      className={`feedback-toast ${toast.type}`}
+    >
       <span className="toast-icon">
-        {toast.type === 'success' ? '✓' : toast.type === 'error' ? '✕' : 'ℹ'}
+        <MapIcon name={iconName} />
       </span>
       {toast.message}
     </div>

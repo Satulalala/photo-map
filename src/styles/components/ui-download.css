@@ -1,0 +1,87 @@
+.desktop-download-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 2200;
+  display: grid;
+  place-items: center;
+  padding: 16px;
+  background: var(--overlay);
+  backdrop-filter: blur(10px);
+}
+.desktop-download-dialog {
+  width: min(420px, 100%);
+  border: 1px solid var(--border);
+  border-radius: 20px;
+  padding: 24px;
+  background: var(--surface);
+  color: var(--text-primary);
+  box-shadow: var(--shadow-xl);
+  font-family: var(--font-sans);
+  animation: panel-in 220ms ease both;
+}
+.desktop-download-dialog header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+.desktop-download-dialog h2 {
+  margin: 0;
+  font-size: 18px;
+}
+.desktop-download-dialog header button {
+  width: 40px;
+  height: 40px;
+  display: grid;
+  place-items: center;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  color: var(--text-secondary);
+  background: var(--surface-muted);
+}
+.desktop-download-dialog .map-icon {
+  width: 20px;
+  height: 20px;
+  fill: none;
+}
+.desktop-download-dialog p {
+  color: var(--text-secondary);
+  line-height: 1.7;
+  font-size: 14px;
+}
+.desktop-download-features {
+  display: grid;
+  gap: 12px;
+  padding: 16px;
+  border-radius: 12px;
+  background: var(--surface-muted);
+}
+.desktop-download-features span,
+.desktop-download-link {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.desktop-download-link {
+  justify-content: center;
+  min-height: 44px;
+  border-radius: 10px;
+  background: var(--accent);
+  color: var(--on-accent);
+  font-size: 14px;
+  text-decoration: none;
+}
+.desktop-download-link:hover {
+  background: var(--accent-hover);
+}
+.desktop-download-dialog button:focus-visible,
+.desktop-download-link:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 3px;
+}
+.app .web-dl-btn {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  animation: none;
+}

@@ -2,31 +2,68 @@ import { useEffect } from 'react';
 
 export function useKeyboard({
   // State values
-  photoViewer, photoEditor, showSettings, showMarkerList, markerMenu, contextMenu, measureMode,
+  photoViewer,
+  photoEditor,
+  showSettings,
+  showMarkerList,
+  markerMenu,
+  contextMenu,
+  measureMode,
   // Refs
-  searchInputRef, markerManageBtnRef, mapRef, userLocationRef,
+  searchInputRef,
+  markerManageBtnRef,
+  mapRef,
+  userLocationRef,
   // Setters and callbacks
-  setPhotoViewer, setPhotoEditor, setShowSettings, setMarkerMenu, setContextMenu, setPreviewPin,
-  setPhotoTransformed, setHeatmapMode,
-  closeMarkerListWithAnimation, exitMeasureMode, toggleMeasureMode,
+  setPhotoViewer,
+  setPhotoEditor,
+  setShowSettings,
+  setMarkerMenu,
+  setContextMenu,
+  setPreviewPin,
+  setPhotoTransformed,
+  setHeatmapMode,
+  closeMarkerListWithAnimation,
+  exitMeasureMode,
+  toggleMeasureMode,
 }) {
   useEffect(() => {
     const handleKeyDown = e => {
+      if (e.defaultPrevented || e.target.closest?.('[role="dialog"]')) return;
       // 忽略输入框中的按键
       if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return;
 
       // Escape - 关闭所有弹窗
       if (e.key === 'Escape') {
-        if (photoViewer) { setPhotoViewer(null); return; }
-        if (photoEditor) { setPhotoEditor(null); return; }
-        if (showSettings) { setShowSettings(false); return; }
+        if (photoViewer) {
+          setPhotoViewer(null);
+          return;
+        }
+        if (photoEditor) {
+          setPhotoEditor(null);
+          return;
+        }
+        if (showSettings) {
+          setShowSettings(false);
+          return;
+        }
         if (showMarkerList) {
           closeMarkerListWithAnimation();
           return;
         }
-        if (markerMenu) { setMarkerMenu(null); return; }
-        if (contextMenu) { setContextMenu(null); setPreviewPin(null); return; }
-        if (measureMode) { exitMeasureMode(); return; }
+        if (markerMenu) {
+          setMarkerMenu(null);
+          return;
+        }
+        if (contextMenu) {
+          setContextMenu(null);
+          setPreviewPin(null);
+          return;
+        }
+        if (measureMode) {
+          exitMeasureMode();
+          return;
+        }
       }
 
       // 照片查看器快捷键
@@ -85,9 +122,28 @@ export function useKeyboard({
 
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [photoViewer, photoEditor, showSettings, showMarkerList, markerMenu, contextMenu, measureMode,
-    searchInputRef, markerManageBtnRef, mapRef, userLocationRef,
-    setPhotoViewer, setPhotoEditor, setShowSettings, setMarkerMenu, setContextMenu, setPreviewPin,
-    setPhotoTransformed, setHeatmapMode,
-    closeMarkerListWithAnimation, exitMeasureMode, toggleMeasureMode]);
+  }, [
+    photoViewer,
+    photoEditor,
+    showSettings,
+    showMarkerList,
+    markerMenu,
+    contextMenu,
+    measureMode,
+    searchInputRef,
+    markerManageBtnRef,
+    mapRef,
+    userLocationRef,
+    setPhotoViewer,
+    setPhotoEditor,
+    setShowSettings,
+    setMarkerMenu,
+    setContextMenu,
+    setPreviewPin,
+    setPhotoTransformed,
+    setHeatmapMode,
+    closeMarkerListWithAnimation,
+    exitMeasureMode,
+    toggleMeasureMode,
+  ]);
 }

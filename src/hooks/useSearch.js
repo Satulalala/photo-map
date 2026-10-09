@@ -198,6 +198,11 @@ export function useSearch(mapRef) {
 
   // 键盘导航
   const handleSearchKeyDown = useCallback(e => {
+    if (e.key === 'Escape') {
+      e.preventDefault();
+      setShowSearchResults(false);
+      return;
+    }
     const items = searchQuery ? searchResults : searchHistory;
     if (!items.length) return;
 
@@ -210,9 +215,6 @@ export function useSearch(mapRef) {
     } else if (e.key === 'Enter' && selectedResultIndex >= 0) {
       e.preventDefault();
       selectSearchResult(items[selectedResultIndex]);
-    } else if (e.key === 'Escape') {
-      setShowSearchResults(false);
-      searchInputRef.current?.blur();
     }
   }, [searchQuery, searchResults, searchHistory, selectedResultIndex, selectSearchResult]);
 

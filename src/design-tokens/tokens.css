@@ -1,0 +1,239 @@
+﻿/* ========================================
+   Field Notes — 地质田野笔记色彩体系
+   核心隐喻：奶油色速写纸 + 测绘墨水 + 冲印店红灯光
+   约束：一屏内 --darkroom-red 出现次数 ≤ 3
+   ======================================== */
+
+:root {
+  /* ---- 纸张 ---- */
+  --paper-white: #ffffff;
+  --paper-card: #f8fafc;
+  --paper-border: #e2e8f0;
+  --paper-border-light: #eef2f7;
+  --paper-tear: #f1f5f9;
+
+  /* ---- 墨水 ---- */
+  --ink-primary: #0f172a;
+  --ink-secondary: #475569;
+  --ink-muted: #64748b;
+  --ink-faint: #cbd5e1;
+
+  /* ---- 暗房红灯（唯一饱和色）---- */
+  --darkroom-red: #2563eb;
+  --darkroom-red-hover: #1d4ed8;
+  --darkroom-red-light: #eff6ff;
+  --darkroom-red-glow: rgba(37, 99, 235, 0.14);
+
+  /* ---- 标本绿 ---- */
+  --specimen-green: #4a7c59;
+  --specimen-green-light: #edf5ef;
+
+  /* ---- 旧地图铜色 ---- */
+  --map-brass: #d4a017;
+  --map-brass-light: #fdf8e8;
+
+  /* ---- 兼容别名（逐步迁移）---- */
+  --bg-primary: var(--paper-white);
+  --bg-secondary: var(--paper-card);
+  --bg-tertiary: var(--paper-tear);
+  --bg-hover: var(--paper-border-light);
+
+  --border: var(--paper-border);
+  --border-light: var(--paper-border-light);
+  --border-focus: var(--darkroom-red);
+
+  --text-primary: var(--ink-primary);
+  --text-secondary: var(--ink-secondary);
+  --text-muted: var(--ink-muted);
+  --text-inverse: #ffffff;
+  --on-accent: #ffffff;
+
+  --accent: var(--darkroom-red);
+  --accent-hover: var(--darkroom-red-hover);
+  --accent-light: var(--darkroom-red-light);
+  --accent-subtle: var(--darkroom-red-light);
+
+  --danger: #dc2626;
+  --danger-hover: #b91c1c;
+  --danger-light: rgba(220, 38, 38, 0.1);
+
+  --success: var(--specimen-green);
+  --success-hover: #3d694b;
+  --success-light: var(--specimen-green-light);
+
+  --warning: var(--map-brass);
+  --warning-light: var(--map-brass-light);
+
+  --info: #5b7a9a;
+  --info-light: #edf3f8;
+
+  /* ---- 界面语义别名 ---- */
+  --surface: var(--paper-white);
+  --surface-muted: var(--paper-card);
+  --surface-subtle: var(--paper-tear);
+  --surface-elevated: rgba(255, 255, 255, 0.94);
+  --surface-elevated-border: rgba(226, 232, 240, 0.9);
+  --control-shadow: 0 8px 24px rgba(15, 23, 42, 0.12);
+  --control-shadow-hover: 0 12px 30px rgba(15, 23, 42, 0.16);
+  --focus-ring: 0 0 0 3px var(--darkroom-red-glow);
+  --control-height: 44px;
+  --control-radius: 12px;
+
+  /* ---- 阴影（暖棕底）---- */
+  --shadow-xs: 0 1px 2px rgba(15, 23, 42, 0.04);
+  --shadow-sm: 0 1px 3px rgba(15, 23, 42, 0.06);
+  --shadow-md: 0 4px 8px rgba(15, 23, 42, 0.08);
+  --shadow-lg: 0 8px 24px rgba(15, 23, 42, 0.1);
+  --shadow-xl: 0 16px 40px rgba(15, 23, 42, 0.14);
+  --shadow-crease: 0 2px 1px rgba(44, 36, 22, 0.04), inset 0 1px 0 rgba(255, 255, 255, 0.6);
+
+  /* ---- 覆盖层 ---- */
+  --overlay: rgba(15, 23, 42, 0.42);
+  --overlay-light: rgba(26, 22, 18, 0.3);
+
+  /* ---- 圆角 ---- */
+  --radius-sm: 4px;
+  --radius-md: 8px;
+  --radius-lg: 12px;
+  --radius-xl: 16px;
+  --radius-full: 9999px;
+
+  /* ---- 间距 ---- */
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 20px;
+  --space-6: 24px;
+  --space-8: 32px;
+  --space-10: 40px;
+  --space-12: 48px;
+
+  /* ---- 字体 ---- */
+  --font-sans:
+    "Noto Sans SC", "Source Sans 3", -apple-system, BlinkMacSystemFont, "PingFang SC", sans-serif;
+  --font-serif: var(--font-sans);
+  --font-mono: "JetBrains Mono", "Fira Code", "Cascadia Code", monospace;
+  --font-italic: "Crimson Text", "Noto Serif SC", "Georgia", serif;
+
+  /* ---- 字号 ---- */
+  --text-xs: 0.75rem;
+  --text-sm: 0.8125rem;
+  --text-base: 0.875rem;
+  --text-md: 0.9375rem;
+  --text-lg: 1.0625rem;
+  --text-xl: 1.25rem;
+  --text-2xl: 1.5rem;
+  --text-3xl: 1.875rem;
+
+  /* ---- 行高 ---- */
+  --leading-tight: 1.25;
+  --leading-normal: 1.5;
+  --leading-relaxed: 1.625;
+
+  /* ---- 字重 ---- */
+  --weight-normal: 400;
+  --weight-medium: 500;
+  --weight-semibold: 600;
+  --weight-bold: 700;
+
+  /* ---- 过渡 ---- */
+  --transition-fast: 150ms ease;
+  --transition-base: 200ms ease;
+  --transition-slow: 300ms cubic-bezier(0.4, 0, 0.2, 1);
+  --transition-spring: 350ms cubic-bezier(0.34, 1.56, 0.64, 1);
+  --transition-drawer-in: 400ms cubic-bezier(0.22, 0.61, 0.36, 1);
+  --transition-drawer-out: 280ms cubic-bezier(0.55, 0.06, 0.68, 0.19);
+
+  /* ---- 层级 ---- */
+  --z-dropdown: 500;
+  --z-sticky: 600;
+  --z-overlay: 1000;
+  --z-modal: 2000;
+  --z-toast: 3000;
+  --z-tooltip: 4000;
+  --z-texture: 9999;
+
+  /* ---- 遗留变量 ---- */
+  --mouse-x: 0px;
+  --mouse-y: 0px;
+}
+
+/* ---- 暗色模式：暗房夜晚 ---- */
+[data-theme="dark"] {
+  --paper-white: #0f172a;
+  --paper-card: #172033;
+  --paper-border: #334155;
+  --paper-border-light: #243149;
+  --paper-tear: #1e293b;
+
+  --ink-primary: #f8fafc;
+  --ink-secondary: #cbd5e1;
+  --ink-muted: #94a3b8;
+  --ink-faint: #475569;
+
+  --on-accent: #0f172a;
+  --darkroom-red: #60a5fa;
+  --darkroom-red-hover: #93c5fd;
+  --darkroom-red-light: #172554;
+  --darkroom-red-glow: rgba(96, 165, 250, 0.2);
+
+  --specimen-green: #5c9a6e;
+  --specimen-green-light: #1a2a1e;
+
+  --map-brass: #c49518;
+  --map-brass-light: #2a2210;
+
+  --shadow-xs: 0 1px 2px rgba(0, 0, 0, 0.15);
+  --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.25);
+  --shadow-md: 0 4px 8px rgba(0, 0, 0, 0.35);
+  --shadow-lg: 0 8px 24px rgba(0, 0, 0, 0.5);
+  --shadow-xl: 0 16px 40px rgba(0, 0, 0, 0.65);
+  --shadow-crease: 0 2px 1px rgba(0, 0, 0, 0.2), inset 0 1px 0 rgba(255, 255, 255, 0.04);
+
+  --overlay: rgba(0, 0, 0, 0.65);
+  --overlay-light: rgba(0, 0, 0, 0.4);
+  --surface-elevated: rgba(15, 23, 42, 0.94);
+  --surface-elevated-border: rgba(71, 85, 105, 0.8);
+  --control-shadow: 0 8px 24px rgba(0, 0, 0, 0.34);
+  --control-shadow-hover: 0 12px 30px rgba(0, 0, 0, 0.46);
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --paper-white: #0f172a;
+    --paper-card: #172033;
+    --paper-border: #334155;
+    --paper-border-light: #243149;
+    --paper-tear: #1e293b;
+
+    --ink-primary: #f8fafc;
+    --ink-secondary: #cbd5e1;
+    --ink-muted: #94a3b8;
+    --ink-faint: #475569;
+
+    --on-accent: #0f172a;
+    --darkroom-red: #60a5fa;
+    --darkroom-red-hover: #93c5fd;
+    --darkroom-red-light: #172554;
+
+    --specimen-green: #5c9a6e;
+    --specimen-green-light: #1a2a1e;
+
+    --map-brass: #c49518;
+    --map-brass-light: #2a2210;
+
+    --shadow-xs: 0 1px 2px rgba(0, 0, 0, 0.15);
+    --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.25);
+    --shadow-md: 0 4px 8px rgba(0, 0, 0, 0.35);
+    --shadow-lg: 0 8px 24px rgba(0, 0, 0, 0.5);
+    --shadow-xl: 0 16px 40px rgba(0, 0, 0, 0.65);
+
+    --overlay: rgba(0, 0, 0, 0.65);
+    --overlay-light: rgba(0, 0, 0, 0.4);
+    --surface-elevated: rgba(15, 23, 42, 0.94);
+    --surface-elevated-border: rgba(71, 85, 105, 0.8);
+    --control-shadow: 0 8px 24px rgba(0, 0, 0, 0.34);
+    --control-shadow-hover: 0 12px 30px rgba(0, 0, 0, 0.46);
+  }
+}

@@ -1,0 +1,227 @@
+/* Photo tools remain dark so the photograph is the focus. */
+.app .photo-viewer,
+.app .photo-editor-overlay {
+  background: #090e18;
+  color: #f8fafc;
+}
+.app .pv-toolbar {
+  left: auto;
+  width: max-content;
+  max-width: calc(100vw - 32px);
+  transform: none;
+  top: max(16px, env(safe-area-inset-top));
+  right: 16px;
+  padding: 6px;
+  border: 1px solid #334155;
+  border-radius: 14px;
+  background: #172033;
+  box-shadow: 0 8px 32px #0004;
+}
+.app .pv-btn,
+.app .photo-nav,
+.app .pe-tool {
+  width: 44px;
+  height: 44px;
+  padding: 0;
+  display: inline-grid;
+  place-items: center;
+  color: #e2e8f0;
+  border: 1px solid transparent;
+  background: transparent;
+  border-radius: 10px;
+  transition:
+    background 150ms ease,
+    transform 150ms ease;
+}
+.app .pv-btn:hover,
+.app .photo-nav:hover,
+.app .pe-tool:hover {
+  background: #334155;
+  transform: none;
+}
+.app .pv-btn:active,
+.app .pe-tool:active {
+  transform: scale(0.94);
+}
+.app .pv-btn-danger {
+  color: #fca5a5;
+}
+.app .pv-btn-danger:hover {
+  background: #450a0a;
+}
+.app .pv-btn svg,
+.app .photo-nav svg,
+.app .pe-tool svg {
+  fill: none;
+  stroke: currentColor;
+  width: 20px;
+  height: 20px;
+}
+.app .photo-nav {
+  background: #172033cc;
+  border-color: #334155;
+}
+.app .photo-nav:hover {
+  transform: translateY(-50%);
+}
+.app .photo-nav.prev {
+  left: 16px;
+}
+.app .photo-nav.next {
+  right: 16px;
+}
+.app .photo-main-wrapper {
+  width: calc(100% - 144px);
+  height: calc(100% - 180px);
+}
+.app .photo-main-wrapper img {
+  max-width: 100%;
+  max-height: 100%;
+  object-fit: contain;
+  border-radius: 4px;
+}
+.app .photo-counter,
+.app .photo-note-bar {
+  border: 1px solid #334155;
+  border-radius: 10px;
+  background: #172033;
+  color: #e2e8f0;
+  box-shadow: none;
+}
+.app .photo-note-bar {
+  max-width: min(680px, calc(100vw - 32px));
+  white-space: normal;
+  overflow-wrap: anywhere;
+  line-height: 1.6;
+}
+.app .batch-select-container {
+  background: var(--surface);
+  color: var(--text-primary);
+  border: 1px solid var(--border);
+  border-radius: 20px;
+}
+.app .batch-select-header {
+  background: var(--surface);
+  border-color: var(--border);
+}
+.app .batch-select-header .pv-btn {
+  color: var(--text-primary);
+}
+.app .batch-select-item {
+  padding: 0;
+  border: 2px solid transparent;
+  background: var(--surface-muted);
+}
+.app .batch-select-item.selected {
+  border-color: var(--accent);
+}
+.app .pe-header,
+.app .pe-toolbar {
+  position: relative;
+  border-color: #334155;
+  background: #172033;
+  padding: 12px 16px;
+  min-height: 68px;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+.app .pe-toolbar {
+  flex-shrink: 0;
+  justify-content: center;
+  gap: 12px;
+  padding-bottom: max(12px, env(safe-area-inset-bottom));
+}
+.app .pe-btn {
+  min-height: 44px;
+  border: 1px solid transparent;
+  border-radius: 10px;
+  padding: 0 14px;
+  color: #cbd5e1;
+}
+.app .pe-done.active {
+  background: #2563eb;
+  color: white;
+}
+.app .pe-done.active:hover {
+  background: #1d4ed8;
+}
+.app .pe-title {
+  color: #f8fafc;
+  font-size: 16px;
+}
+.app .photo-editor-modern {
+  background: #090e18;
+}
+.app .pe-canvas-area {
+  padding: 0;
+  min-height: 0;
+  overflow: hidden;
+}
+.app .pe-image-container {
+  flex: 0 0 auto;
+  touch-action: none;
+  overflow: hidden;
+}
+.app .pe-image-container img {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  max-width: none;
+  max-height: none;
+  object-fit: fill;
+  transition: none;
+}
+.app .pe-hint {
+  position: absolute;
+  bottom: 8px;
+  margin: 0;
+  font-size: 12px;
+  color: #94a3b8;
+  pointer-events: none;
+}
+.app .pe-status {
+  position: absolute;
+  top: 12px;
+  background: #450a0a;
+  color: #fecaca;
+  border-radius: 8px;
+  padding: 8px 12px;
+}
+.app .crop-handle {
+  width: 24px;
+  height: 24px;
+  touch-action: none;
+}
+@media (max-width: 600px) {
+  .app .pv-toolbar {
+    width: auto;
+    top: 12px;
+    right: 12px;
+    left: 12px;
+    justify-content: center;
+  }
+  .app .photo-main-wrapper {
+    width: calc(100% - 32px);
+    height: calc(100% - 210px);
+  }
+  .app .photo-nav {
+    top: auto;
+    bottom: 90px;
+    transform: none;
+  }
+  .app .photo-nav:hover {
+    transform: none;
+  }
+  .app .photo-bottom-bar {
+    bottom: 16px;
+    max-height: 64px;
+    overflow: auto;
+  }
+  .app .pe-header {
+    padding: 8px;
+    gap: 4px;
+  }
+  .app .pe-btn {
+    padding: 0 10px;
+  }
+}

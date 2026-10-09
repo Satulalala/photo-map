@@ -1,0 +1,108 @@
+.app .toolbar {
+  top: max(16px, env(safe-area-inset-top));
+  z-index: calc(var(--z-sticky) - 20);
+  display: flex;
+  gap: 8px;
+  padding: 0;
+  background: transparent;
+  border: 0;
+  box-shadow: none;
+  animation: toolbar-in 360ms ease both;
+}
+
+@keyframes toolbar-in {
+  from {
+    opacity: 0;
+    transform: translateY(-8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.app .toolbar-left {
+  left: 16px;
+}
+
+.app .toolbar-right {
+  right: 16px;
+}
+
+.app .toolbar button,
+.app .marker-count-btn {
+  border: 1px solid var(--surface-elevated-border);
+  background: var(--surface-elevated);
+  color: var(--text-primary);
+  box-shadow: var(--control-shadow);
+  backdrop-filter: blur(16px);
+  transition:
+    background var(--transition-fast),
+    border-color var(--transition-fast),
+    box-shadow var(--transition-fast),
+    color var(--transition-fast),
+    transform var(--transition-fast);
+}
+
+.app .toolbar button {
+  width: var(--control-height);
+  height: var(--control-height);
+  min-width: var(--control-height);
+  min-height: var(--control-height);
+  border-radius: var(--control-radius);
+  overflow: visible;
+}
+
+.app .toolbar button::before {
+  display: none;
+}
+
+.app .toolbar button:hover:not(:disabled) {
+  border-color: var(--accent);
+  background: var(--accent-light);
+  color: var(--accent);
+  box-shadow: var(--control-shadow-hover);
+  transform: translateY(-2px);
+}
+
+.app .toolbar button:active:not(:disabled) {
+  box-shadow: var(--shadow-sm);
+  transform: translateY(1px) scale(0.95);
+}
+
+.app .toolbar button[aria-pressed="true"] {
+  border-color: var(--accent);
+  background: var(--accent-light);
+  color: var(--accent);
+  box-shadow: var(--shadow-md);
+}
+
+.app .toolbar button[data-action="refresh"]:active .map-icon {
+  transform: rotate(180deg);
+}
+
+.app .toolbar button[data-action="locate"]:active .map-icon {
+  transform: scale(0.84);
+}
+
+.app .toolbar button[data-action="zoom-in"]:active .map-icon {
+  transform: scale(1.12);
+}
+
+.app .toolbar button[data-action="zoom-out"]:active .map-icon {
+  transform: scale(0.88);
+}
+
+.app .toolbar button[data-action="settings"]:hover .map-icon {
+  transform: rotate(18deg);
+}
+
+.app .toolbar [data-tooltip]::after {
+  white-space: nowrap;
+}
+
+.app .toolbar [data-tooltip]:focus-visible::after,
+.app .toolbar [data-tooltip]:focus-visible::before {
+  opacity: 1;
+  visibility: visible;
+}

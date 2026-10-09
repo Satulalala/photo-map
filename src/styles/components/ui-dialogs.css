@@ -1,0 +1,253 @@
+.app .notes-panel,
+.app .merge-dialog {
+  max-width: 100%;
+  max-height: calc(100dvh - 48px);
+  overflow: hidden;
+}
+.app .notes-panel-overlay,
+.app .merge-dialog-overlay,
+.app .note-editor-overlay,
+.app .village-modal-overlay {
+  grid-template-columns: minmax(0, 1fr);
+  min-width: 0;
+}
+.app .notes-panel {
+  width: min(clamp(520px, 42vw, 680px), 100%);
+}
+.app .merge-dialog {
+  width: min(640px, 100%);
+}
+.app .note-editor {
+  width: min(520px, 100%);
+  max-width: none;
+  max-height: calc(100dvh - 48px);
+  overflow: auto;
+}
+.app .notes-panel-header,
+.app .merge-dialog-header {
+  flex: 0 0 auto;
+  flex-wrap: wrap;
+  gap: 12px 24px;
+  padding: 18px 20px;
+}
+.app .notes-panel-header h3,
+.app .merge-dialog-header h3 {
+  margin: 0;
+  min-width: 0;
+  font-size: 16px;
+  line-height: 1.5;
+}
+.app .notes-panel-header .header-actions {
+  flex: 0 0 auto;
+  margin-left: auto;
+  gap: 8px;
+}
+.app .notes-panel-header button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex: 0 0 auto;
+  gap: 6px;
+  min-height: 36px;
+  padding: 7px 12px;
+  line-height: 1.4;
+  white-space: nowrap;
+}
+.app .notes-panel-header .panel-close {
+  position: static;
+  width: 36px;
+  height: 36px;
+  padding: 0;
+}
+.app .notes-panel-header button .map-icon {
+  width: 16px;
+  height: 16px;
+}
+.app .notes-panel-header [role="alert"] {
+  flex-basis: 100%;
+  margin: 0;
+  overflow-wrap: anywhere;
+}
+.app .notes-list,
+.app .merge-dialog-content {
+  min-height: 0;
+  padding: 20px;
+  overflow: auto;
+}
+.app .note-item {
+  gap: 16px;
+  padding: 14px;
+  align-items: flex-start;
+}
+.app .note-item:hover,
+.app .note-item:hover .note-thumb {
+  transform: none;
+}
+.app .note-thumb {
+  width: 80px;
+  height: 80px;
+}
+.app .note-content {
+  gap: 8px;
+}
+.app .note-text {
+  line-height: 1.65;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+.app .note-content textarea {
+  width: 100%;
+  min-height: 96px;
+  line-height: 1.6;
+}
+.app .note-editor h3 {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.app .notes-panel-header,
+.app .merge-dialog-header {
+  background: var(--surface);
+  border-bottom: 1px solid var(--border);
+}
+.app .notes-panel h3,
+.app .merge-dialog h3 {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--text-primary);
+}
+.app .note-item {
+  background: var(--surface-muted);
+  border-color: var(--border);
+  border-radius: 12px;
+}
+.app .note-content textarea {
+  background: var(--surface);
+  color: var(--text-primary);
+  border-color: var(--border);
+}
+.app .merge-photo-item {
+  text-align: left;
+  color: var(--text-primary);
+  background: var(--surface-muted);
+  border: 2px solid var(--border);
+}
+.app .merge-photo-item.target {
+  border-color: var(--accent);
+}
+.app .poster-page {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 20px;
+  color: var(--text-primary);
+}
+.app .poster-sidebar {
+  background: var(--surface);
+  color: var(--text-primary);
+}
+.app .poster-canvas-wrap {
+  background: var(--surface-subtle);
+  border: 1px solid var(--border);
+}
+.app .poster-pills button,
+.app .poster-action,
+.app .poster-photo-list-panel {
+  border-color: var(--border);
+  background: var(--surface-muted);
+  color: var(--text-primary);
+}
+.app .poster-pills button.active,
+.app .poster-action.primary {
+  background: var(--accent);
+  color: var(--on-accent);
+  border-color: var(--accent);
+}
+@keyframes ui-panel-out {
+  to {
+    opacity: 0;
+    transform: translateY(8px) scale(0.98);
+  }
+}
+@media (max-width: 768px) {
+  .app .life-panel-overlay,
+  .app .village-modal-overlay,
+  .app .notes-panel-overlay,
+  .app .merge-dialog-overlay {
+    padding: 12px;
+  }
+  .app .life-panel,
+  .app .village-modal-shell {
+    height: calc(100dvh - 24px);
+    border-radius: 16px;
+  }
+  .app .life-panel-content {
+    padding: 16px;
+  }
+  .app .life-global-cards {
+    grid-template-columns: 1fr;
+  }
+  .app .village-modal-shell {
+    grid-template-columns: 1fr;
+    display: block;
+    overflow: auto;
+    padding: 20px 16px;
+  }
+  .app .village-modal-left,
+  .app .village-modal-right {
+    overflow: visible;
+  }
+  .app .village-modal-right {
+    border-left: 0;
+    border-top: 1px solid var(--border);
+    padding: 20px 0 0;
+    margin-top: 20px;
+  }
+  .app .poster-page {
+    max-height: calc(100dvh - 24px);
+    overflow: auto;
+  }
+  .app .social-actions {
+    flex-direction: column;
+  }
+}
+@media (max-width: 480px) {
+  .app .note-editor-overlay {
+    padding: 12px;
+  }
+  .app .notes-panel-header,
+  .app .merge-dialog-header {
+    padding: 14px 16px;
+    gap: 12px;
+  }
+  .app .notes-panel-header .header-actions {
+    flex-basis: 100%;
+    justify-content: flex-end;
+  }
+  .app .notes-list,
+  .app .merge-dialog-content {
+    padding: 16px;
+  }
+  .app .note-item {
+    gap: 12px;
+    padding: 12px;
+  }
+  .app .note-thumb {
+    width: 56px;
+    height: 56px;
+  }
+  .app .note-editor {
+    padding: 20px;
+    max-height: calc(100dvh - 24px);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .app *,
+  .app *::before,
+  .app *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}

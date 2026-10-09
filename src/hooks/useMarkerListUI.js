@@ -1,5 +1,5 @@
-import { useState, useCallback, useRef } from 'react';
-import api from '../api/index.js';
+import { useState, useCallback, useRef, useEffect } from 'react';
+import api, { webStorage } from '../api/index.js';
 
 export function useMarkerListUI({
   batchMode,
@@ -40,95 +40,76 @@ export function useMarkerListUI({
   const [markerListTimeRange, setMarkerListTimeRange] = useState({ start: '', end: '' });
   const [showTimeFilterMenu, setShowTimeFilterMenu] = useState(false);
 
-  // --- Animation callbacks ---
+  // CSS owns entry motion; one tracked timer owns delayed unmount.
+  const closeTimer = useRef(null);
+  const markerOpenRequest = useRef(0);
+  const cancelMapWait = useRef(null);
+  const searchRequest = useRef(0);
+  const searchToast = useRef(showToast);
+  searchToast.current = showToast;
+  useEffect(() => {
+    return window.electronAPI?.onEmbeddingProgress?.(progress => {
+      setEmbeddingProgress(progress.percent >= 100 ? null : progress);
+    });
+  }, []);
+  useEffect(() => () => {
+    clearTimeout(closeTimer.current);
+    ++markerOpenRequest.current;
+    cancelMapWait.current?.();
+  }, []);
   const closeMarkerListWithAnimation = useCallback(() => {
-    if (markerListTransitioning) return;
-    const btn = markerManageBtnRef.current;
-    if (!btn) return;
-    const rect = btn.getBoundingClientRect();
-    const vw = window.innerWidth;
-    const vh = window.innerHeight;
-    setMarkerListRect(prev => ({
-      ...(prev || {}),
-      x: rect.left + rect.width / 2,
-      y: rect.top + rect.height / 2,
-      size: Math.max(btn.offsetWidth, btn.offsetHeight),
-    }));
+    if (closeTimer.current) return;
     setMarkerListClosing(true);
     setMarkerListTransitioning(true);
-    setTimeout(() => {
+    const duration = window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 0 : 180;
+    closeTimer.current = setTimeout(() => {
       setShowMarkerList(false);
       setMarkerListReady(false);
       setMarkerListClosing(false);
       setMarkerListTransitioning(false);
-      setMarkerBtnReveal(true);
-      setTimeout(() => setMarkerBtnReveal(false), 600);
-    }, 400);
-  }, [markerListTransitioning]);
-
+      closeTimer.current = null;
+    }, duration);
+  }, []);
   const handleOpenMarkerList = useCallback(() => {
-    if (markerListTransitioning) return;
-    const btn = markerManageBtnRef.current;
-    if (!btn) return;
-    const rect = btn.getBoundingClientRect();
-    const vw = window.innerWidth;
-    const vh = window.innerHeight;
-    // 计算面板位置
-    setMarkerListRect({
-      x: rect.left + rect.width / 2,
-      y: rect.top + rect.height / 2,
-      size: Math.max(btn.offsetWidth, btn.offsetHeight),
-      targetW: Math.min(1200, vw - 80),
-      targetH: Math.min(800, vh - 120),
-      dx: (vw / 2) - (rect.left + rect.width / 2),
-      dy: (vh / 2) - (rect.top + rect.height / 2),
-      startScale: Math.max(btn.offsetWidth, btn.offsetHeight) / Math.min(1200, vw - 80),
-    });
-    setMarkerListTransitioning(true);
+    if (closeTimer.current) return;
+    ++markerOpenRequest.current;
+    cancelMapWait.current?.();
     setShowMarkerList(true);
-    requestAnimationFrame(() => {
-      requestAnimationFrame(() => {
-        setMarkerListReady(true);
-        setMarkerListContentHidden(false);
-        setMarkerListTransitioning(false);
-      });
-    });
-  }, [markerListTransitioning]);
-
-  const handleCloseMarkerList = useCallback(() => {
-    closeMarkerListWithAnimation();
-  }, [closeMarkerListWithAnimation]);
+    setMarkerListReady(true);
+    setMarkerListContentHidden(false);
+  }, []);
+  const handleCloseMarkerList = closeMarkerListWithAnimation;
 
   // --- Handler callbacks ---
-  const handleMarkerListSearch = useCallback(val => {
-    setMarkerListSearch(val);
-    // Note search
-    if (val.trim()) {
-      setIsNoteSearching(true);
-      api.photos.searchNotes(val).then(results => {
-        setNoteSearchResults(results || []);
-        setIsNoteSearching(false);
-      }).catch(() => {
-        setNoteSearchResults([]);
-        setIsNoteSearching(false);
+  const handleMarkerListSearch = useCallback(val => setMarkerListSearch(val), []);
+  useEffect(() => {
+    const request = ++searchRequest.current;
+    const query = markerListSearch.trim();
+    setNoteSearchResults([]);
+    setSemanticResults([]);
+    setIsNoteSearching(!!query);
+    setIsSemanticSearching(!!query);
+    if (!query) return;
+    // Avoid running expensive model inference for every keystroke.
+    const timer = setTimeout(() => {
+      api.photos.searchNotes(query).then(results => {
+        if (request === searchRequest.current) setNoteSearchResults(results || []);
+      }).catch(() => {}).finally(() => {
+        if (request === searchRequest.current) setIsNoteSearching(false);
       });
-    } else {
-      setNoteSearchResults([]);
-    }
-    // Semantic search
-    if (val.trim()) {
-      setIsSemanticSearching(true);
-      api.photos.searchByContent(val, 20).then(results => {
-        setSemanticResults(results || []);
-        setIsSemanticSearching(false);
-      }).catch(() => {
-        setSemanticResults([]);
-        setIsSemanticSearching(false);
+      api.photos.searchByContent(query, 20).then(results => {
+        if (request === searchRequest.current) setSemanticResults(results || []);
+      }).catch(error => {
+        if (request === searchRequest.current) searchToast.current?.('info', error.message || '图片描述搜索暂时不可用');
+      }).finally(() => {
+        if (request === searchRequest.current) setIsSemanticSearching(false);
       });
-    } else {
-      setSemanticResults([]);
-    }
-  }, []);
+    }, 350);
+    return () => {
+      clearTimeout(timer);
+      ++searchRequest.current;
+    };
+  }, [markerListSearch]);
 
   const handleMarkerListSort = useCallback(sortType => {
     setMarkerListSort(sortType);
@@ -171,35 +152,53 @@ export function useMarkerListUI({
     }
   }, []);
 
-  const handleMarkerListMarkerClick = useCallback(async m => {
-    if (batchMode) return; // Batch mode doesn't respond to clicks
-    handleCloseMarkerList();
-    if (mapRef.current) {
-      mapRef.current.flyTo({ center: [m.lng, m.lat], zoom: 15, duration: 1000 });
-      setTimeout(async () => {
-        const point = mapRef.current.project([m.lng, m.lat]);
-        let fullMarker = m;
-
-        // Load complete marker data
-        if (window.electronAPI?.getMarkerDetail) {
-          const detail = await window.electronAPI.getMarkerDetail(m.id);
-          if (detail) fullMarker = detail;
-        } else {
-          // Web environment
-          const photos = await api.photos.getByMarkerId(m.id);
-          const sorted = [...photos].sort((a, b) => (a.order ?? 9999) - (b.order ?? 9999));
-          fullMarker = {
-            ...m,
-            photos: sorted,
-            photoCount: sorted.length,
-            firstPhoto: sorted[0] || null
-          };
+  const handleMarkerListMarkerClick = useCallback(
+    async marker => {
+      if (batchMode) return;
+      const request = ++markerOpenRequest.current;
+      cancelMapWait.current?.();
+      mapRef.current?.jumpTo?.({ center: [marker.lng, marker.lat], zoom: 15, preloadOnly: true });
+      try {
+        const detail = window.electronAPI?.getMarkerDetail
+          ? await window.electronAPI.getMarkerDetail(marker.id)
+          : null;
+        const photos = detail?.photos || (await api.photos.getByMarkerId(marker.id));
+        if (request !== markerOpenRequest.current) return;
+        const sorted = [...photos].sort((a, b) => (a.order ?? 9999) - (b.order ?? 9999));
+        const fullMarker = { ...marker, ...detail, photos: sorted, photoCount: sorted.length };
+        const map = mapRef.current;
+        setMarkerMenu(null);
+        handleCloseMarkerList();
+        if (map) {
+          map.stop();
+          // Register before flyTo: reduced motion can complete synchronously.
+          await new Promise(resolve => {
+            const finish = () => {
+              map.off('moveend', finish);
+              if (cancelMapWait.current === finish) cancelMapWait.current = null;
+              resolve();
+            };
+            cancelMapWait.current = finish;
+            map.once('moveend', finish);
+            map.flyTo({ center: [marker.lng, marker.lat], zoom: 15, duration: 1000 });
+          });
         }
-
-        setMarkerMenu({ x: point.x, y: point.y, marker: fullMarker });
-      }, 1050);
-    }
-  }, [batchMode]);
+        if (request !== markerOpenRequest.current || map !== mapRef.current) return;
+        const point = map?.project([marker.lng, marker.lat]);
+        setMarkerMenu({
+          x: point?.x ?? window.innerWidth / 2 - 140,
+          y: point?.y ?? window.innerHeight / 2 - 160,
+          marker: fullMarker,
+        });
+      } catch {
+        if (request === markerOpenRequest.current) {
+          cancelMapWait.current?.();
+          showToast('error', '地点详情加载失败，请重试');
+        }
+      }
+    },
+    [batchMode, handleCloseMarkerList, mapRef, setMarkerMenu, showToast]
+  );
 
   const handleMarkerListNoteClick = useCallback(async result => {
     handleCloseMarkerList();
@@ -213,7 +212,7 @@ export function useMarkerListUI({
         setPhotoViewer({
           photos: detail.photos,
           index: photoIndex >= 0 ? photoIndex : 0,
-          markerId: result.markerId
+          markerId: result.markerId,
         });
       }
     }
@@ -231,7 +230,7 @@ export function useMarkerListUI({
         setPhotoViewer({
           photos: detail.photos,
           index: photoIndex >= 0 ? photoIndex : 0,
-          markerId: result.markerId
+          markerId: result.markerId,
         });
       }
     }
@@ -260,10 +259,9 @@ export function useMarkerListUI({
           await api.markers.delete(markerId);
         } else {
           // Update marker's photoCount and firstPhoto
-          const { webStorage } = await import('../api/index.js');
           await webStorage.markers.update(markerId, {
             photoCount: remaining.length,
-            firstPhoto: remaining[0] || null
+            firstPhoto: remaining[0] || null,
           });
         }
       }
@@ -289,20 +287,41 @@ export function useMarkerListUI({
 
   return {
     // Animation state
-    showMarkerList, markerListReady, markerListClosing, markerListRect,
-    markerListTransitioning, markerListContentHidden, markerBtnReveal,
+    showMarkerList,
+    markerListReady,
+    markerListClosing,
+    markerListRect,
+    markerListTransitioning,
+    markerListContentHidden,
+    markerBtnReveal,
     markerManageBtnRef,
-    setShowMarkerList, setMarkerListReady, setMarkerListClosing,
-    setMarkerListRect, setMarkerListTransitioning, setMarkerListContentHidden,
+    setShowMarkerList,
+    setMarkerListReady,
+    setMarkerListClosing,
+    setMarkerListRect,
+    setMarkerListTransitioning,
+    setMarkerListContentHidden,
     setMarkerBtnReveal,
-    handleOpenMarkerList, handleCloseMarkerList, closeMarkerListWithAnimation,
+    handleOpenMarkerList,
+    handleCloseMarkerList,
+    closeMarkerListWithAnimation,
     // Marker list UI state
-    markerListSort, markerListLayout, showSortMenu, showLayoutMenu,
-    markerListSearch, noteSearchResults, isNoteSearching,
-    semanticResults, isSemanticSearching,
-    embeddingProgress, setEmbeddingProgress,
-    searchFocusIndex, searchResultsRef,
-    markerListTimeFilter, markerListTimeRange, showTimeFilterMenu,
+    markerListSort,
+    markerListLayout,
+    showSortMenu,
+    showLayoutMenu,
+    markerListSearch,
+    noteSearchResults,
+    isNoteSearching,
+    semanticResults,
+    isSemanticSearching,
+    embeddingProgress,
+    setEmbeddingProgress,
+    searchFocusIndex,
+    searchResultsRef,
+    markerListTimeFilter,
+    markerListTimeRange,
+    showTimeFilterMenu,
     // Handler callbacks
     handleMarkerListSearch,
     handleMarkerListSort,

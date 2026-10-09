@@ -3,7 +3,7 @@ import { useState, useCallback } from 'react';
 const defaultSettings = {
   antialias: true,
   fadeDuration: 200,
-  maxTileCacheSize: 4000,
+  maxTileCacheSize: null,
   dragRotate: false,
   renderWorldCopies: false,
   maxZoom: 18,

@@ -37,14 +37,8 @@ function setProgressCallback(cb) {
  */
 async function loadModel(retries = 3) {
   if (isLoaded) return true;
-  if (loadError) throw loadError;
   if (loadingPromise) return loadingPromise;
-
-  const TIMEOUT_MS = 5 * 60 * 1000;
-
-  const timeoutPromise = new Promise((_, reject) =>
-    setTimeout(() => reject(new Error(`模型加载超时 (${TIMEOUT_MS / 1000}s)`)), TIMEOUT_MS)
-  );
+  loadError = null;
 
   const loadAttempt = async (attempt = 1) => {
     try {
@@ -93,10 +87,8 @@ async function loadModel(retries = 3) {
     }
   };
 
-  loadingPromise = Promise.race([
-    (async () => loadAttempt())(),
-    timeoutPromise,
-  ]);
+  // A slow download must not leave a permanently rejected loading promise.
+  loadingPromise = loadAttempt().finally(() => { loadingPromise = null; });
 
   return loadingPromise;
 }
@@ -147,6 +139,8 @@ async function getImageEmbedding(imagePath) {
 
     const imageBuffer = await sharp(imagePath)
       .resize(224, 224, { fit: 'cover', position: 'center' })
+      .removeAlpha()
+      .toColourspace('srgb')
       .raw()
       .toBuffer();
 
@@ -212,7 +206,8 @@ function getStatus() {
 
 async function warmup() {
   if (isLoaded) return true;
-  try { await loadModel(); return true; } catch { return false; }
+  await loadModel();
+  return true;
 }
 
 module.exports = {

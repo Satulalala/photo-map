@@ -1,0 +1,365 @@
+/* Map workspace chrome: one interaction system for search, tools and album access. */
+html,
+body {
+  overflow-x: clip;
+}
+
+body {
+  font-family: var(--font-sans);
+}
+
+.app,
+.map-container {
+  min-height: 100dvh;
+}
+
+.app input,
+.app textarea,
+.app select {
+  user-select: text;
+  font-family: var(--font-sans);
+}
+
+.app button,
+.app select {
+  font-family: var(--font-sans);
+}
+
+.map-icon {
+  width: 20px;
+  height: 20px;
+  flex: 0 0 auto;
+  display: block;
+  stroke: currentColor;
+  transition:
+    transform var(--transition-fast),
+    color var(--transition-fast);
+}
+
+.app button:focus-visible,
+.app input:focus-visible,
+.app select:focus-visible,
+.app textarea:focus-visible {
+  outline: none;
+  box-shadow: var(--focus-ring);
+}
+
+.app button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  transform: none !important;
+}
+
+.map-header {
+  position: fixed;
+  top: max(16px, env(safe-area-inset-top));
+  left: 50%;
+  z-index: var(--z-sticky);
+  width: min(560px, calc(100vw - 400px));
+  transform: translateX(-50%);
+  animation: map-header-in 360ms cubic-bezier(0.2, 0.8, 0.2, 1) both;
+}
+
+@keyframes map-header-in {
+  from {
+    opacity: 0;
+    transform: translate(-50%, -10px);
+  }
+  to {
+    opacity: 1;
+    transform: translate(-50%, 0);
+  }
+}
+
+.app .map-header .search-bar-container {
+  position: relative;
+  inset: auto;
+  transform: none;
+  width: 100%;
+  max-width: none;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  animation: none;
+}
+
+.app .map-header .search-bar-wrapper {
+  min-width: 0;
+}
+
+.map-header .search-bar {
+  min-height: 48px;
+  padding: 4px 8px 4px 14px;
+  gap: 10px;
+  border: 1px solid var(--surface-elevated-border);
+  border-radius: var(--control-radius);
+  background: var(--surface-elevated);
+  color: var(--text-primary);
+  box-shadow: var(--control-shadow);
+  backdrop-filter: blur(16px);
+  transition:
+    border-color var(--transition-fast),
+    box-shadow var(--transition-fast),
+    transform var(--transition-fast);
+}
+
+.map-header .search-bar:hover {
+  border-color: var(--border);
+  box-shadow: var(--control-shadow-hover);
+  transform: translateY(-1px);
+}
+
+.map-header .search-bar:focus-within {
+  border-color: var(--accent);
+  box-shadow: var(--focus-ring), var(--control-shadow);
+  transform: translateY(-1px);
+}
+
+.map-header .search-icon {
+  width: 22px;
+  height: 22px;
+  display: grid;
+  place-items: center;
+  color: var(--text-secondary);
+  transition:
+    color var(--transition-fast),
+    transform var(--transition-fast);
+}
+
+.map-header .search-icon .map-icon {
+  width: 18px;
+  height: 18px;
+}
+
+.map-header .search-bar:focus-within .search-icon {
+  color: var(--accent);
+  transform: scale(1.04);
+}
+
+.map-header .search-bar input {
+  min-width: 0;
+  min-height: 38px;
+  flex: 1;
+  padding: 0;
+  border: 0;
+  outline: 0;
+  background: transparent;
+  color: var(--text-primary);
+  font-size: 15px;
+  font-weight: var(--weight-medium);
+}
+
+.map-header .search-bar input::placeholder {
+  color: var(--text-muted);
+  font-weight: var(--weight-normal);
+}
+
+/* Focus belongs to the rounded search surface, not the nested input rectangle. */
+.app .map-header .search-bar input:focus {
+  outline: none;
+  box-shadow: none;
+}
+
+.map-header .search-clear,
+.map-header .globe-village-btn,
+.map-header .web-dl-btn {
+  display: inline-grid;
+  place-items: center;
+  min-width: var(--control-height);
+  min-height: var(--control-height);
+  border: 1px solid var(--surface-elevated-border);
+  border-radius: var(--control-radius);
+  background: var(--surface-elevated);
+  color: var(--text-primary);
+  box-shadow: var(--control-shadow);
+  transition:
+    background var(--transition-fast),
+    border-color var(--transition-fast),
+    box-shadow var(--transition-fast),
+    transform var(--transition-fast);
+}
+
+.map-header .search-clear {
+  width: 36px;
+  min-width: 36px;
+  min-height: 36px;
+  border: 0;
+  background: var(--surface-subtle);
+  color: var(--text-secondary);
+  box-shadow: none;
+  animation: control-in 160ms ease both;
+}
+
+.map-header .search-clear:hover,
+.map-header .globe-village-btn:hover:not(:disabled),
+.map-header .web-dl-btn:hover {
+  border-color: var(--accent);
+  background: var(--accent-light);
+  color: var(--accent);
+  box-shadow: none;
+  transform: translateY(-1px);
+}
+
+.map-header .search-clear:active,
+.map-header .globe-village-btn:active:not(:disabled),
+.map-header .web-dl-btn:active {
+  transform: translateY(1px) scale(0.96);
+}
+
+.map-header .globe-village-btn {
+  width: var(--control-height);
+  margin: 0;
+  flex: 0 0 var(--control-height);
+}
+
+.map-header .globe-village-btn.active {
+  background: var(--accent-light);
+  border-color: var(--accent);
+  color: var(--accent);
+}
+
+.map-header .web-download-beside-search {
+  position: absolute;
+  top: 0;
+  left: calc(100% + 8px);
+  max-width: none;
+  transform: none;
+}
+
+.map-header .web-dl-btn {
+  min-width: auto;
+  padding: 0 14px;
+  color: var(--text-secondary);
+  white-space: nowrap;
+}
+
+.map-header .search-results {
+  position: absolute;
+  top: calc(100% + 8px);
+  left: 0;
+  right: 0;
+  max-height: min(380px, 55dvh);
+  overflow: auto;
+  border: 1px solid var(--surface-elevated-border);
+  border-radius: var(--control-radius);
+  background: var(--surface-elevated);
+  box-shadow: var(--control-shadow-hover);
+  backdrop-filter: blur(16px);
+  animation: dropdown-in 180ms ease both;
+}
+
+@keyframes dropdown-in {
+  from {
+    opacity: 0;
+    transform: translateY(-5px) scale(0.985);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+@keyframes control-in {
+  from {
+    opacity: 0;
+    transform: scale(0.85);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+.map-header .search-result-item {
+  min-height: 60px;
+  padding: 10px 14px;
+  gap: 12px;
+  border-bottom: 1px solid var(--border-light);
+  transition:
+    background var(--transition-fast),
+    transform var(--transition-fast);
+}
+
+.map-header .search-result-item::before {
+  width: 3px;
+  background: var(--accent);
+  border-radius: 0 2px 2px 0;
+  transition: transform var(--transition-fast);
+}
+
+.map-header .search-result-item:hover,
+.map-header .search-result-item.selected {
+  padding-left: 14px;
+  background: var(--accent-light);
+  transform: translateX(2px);
+}
+
+.map-header .result-icon {
+  width: 32px;
+  height: 32px;
+  display: grid;
+  place-items: center;
+  flex: 0 0 32px;
+  border-radius: 10px;
+  background: var(--surface-subtle);
+  color: var(--accent);
+}
+
+.map-header .result-icon .map-icon {
+  width: 17px;
+  height: 17px;
+}
+
+.map-header .result-name,
+.map-header .result-address,
+.map-header .result-distance,
+.map-header .search-empty,
+.map-header .search-tip,
+.map-header .search-loading {
+  color: var(--text-secondary);
+}
+
+.map-header .result-name {
+  color: var(--text-primary);
+  font-weight: var(--weight-semibold);
+}
+
+.map-header .search-history-header {
+  min-height: 44px;
+  padding: 8px 12px;
+}
+
+.map-header .search-history-title {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.map-header .search-history-title .map-icon {
+  width: 16px;
+  height: 16px;
+  color: var(--text-muted);
+}
+
+.map-header .search-history-header button {
+  min-height: 32px;
+  padding: 0 8px;
+  border: 0;
+  border-radius: 8px;
+  background: transparent;
+  color: var(--accent);
+  transition:
+    background var(--transition-fast),
+    transform var(--transition-fast);
+}
+
+.map-header .search-history-header button:hover {
+  background: var(--accent-light);
+  transform: translateY(-1px);
+}
+
+.map-header .search-loading,
+.map-header .search-empty,
+.map-header .search-tip {
+  padding: 28px 18px;
+}

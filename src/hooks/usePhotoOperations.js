@@ -1,6 +1,6 @@
 import { useCallback } from 'react';
 import { v4 as uuidv4 } from 'uuid';
-import api from '../api/index.js';
+import api, { webStorage } from '../api/index.js';
 import { photoUrlCache, thumbnailCache } from '../utils/LRUCache.ts';
 
 export function usePhotoOperations(
@@ -106,8 +106,6 @@ export function usePhotoOperations(
       setMarkers(updatedMarkers);
     } else {
       // Web 版本：用 IndexedDB 操作
-      const { webStorage } = await import('../api/index.js');
-
       // 1. 把所有照片移动到目标标记
       for (const { photo } of photosToMove) {
         await webStorage.photos.add(targetMarkerId, { ...photo, markerId: targetMarkerId });
@@ -145,7 +143,6 @@ export function usePhotoOperations(
   // 设为封面照片（将该照片移到 photos 数组第一位）
   const handleSetCover = useCallback(async (markerId, photo) => {
     try {
-      const { webStorage } = await import('../api/index.js');
       const photos = await api.photos.getByMarkerId(markerId);
       // 把目标照片移到第一位，重新分配 order
       const reordered = [photo, ...photos.filter(p => p.id !== photo.id)];
@@ -178,7 +175,6 @@ export function usePhotoOperations(
       if (remaining.length === 0) {
         await api.markers.delete(markerId);
       } else {
-        const { webStorage } = await import('../api/index.js');
         await webStorage.markers.update(markerId, {
           photoCount: remaining.length,
           firstPhoto: remaining[0] || null
@@ -218,7 +214,6 @@ export function usePhotoOperations(
         if (photosData.length === 0) return;
         await api.photos.addBatch(markerId, photosData);
         const allPhotos = await api.photos.getByMarkerId(markerId);
-        const { webStorage } = await import('../api/index.js');
         await webStorage.markers.update(markerId, {
           photoCount: allPhotos.length,
           firstPhoto: allPhotos[0] || null
@@ -338,7 +333,6 @@ export function usePhotoOperations(
             createdAt: Date.now(),
             photoCount: 0,
           };
-          const { webStorage } = await import('../api/index.js');
           await webStorage.markers.save(markerObj);
           const savedPhotos = await api.photos.addBatch(markerId, validPhotos);
           const firstPhotoLight = savedPhotos[0] ? { id: savedPhotos[0].id, note: savedPhotos[0].note || '' } : null;
@@ -370,9 +364,11 @@ export function usePhotoOperations(
       await window.electronAPI.updatePhotoNote(markerId, photoIndex, note);
       showToast('success', '备注已保存');
     } else {
-      // Web 环境：需要 photoId 而不是 photoIndex
-      // 暂时跳过，因为 noteEditor 功能可能已废弃
-      console.warn('savePhotoNote: Web 环境暂不支持');
+      const photos = await api.photos.getByMarkerId(markerId);
+      const ordered = [...photos].sort((a, b) => (a.order ?? 9999) - (b.order ?? 9999));
+      if (!ordered[photoIndex]) throw new Error('照片不存在');
+      await api.photos.update(markerId, ordered[photoIndex].id, { note });
+      showToast('success', '备注已保存');
     }
     setNoteEditor(null);
   };

@@ -1,0 +1,387 @@
+/* Neutral surfaces for settings, marker library and secondary map panels. */
+.app .settings-overlay,
+.app .marker-list-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: var(--z-overlay);
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  justify-items: center;
+  place-items: center;
+  padding: 24px;
+  background: var(--overlay);
+  backdrop-filter: blur(10px);
+  animation: overlay-in 220ms ease both;
+}
+
+@keyframes overlay-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+.app .settings-panel,
+.app .marker-list-panel,
+.app .themed-floating-panel.theme-note {
+  border: 1px solid var(--surface-elevated-border);
+  border-radius: 20px;
+  background: var(--surface);
+  color: var(--text-primary);
+  box-shadow: var(--shadow-xl);
+  overflow: hidden;
+}
+
+.app .settings-panel {
+  width: min(760px, 100%);
+  max-width: none;
+  height: min(600px, calc(100dvh - 48px));
+  display: flex;
+  animation: panel-in 260ms cubic-bezier(0.2, 0.8, 0.2, 1) both;
+}
+
+@keyframes panel-in {
+  from {
+    opacity: 0;
+    transform: translateY(12px) scale(0.98);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+.app .settings-nav {
+  width: 172px;
+  flex: 0 0 172px;
+  padding: 14px 10px;
+  border-right: 1px solid var(--border);
+  background: var(--surface-muted);
+}
+
+.app .settings-nav-header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-height: 40px;
+  padding: 0 10px 12px;
+  border-bottom: 1px solid var(--border);
+}
+
+.app .settings-nav-header .nav-icon,
+.app .settings-nav-items .map-icon {
+  width: 18px;
+  height: 18px;
+  color: var(--text-secondary);
+}
+
+.app .settings-nav-header .nav-title {
+  color: var(--text-primary);
+  font: var(--weight-semibold) var(--text-lg) / 1.2 var(--font-sans);
+}
+
+.app .settings-nav-items {
+  display: grid;
+  flex: 0 0 auto;
+  grid-auto-rows: 44px;
+  align-content: start;
+  gap: 4px;
+  padding: 16px 0;
+}
+
+.app .settings-nav-items button {
+  min-height: 44px;
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  gap: 10px;
+  padding: 0 12px;
+  border: 1px solid transparent;
+  border-radius: 10px;
+  background: transparent;
+  color: var(--text-secondary);
+  font-size: 13px;
+  font-weight: var(--weight-medium);
+  text-align: left;
+  transition:
+    background var(--transition-fast),
+    border-color var(--transition-fast),
+    color var(--transition-fast),
+    transform var(--transition-fast);
+}
+
+.app .settings-nav-items button:hover {
+  background: var(--surface-subtle);
+  color: var(--text-primary);
+  transform: translateX(2px);
+}
+
+.app .settings-nav-items button.active {
+  border-color: var(--border);
+  background: var(--surface);
+  color: var(--accent);
+  box-shadow: var(--shadow-sm);
+}
+
+.app .settings-nav-items button.active .map-icon {
+  color: var(--accent);
+}
+
+.app .settings-nav-items button.active + button {
+  border-top-color: transparent;
+}
+
+.app .settings-content {
+  position: relative;
+  min-width: 0;
+  min-height: 0;
+  flex: 1;
+  overflow: hidden;
+  padding: 0;
+  background: var(--surface);
+}
+
+.app .settings-scroll {
+  height: 100%;
+  min-height: 0;
+  overflow: auto;
+  scrollbar-gutter: stable;
+  padding: 20px 20px 76px;
+}
+
+.app .settings-close {
+  position: absolute;
+  top: 14px;
+  right: 14px;
+  z-index: 2;
+  width: 36px;
+  height: 36px;
+  display: grid;
+  place-items: center;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  background: var(--surface-muted);
+  color: var(--text-secondary);
+  font-size: 0;
+  transition:
+    background var(--transition-fast),
+    border-color var(--transition-fast),
+    color var(--transition-fast),
+    transform var(--transition-fast);
+}
+
+.app .settings-close::before {
+  display: none;
+}
+
+.app .settings-close .map-icon {
+  width: 18px;
+  height: 18px;
+}
+
+.app .settings-close:hover {
+  border-color: var(--accent);
+  background: var(--accent-light);
+  color: var(--accent);
+  transform: rotate(90deg);
+}
+
+.app .settings-page {
+  width: 100%;
+  max-width: none;
+  animation: content-in 220ms ease both;
+}
+
+@keyframes content-in {
+  from {
+    opacity: 0;
+    transform: translateY(5px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.app .settings-page h2 {
+  margin: 0 48px 8px 0;
+  color: var(--text-primary);
+  font-family: var(--font-sans);
+  font-size: 18px;
+  font-weight: var(--weight-semibold);
+  letter-spacing: -0.02em;
+}
+
+.app .settings-page h2 .map-icon,
+.app .setting-group h3 .map-icon {
+  width: 20px;
+  height: 20px;
+  margin-right: 8px;
+  color: var(--accent);
+  vertical-align: -3px;
+}
+
+.app .settings-page h2 {
+  display: flex;
+  align-items: center;
+}
+
+.app .settings-page .page-desc {
+  margin: 0 0 18px;
+  color: var(--text-secondary);
+  font-size: 13px;
+}
+
+.app .setting-group {
+  margin-bottom: 12px;
+  padding: 14px;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  background: var(--surface-muted);
+  box-shadow: none;
+  transition:
+    border-color var(--transition-fast),
+    box-shadow var(--transition-fast);
+}
+
+.app .setting-group:hover {
+  border-color: var(--border-focus);
+  box-shadow: var(--shadow-sm);
+  transform: none;
+}
+
+.app.ui-theme-note .setting-group,
+.app.ui-theme-note .marker-list-item,
+.app.ui-theme-note .result-group {
+  border: 1px solid var(--border);
+  background: var(--surface-muted);
+  box-shadow: none;
+}
+
+.app.ui-theme-note .setting-group h3,
+.app.ui-theme-note .result-group-title {
+  padding-bottom: 0;
+  border-bottom: 0;
+  color: var(--text-secondary);
+}
+
+.app .switch:hover .slider {
+  background: var(--border);
+}
+
+.app .switch input:checked + .slider {
+  background: var(--accent);
+}
+
+.app .setting-group h3 {
+  margin: 0 0 8px;
+  color: var(--text-secondary);
+  font-size: 12px;
+  font-weight: var(--weight-semibold);
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+}
+
+.app .setting-row {
+  min-height: 48px;
+  flex-wrap: wrap;
+  gap: 12px;
+  padding: 8px 0;
+  border-color: var(--border-light);
+}
+.app .setting-row .setting-label {
+  flex: 1 1 160px;
+}
+.app .setting-row > :not(.setting-label) {
+  flex-shrink: 0;
+  max-width: 100%;
+}
+
+.app .setting-label strong {
+  color: var(--text-primary);
+  font-size: 13px;
+}
+
+.app .setting-label span {
+  color: var(--text-secondary);
+  font-size: 12px;
+}
+
+.app .stat-icon,
+.app .storage-icon,
+.app .guest-icon,
+.app .benefit-icon,
+.app .fi-icon,
+.app .setting-tip > .map-icon,
+.app .action-btn > .map-icon {
+  display: inline-grid;
+  place-items: center;
+  color: var(--accent);
+}
+
+.app .stat-icon .map-icon,
+.app .storage-icon .map-icon,
+.app .guest-icon .map-icon,
+.app .benefit-icon .map-icon,
+.app .fi-icon .map-icon {
+  width: 20px;
+  height: 20px;
+}
+
+.app .setting-group h3 {
+  display: flex;
+  align-items: center;
+}
+
+.app .action-btn,
+.app .login-prompt-btn {
+  transition:
+    background var(--transition-fast),
+    border-color var(--transition-fast),
+    color var(--transition-fast),
+    transform var(--transition-fast);
+}
+
+.app .action-btn:hover,
+.app .login-prompt-btn:hover {
+  transform: translateY(-1px);
+}
+
+.app .settings-footer {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  margin: 0;
+  padding: 10px 20px;
+  border-top: 1px solid var(--border);
+  background: color-mix(in srgb, var(--surface) 92%, transparent);
+  backdrop-filter: blur(12px);
+}
+
+.app .settings-footer .save-btn {
+  min-height: 36px;
+  padding: 0 18px;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  background: var(--surface-subtle);
+  color: var(--text-secondary);
+  transition:
+    background var(--transition-fast),
+    border-color var(--transition-fast),
+    color var(--transition-fast),
+    transform var(--transition-fast);
+}
+
+.app .settings-footer .save-btn:not(:disabled) {
+  border-color: var(--accent);
+  background: var(--accent);
+  color: var(--on-accent);
+}
+
+.app .settings-footer .save-btn:not(:disabled):hover {
+  background: var(--accent-hover);
+  transform: translateY(-1px);
+}

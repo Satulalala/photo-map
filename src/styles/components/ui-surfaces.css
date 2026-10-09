@@ -1,0 +1,212 @@
+/* Shared neutral panels; poster artwork keeps its chosen export style. */
+.app .map-icon {
+  width: 20px;
+  height: 20px;
+  flex-shrink: 0;
+  fill: none;
+}
+.app button {
+  font-family: var(--font-sans);
+  cursor: pointer;
+}
+.app button:disabled {
+  opacity: 0.45;
+  cursor: default;
+  transform: none;
+}
+.app button:focus-visible,
+.app input:focus-visible,
+.app select:focus-visible,
+.app textarea:focus-visible,
+.app [tabindex]:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 3px;
+}
+.app .themed-floating-panel::after {
+  display: none;
+}
+.app .marker-list-panel {
+  position: relative;
+  inset: auto;
+  margin: 0;
+  opacity: 1;
+  transform: none;
+  transition: none;
+  will-change: auto;
+}
+.app .marker-list-panel.closing {
+  animation: ui-panel-out 180ms ease both;
+}
+.app .marker-list-panel-inner > * {
+  opacity: 1;
+  transform: none;
+  transition: none;
+}
+.app .marker-list-overlay.closing {
+  pointer-events: auto;
+  background: var(--overlay);
+}
+.app .marker-list-empty::before {
+  display: none;
+}
+.app .dropdown-item {
+  width: 100%;
+  border: 0;
+  background: transparent;
+  text-align: left;
+  color: var(--text-primary);
+}
+.app .batch-toggle-btn[aria-pressed="true"] {
+  background: var(--accent-light);
+  color: var(--accent);
+  border-color: var(--accent);
+}
+.app .theme-select {
+  min-height: 36px;
+  padding: 0 10px;
+  border: 1px solid var(--border);
+  border-radius: 9px;
+  background: var(--surface);
+  color: var(--text-primary);
+}
+
+.app .settings-page {
+  font-size: 13px;
+  line-height: 1.6;
+}
+.app .settings-page .setting-label {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+.app .settings-page .setting-label span {
+  line-height: 1.5;
+}
+.app .settings-page .setting-tip {
+  margin-top: 12px;
+  padding: 12px;
+  gap: 8px;
+  background: var(--surface-muted);
+  border-color: var(--border);
+}
+.app .settings-page .feature-inline-grid {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+.app .settings-page .feature-inline-item {
+  padding: 8px 10px;
+  background: var(--surface);
+  border-color: var(--border);
+}
+.app .settings-page .fi-name {
+  color: var(--text-primary);
+  font-size: 12px;
+}
+.app .settings-page .range-control {
+  margin-left: 0;
+  gap: 8px;
+}
+.app .settings-page .range-control input[type="range"] {
+  width: 110px;
+}
+.app .settings-page .range-value {
+  min-width: 42px;
+  font-size: 12px;
+  color: var(--text-secondary);
+}
+.app .settings-page .stat-value,
+.app .settings-page .storage-value {
+  font-size: 20px;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+.app .settings-page .storage-card {
+  padding: 10px;
+  background: var(--surface);
+  border-color: var(--border);
+}
+.app .settings-page .storage-card:hover {
+  transform: none;
+  box-shadow: none;
+}
+.app .settings-page .storage-card::before,
+.app .settings-page .action-btn::before {
+  display: none;
+}
+.app .settings-page .action-btn {
+  min-height: 44px;
+  padding: 10px 12px;
+  gap: 10px;
+  background: var(--surface);
+  border-color: var(--border);
+  color: var(--text-primary);
+}
+.app .settings-page .action-btn strong {
+  font-size: 13px;
+}
+.app .settings-page .action-btn small {
+  color: var(--text-secondary);
+}
+.app .settings-page .guest-card,
+.app .settings-page .user-profile-card {
+  margin-bottom: 12px;
+  padding: 16px;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  background: var(--surface-muted);
+}
+.app .settings-page .guest-card h3 {
+  font-size: 15px;
+  margin: 8px 0;
+}
+.app .settings-page .guest-card p {
+  font-size: 13px;
+  color: var(--text-secondary);
+  margin: 8px 0 12px;
+}
+.app .settings-page .login-prompt-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-height: 36px;
+  padding: 0 12px;
+  font-size: 13px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: var(--surface);
+  color: var(--accent);
+}
+.app .settings-page .benefits-list {
+  display: grid;
+  gap: 10px;
+}
+.app .settings-page .benefit-item,
+.app .settings-page .user-profile-card {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.app .settings-page .benefit-text {
+  display: grid;
+  gap: 2px;
+}
+.app .settings-page .benefit-text strong {
+  font-size: 13px;
+  font-weight: 500;
+}
+.app .settings-page .benefit-text small {
+  font-size: 12px;
+  color: var(--text-secondary);
+}
+.app .settings-page .user-name {
+  font-size: 15px;
+  font-weight: 600;
+}
+.app .settings-page .user-avatar {
+  width: 40px;
+  height: 40px;
+  flex: 0 0 40px;
+  display: grid;
+  place-items: center;
+  border-radius: 10px;
+  background: var(--accent-light);
+  color: var(--accent);
+}

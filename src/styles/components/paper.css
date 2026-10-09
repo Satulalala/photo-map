@@ -1,0 +1,166 @@
+﻿/* ========================================
+   Field Notes — Paper 材质系统
+   纸张卡片、折痕、毛边
+   ======================================== */
+
+/* ---- 通用纸张卡片 ---- */
+.paper-card {
+  background: var(--paper-card);
+  border: 1px solid var(--paper-border);
+  border-radius: var(--radius-sm);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.6),
+    var(--shadow-crease);
+  position: relative;
+  transition: transform var(--transition-base),
+              box-shadow var(--transition-base);
+}
+
+/* 右下角折痕 */
+.paper-card::after {
+  content: '';
+  position: absolute;
+  right: -1px;
+  bottom: -1px;
+  width: 24px;
+  height: 24px;
+  background: linear-gradient(
+    135deg,
+    transparent 50%,
+    rgba(44, 36, 22, 0.03) 50%,
+    rgba(44, 36, 22, 0.05) 100%
+  );
+  pointer-events: none;
+}
+
+[data-theme="dark"] .paper-card::after {
+  background: linear-gradient(
+    135deg,
+    transparent 50%,
+    rgba(255, 255, 255, 0.02) 50%,
+    rgba(255, 255, 255, 0.04) 100%
+  );
+}
+
+/* hover 升起（手指轻压纸张） */
+.paper-card:hover {
+  transform: translateY(-2px);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.6),
+    var(--shadow-md);
+}
+
+.paper-card:active {
+  transform: translateY(1px);
+  box-shadow: var(--shadow-xs);
+}
+
+/* ---- 相纸白边（照片缩略图） ---- */
+.photo-print {
+  border: 3px solid var(--paper-white);
+  box-shadow: var(--shadow-crease);
+  border-radius: 2px;
+}
+
+/* ---- 笔记本横线背景 ---- */
+.notebook-lines {
+  background-image: repeating-linear-gradient(
+    0deg,
+    transparent,
+    transparent 23px,
+    var(--ink-faint) 23px,
+    var(--ink-faint) 24px
+  );
+}
+
+/* ---- 选中态红灯条 ---- */
+.paper-card.selected,
+.photo-print.selected {
+  border-color: var(--darkroom-red);
+}
+
+.paper-card.selected::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 4px;
+  bottom: 4px;
+  width: 3px;
+  background: var(--darkroom-red);
+  border-radius: 0 2px 2px 0;
+}
+
+/* ---- 按钮体系 ---- */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-2);
+  min-width: 44px;
+  min-height: 44px;
+  padding: var(--space-2) var(--space-4);
+  border-radius: var(--radius-sm);
+  font-family: var(--font-sans);
+  font-size: var(--text-sm);
+  font-weight: var(--weight-medium);
+  cursor: pointer;
+  transition: all var(--transition-base);
+  border: 1px solid transparent;
+  line-height: 1;
+}
+
+.btn:focus-visible {
+  outline: 2px solid var(--darkroom-red);
+  outline-offset: 2px;
+}
+
+.btn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+  transform: none !important;
+  box-shadow: none !important;
+}
+
+/* 主按钮：纸白底 + 红灯边框 */
+.btn-primary {
+  background: var(--paper-white);
+  color: var(--ink-primary);
+  border-color: var(--darkroom-red);
+}
+
+.btn-primary:hover:not(:disabled) {
+  background: var(--darkroom-red);
+  color: var(--paper-white);
+}
+
+.btn-primary:active:not(:disabled) {
+  transform: translateY(1px);
+  box-shadow: var(--shadow-xs);
+}
+
+/* 次要按钮：透明底 + 铅笔灰边框 */
+.btn-secondary {
+  background: transparent;
+  color: var(--ink-secondary);
+  border-color: var(--paper-border);
+}
+
+.btn-secondary:hover:not(:disabled) {
+  color: var(--ink-primary);
+  border-color: var(--ink-secondary);
+}
+
+.btn-secondary:active:not(:disabled) {
+  transform: translateY(1px);
+}
+
+/* 危险按钮：透明底 + 红灯文字 */
+.btn-danger {
+  background: transparent;
+  color: var(--darkroom-red);
+  border-color: var(--darkroom-red);
+}
+
+.btn-danger:hover:not(:disabled) {
+  background: var(--darkroom-red-light);
+}
