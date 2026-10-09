@@ -38,7 +38,7 @@ jobs:
       - name: 设置 Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: '18'
+          node-version-file: .nvmrc
           cache: 'npm'
           
       - name: 安装依赖
@@ -76,7 +76,7 @@ jobs:
       - name: 设置 Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: '18'
+          node-version-file: .nvmrc
           cache: 'npm'
           
       - name: 安装依赖
@@ -128,7 +128,7 @@ jobs:
       - name: 设置 Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: '18'
+          node-version-file: .nvmrc
           cache: 'npm'
           
       - name: 安装系统依赖
@@ -235,7 +235,7 @@ jobs:
       - name: 设置 Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: '18'
+          node-version-file: .nvmrc
           cache: 'npm'
           
       - name: 安装依赖

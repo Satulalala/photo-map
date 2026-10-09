@@ -1,0 +1,24 @@
+server:
+  port: ${PORT:8080}
+
+spring:
+  datasource:
+    url: ${PHOTOMAP_DB_URL}
+    driver-class-name: org.postgresql.Driver
+    username: ${PHOTOMAP_DB_USERNAME}
+    password: ${PHOTOMAP_DB_PASSWORD}
+  jpa:
+    hibernate:
+      ddl-auto: ${PHOTOMAP_JPA_DDL_AUTO:validate}
+    show-sql: false
+  h2:
+    console:
+      enabled: false
+
+jwt:
+  secret: ${PHOTOMAP_JWT_SECRET}
+  expiration-ms: ${PHOTOMAP_JWT_EXPIRATION_MS:86400000}
+
+photomap:
+  cors:
+    allowed-origins: ${PHOTOMAP_CORS_ALLOWED_ORIGINS}

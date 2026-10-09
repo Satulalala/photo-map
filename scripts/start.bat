@@ -74,7 +74,7 @@ echo.
 echo  [Web Dev]
 echo  ----------------------------------------
 echo  Starting backend on port 8080...
-start "PhotoMap Backend" cmd /k "cd /d "%~dp0..\server-java" && mvn spring-boot:run"
+start "PhotoMap Backend" powershell.exe -NoProfile -NoExit -ExecutionPolicy Bypass -File "%~dp0backend.ps1" run
 echo  Waiting for backend...
 timeout /t 3 >nul
 echo  Starting frontend on port 3001...
@@ -89,7 +89,7 @@ echo.
 echo  [Desktop Dev]
 echo  ----------------------------------------
 echo  Starting backend on port 8080...
-start "PhotoMap Backend" cmd /k "cd /d "%~dp0..\server-java" && mvn spring-boot:run"
+start "PhotoMap Backend" powershell.exe -NoProfile -NoExit -ExecutionPolicy Bypass -File "%~dp0backend.ps1" run
 echo  Waiting for backend...
 timeout /t 3 >nul
 echo  Starting Electron...
@@ -105,6 +105,5 @@ echo  [Backend Only]
 echo  ----------------------------------------
 echo  Starting backend on port 8080...
 echo.
-cd /d "%~dp0..\server-java"
-mvn spring-boot:run
+powershell.exe -NoProfile -ExecutionPolicy Bypass -File "%~dp0backend.ps1" run
 goto menu
