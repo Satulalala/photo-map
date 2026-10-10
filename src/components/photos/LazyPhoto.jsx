@@ -30,10 +30,14 @@ async function decodeImage(url) {
 const LazyPhoto = memo(function LazyPhoto({ photo, className, alt = '', useThumbnail = true }) {
   const [placeholder, setPlaceholder] = useState('');
   const [src, setSrc] = useState('');
-  const [loaded, setLoaded] = useState(false);
+  const [loadedSrc, setLoadedSrc] = useState('');
+  const loaded = Boolean(src) && loadedSrc === src;
   const [isVisible, setIsVisible] = useState(false);
   const containerRef = useRef(null);
-  const prevUrlRef = useRef(null);
+
+  useEffect(() => () => {
+    if (src.startsWith('blob:')) URL.revokeObjectURL(src);
+  }, [src]);
   
   // IntersectionObserver 检测可见性
   useEffect(() => {
@@ -58,27 +62,18 @@ const LazyPhoto = memo(function LazyPhoto({ photo, className, alt = '', useThumb
   useEffect(() => {
     if (!isVisible || !photo) return;
     
-    const cleanup = () => {
-      if (prevUrlRef.current?.startsWith('blob:')) {
-        URL.revokeObjectURL(prevUrlRef.current);
-      }
-    };
-    
-    setLoaded(false);
+    let active = true;
+    // 备注刷新可能返回相同图片 URL，保留该 URL 的已加载状态。
     
     // 旧格式：直接是 base64
     if (typeof photo === 'string') {
-      cleanup();
       setSrc(photo);
       setPlaceholder('');
-      prevUrlRef.current = photo;
       return;
     }
     if (photo.data?.startsWith('data:')) {
-      cleanup();
       setSrc(photo.data);
       setPlaceholder('');
-      prevUrlRef.current = photo.data;
       return;
     }
     
@@ -87,7 +82,7 @@ const LazyPhoto = memo(function LazyPhoto({ photo, className, alt = '', useThumb
       // 先加载模糊占位图
       if (window.electronAPI.getPlaceholderUrl) {
         window.electronAPI.getPlaceholderUrl(photo.id).then(url => {
-          if (url) setPlaceholder(url);
+          if (active && url) setPlaceholder(url);
         });
       }
       
@@ -96,15 +91,13 @@ const LazyPhoto = memo(function LazyPhoto({ photo, className, alt = '', useThumb
         ? window.electronAPI.getThumbnailUrl 
         : window.electronAPI.getPhotoUrl;
       getUrl(photo.id).then(url => {
-        if (url) {
-          cleanup();
+        if (active && url) {
           setSrc(url);
-          prevUrlRef.current = url;
         }
       });
     }
     
-    return cleanup;
+    return () => { active = false; };
   }, [isVisible, photo, useThumbnail]);
   
   return (
@@ -137,7 +130,7 @@ const LazyPhoto = memo(function LazyPhoto({ photo, className, alt = '', useThumb
         <img 
           src={src} 
           alt={alt} 
-          onLoad={() => setLoaded(true)}
+          onLoad={() => setLoadedSrc(src)}
           style={{ 
             width: '100%', height: '100%', 
             objectFit: 'cover',

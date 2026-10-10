@@ -1,5 +1,5 @@
 import { useLayoutEffect } from 'react';
-import { act, renderHook, waitFor } from '@testing-library/react';
+import { act, fireEvent, renderHook, waitFor } from '@testing-library/react';
 import { afterEach, expect, it, vi } from 'vitest';
 import { useMap } from './useMap.js';
 import { rememberMapSession } from '../api/auth.js';
@@ -7,6 +7,7 @@ import { rememberMapSession } from '../api/auth.js';
 afterEach(() => {
   localStorage.clear();
   delete window.__entryMap;
+  delete window.electronAPI;
   vi.unstubAllGlobals();
   vi.unstubAllEnvs();
 });
@@ -49,7 +50,7 @@ it('sets the access token before constructing the map on a direct page refresh',
   expect(mapOptions.maxTileCacheSize).toBeUndefined();
 });
 
-it('enables camera controls after adopting a loaded map even while destination tiles are pending', async () => {
+it('adopts a loaded map, enables controls and refreshes a marker preview after adding photos', async () => {
   rememberMapSession();
   const handler = () => ({ enable: vi.fn(), disable: vi.fn() });
   const canvas = document.createElement('div');
@@ -77,11 +78,12 @@ it('enables camera controls after adopting a loaded map even while destination t
   };
   window.__entryMap = map;
   let markerElement;
+  const createMarker = vi.fn();
   vi.stubGlobal('mapboxgl', {
     supported: () => true,
     Map: vi.fn(),
     Marker: class {
-      constructor({ element }) { markerElement = element; }
+      constructor({ element }) { markerElement = element; createMarker(); }
       setLngLat() { return this; }
       addTo() {
         markerElement.style.transform = 'translate(400px, 300px)';
@@ -127,6 +129,30 @@ it('enables camera controls after adopting a loaded map even while destination t
   expect(markerElement.style.animation).toBe('');
   expect(markerElement.style.transform).toBe('translate(400px, 300px)');
   expect(markerElement.querySelector('.marker-visual-new svg')).not.toBeNull();
+
+  // An upload first creates an empty pin, then supplies its cover photo.
+  const thumbnail = 'data:image/png;base64,AA==';
+  window.electronAPI = { getThumbnailUrl: vi.fn().mockResolvedValue(thumbnail) };
+  args.markers = [{ ...args.markers[0], firstPhoto: { id: 'photo.jpg' }, photoCount: 1 }];
+  rerender();
+  await waitFor(() => expect(markerElement.querySelector('img')).toHaveAttribute('src', thumbnail));
+  fireEvent.load(markerElement.querySelector('img'));
+  expect(markerElement.querySelector('img').style.opacity).toBe('1');
+  expect(createMarker).toHaveBeenCalledTimes(2);
+
+  // Saving notes replaces the list summary with detail; keep its same preview.
+  args.markers = [{ id: 'new-pin', lat: 31.8, lng: 117.2, photos: [{ id: 'photo.jpg', note: '11' }] }];
+  rerender();
+  expect(createMarker).toHaveBeenCalledTimes(2);
+  expect(window.electronAPI.getThumbnailUrl).toHaveBeenCalledOnce();
+
+  // A missing thumbnail can still show the original photo.
+  window.electronAPI.getThumbnailUrl.mockResolvedValue(null);
+  args.getPhotoUrl.mockResolvedValue(thumbnail);
+  args.markers = [{ ...args.markers[0], photos: [{ id: 'other.jpg' }] }];
+  rerender();
+  await waitFor(() => expect(args.getPhotoUrl).toHaveBeenCalledWith({ id: 'other.jpg' }));
+  await waitFor(() => expect(markerElement.querySelector('img')).toHaveAttribute('src', thumbnail));
 
   // The map listener reads the current detail state, not its initial closure.
   args.markerMenu = { marker: args.markers[0] };

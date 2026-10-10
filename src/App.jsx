@@ -7,6 +7,7 @@ import { useSEO } from './utils/seoManager.js';
 import { useAnalytics } from './utils/webAnalytics.js';
 import { usePWA } from './utils/pwaManager.js';
 import api from './api/index.js';
+import { savePhotoNotes } from './api/photoNotes.js';
 import syncService from './api/syncService.js';
 import LoginButtons from './components/LoginButtons.jsx';
 import MapHeader from './components/map/MapHeader.jsx';
@@ -979,13 +980,7 @@ function App() {
           }
           // 批量更新照片备注
           const photos = (notesPanel.marker || markers.find(m => m.id === notesPanel.markerId))?.photos || [];
-          for (let i = 0; i < Math.min(updatedNotes.length, photos.length); i++) {
-            const note = updatedNotes[i] || '';
-            await api.photos.update(notesPanel.markerId, photos[i].id, { note });
-          }
-          setNotesEditing(false);
-          setEditingNotes([]);
-          showToast('success', '备注已保存');
+          await savePhotoNotes(notesPanel.markerId, photos, updatedNotes);
           // 刷新当前面板的标记数据
           let detail = null;
           if (window.electronAPI?.getMarkerDetail) {
@@ -1002,6 +997,9 @@ function App() {
             setNotesPanel(prev => ({ ...prev, marker: detail }));
             setMarkers(prev => prev.map(m => m.id === detail.id ? detail : m));
           }
+          setNotesEditing(false);
+          setEditingNotes([]);
+          showToast('success', '备注已保存');
         }}
         onCancel={() => {
           setNotesEditing(false);

@@ -1,0 +1,39 @@
+{
+  "$schema": "./node_modules/wrangler/config-schema.json",
+  "name": "photo-map-web",
+  "main": "cloudflare/worker.js",
+  "compatibility_date": "2026-10-10",
+  "routes": [
+    {
+      "pattern": "photomap.satula.top",
+      "custom_domain": true
+    }
+  ],
+  "assets": {
+    "directory": "./dist-web",
+    "binding": "ASSETS",
+    "not_found_handling": "single-page-application",
+    "run_worker_first": ["/api/*"]
+  },
+  "d1_databases": [
+    {
+      "binding": "DB",
+      "database_name": "photo-map-prod",
+      "database_id": "a1f91796-bbe5-4536-a337-1e85f97b087e",
+      "migrations_dir": "cloudflare/migrations"
+    }
+  ],
+  "ratelimits": [
+    {
+      "name": "AUTH_RATE_LIMITER",
+      "namespace_id": "20261010",
+      "simple": {
+        "limit": 8,
+        "period": 60
+      }
+    }
+  ],
+  "observability": {
+    "enabled": true
+  }
+}

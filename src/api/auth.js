@@ -1,9 +1,10 @@
+import { apiUrl, IS_WEB_BUILD } from './apiBase.js';
+
 const TOKEN_KEY = 'auth_token';
 const USER_KEY = 'auth_user';
 const MAP_SESSION_KEY = 'photo_map_entered';
-const API_BASE = 'http://localhost:8080';
 
-// Navigation preference only; account permissions still depend on the auth token.
+// Navigation preference only; account access still depends on the server session.
 export function hasMapSession() {
   try {
     return localStorage.getItem(MAP_SESSION_KEY) === '1';
@@ -60,8 +61,9 @@ export function removeCurrentUser() {
 }
 
 export async function register(email, password) {
-  const res = await fetch(`${API_BASE}/api/v1/auth/register`, {
+  const res = await fetch(apiUrl('/api/v1/auth/register'), {
     method: 'POST',
+    credentials: IS_WEB_BUILD ? 'same-origin' : 'include',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ email, password }),
   });
@@ -69,14 +71,16 @@ export async function register(email, password) {
   if (!data.ok) {
     throw new Error(data.error || '注册失败');
   }
-  setToken(data.token);
+  if (data.token) setToken(data.token);
+  else removeToken();
   setCurrentUser(data.user);
   return data.user;
 }
 
 export async function login(email, password) {
-  const res = await fetch(`${API_BASE}/api/v1/auth/login`, {
+  const res = await fetch(apiUrl('/api/v1/auth/login'), {
     method: 'POST',
+    credentials: IS_WEB_BUILD ? 'same-origin' : 'include',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ email, password }),
   });
@@ -84,7 +88,8 @@ export async function login(email, password) {
   if (!data.ok) {
     throw new Error(data.error || '登录失败');
   }
-  setToken(data.token);
+  if (data.token) setToken(data.token);
+  else removeToken();
   setCurrentUser(data.user);
   return data.user;
 }
@@ -95,6 +100,10 @@ export function logout() {
   try {
     localStorage.removeItem(MAP_SESSION_KEY);
   } catch {}
+  void fetch(apiUrl('/api/v1/auth/logout'), {
+    method: 'POST',
+    credentials: IS_WEB_BUILD ? 'same-origin' : 'include',
+  }).catch(() => {});
 }
 
 export function authFetch(url, options = {}) {
@@ -103,5 +112,5 @@ export function authFetch(url, options = {}) {
   if (token) {
     headers['Authorization'] = `Bearer ${token}`;
   }
-  return fetch(url, { ...options, headers });
+  return fetch(url, { credentials: IS_WEB_BUILD ? 'same-origin' : 'include', ...options, headers });
 }

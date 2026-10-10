@@ -2,10 +2,63 @@
 require('v8-compile-cache');
 
 // ========== 核心模块（立即加载）==========
-const { app, BrowserWindow, ipcMain, Menu } = require('electron');
+const { app, BrowserWindow, ipcMain, Menu, protocol } = require('electron');
 const path = require('path');
 const fs = require('fs');
 const log = require('electron-log');
+
+protocol.registerSchemesAsPrivileged([
+  {
+    scheme: 'photomap',
+    privileges: { standard: true, secure: true, supportFetchAPI: true, corsEnabled: true, stream: true },
+  },
+]);
+
+const APP_BUILD_MIME_TYPES = {
+  '.avif': 'image/avif',
+  '.css': 'text/css; charset=utf-8',
+  '.eot': 'application/vnd.ms-fontobject',
+  '.gif': 'image/gif',
+  '.html': 'text/html; charset=utf-8',
+  '.ico': 'image/x-icon',
+  '.jpeg': 'image/jpeg',
+  '.jpg': 'image/jpeg',
+  '.js': 'text/javascript; charset=utf-8',
+  '.json': 'application/json; charset=utf-8',
+  '.mp4': 'video/mp4',
+  '.otf': 'font/otf',
+  '.png': 'image/png',
+  '.svg': 'image/svg+xml',
+  '.ttf': 'font/ttf',
+  '.wasm': 'application/wasm',
+  '.webp': 'image/webp',
+  '.webm': 'video/webm',
+  '.woff': 'font/woff',
+  '.woff2': 'font/woff2',
+};
+
+function appBuildFilePath(requestUrl) {
+  const url = new URL(requestUrl);
+  if (url.hostname !== 'app') return null;
+  const buildDirectory = path.resolve(app.getAppPath(), 'build');
+  const decodedPath = decodeURIComponent(url.pathname).replace(/^\/+/, '') || 'index.html';
+  const filePath = path.resolve(buildDirectory, decodedPath);
+  const relativePath = path.relative(buildDirectory, filePath);
+  if (relativePath.startsWith('..') || path.isAbsolute(relativePath)) return null;
+  return filePath;
+}
+
+async function serveAppBuild(request) {
+  try {
+    const filePath = appBuildFilePath(request.url);
+    if (!filePath) return new Response('Not found', { status: 404 });
+    const contents = await fs.promises.readFile(filePath);
+    const contentType = APP_BUILD_MIME_TYPES[path.extname(filePath).toLowerCase()] || 'application/octet-stream';
+    return new Response(contents, { headers: { 'Content-Type': contentType } });
+  } catch {
+    return new Response('Not found', { status: 404 });
+  }
+}
 
 // ========== 延迟加载模块（首次使用时加载）==========
 const lazyRequire = (name, loader) => {
@@ -220,7 +273,7 @@ function createWindow() {
             "style-src 'self' 'unsafe-inline' https://api.mapbox.com",
             "img-src 'self' data: blob: file: https://*.mapbox.com https://*.tiles.mapbox.com",
             "font-src 'self' data:",
-            "connect-src 'self' https://api.mapbox.com https://*.mapbox.com https://*.tiles.mapbox.com https://restapi.amap.com ws://localhost:* http://localhost:*",
+            "connect-src 'self' https://photomap.satula.top https://api.mapbox.com https://*.mapbox.com https://*.tiles.mapbox.com https://restapi.amap.com ws://localhost:* http://localhost:*",
             "worker-src 'self' blob:",
             "frame-src 'none'",
             "object-src 'none'",
@@ -244,7 +297,7 @@ function createWindow() {
   });
 
   if (app.isPackaged) {
-    mainWindow.loadFile(path.join(__dirname, 'build', 'index.html'));
+    mainWindow.loadURL('photomap://app/index.html');
   } else {
     console.log('开发模式：连接 localhost:3000');
     mainWindow.loadURL('http://localhost:3000');
@@ -313,6 +366,7 @@ app.whenReady().then(async () => {
   session.defaultSession.webRequest.onBeforeRequest({ urls: ['*://events.mapbox.com/*'] }, (_, callback) => {
     callback({ cancel: true });
   });
+  protocol.handle('photomap', serveAppBuild);
   Menu.setApplicationMenu(null);
   createWindow();
 

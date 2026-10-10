@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { showNetworkStatus, showUpdateBanner, showInstallButton, hideInstallButton } from './pwaNotifications.js';
+import { showNetworkStatus, showInstallButton, hideInstallButton } from './pwaNotifications.js';
 
 const isDev = typeof window !== 'undefined' &&
   (window.location.hostname === 'localhost' ||
@@ -39,14 +39,23 @@ class PWAManager {
 
   async registerServiceWorker() {
     try {
+      const hadController = Boolean(navigator.serviceWorker.controller);
+      this.reloadingForControllerChange = false;
+      navigator.serviceWorker.addEventListener('controllerchange', () => {
+        if (!hadController || this.reloadingForControllerChange) return;
+        this.reloadingForControllerChange = true;
+        window.location.reload();
+      });
+
       this.registration = await navigator.serviceWorker.register('/sw.js', { scope: '/' });
 
       this.registration.addEventListener('updatefound', () => {
         const newWorker = this.registration.installing;
+        if (!newWorker) return;
         newWorker.addEventListener('statechange', () => {
           if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
             this.updateAvailable = true;
-            showUpdateBanner(() => this.applyUpdate());
+            newWorker.postMessage({ type: 'SKIP_WAITING' });
           }
         });
       });
@@ -109,7 +118,6 @@ class PWAManager {
   async applyUpdate() {
     if (!this.registration || !this.registration.waiting) return;
     this.registration.waiting.postMessage({ type: 'SKIP_WAITING' });
-    window.location.reload();
   }
 
   async promptInstall() {

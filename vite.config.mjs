@@ -140,6 +140,12 @@ export default defineConfig(({ mode, command }) => {
       config.server = {
         ...config.server,
         open: '/index-web.html',
+        proxy: {
+          '/api': {
+            target: 'http://localhost:8080',
+            changeOrigin: true,
+          },
+        },
       };
     }
   }

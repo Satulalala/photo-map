@@ -6,6 +6,7 @@ yarn-error.log*
 
 # 构建输出
 build/
+build-resources/
 dist/
 dist-web/
 server-java/target/
@@ -83,3 +84,5 @@ playwright-report/
 test-results/
 # Local Netlify folder
 .netlify
+.wrangler/
+.dev.vars

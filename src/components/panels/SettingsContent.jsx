@@ -1,3 +1,4 @@
+import { IS_WEB_BUILD } from '../../api/apiBase.js';
 import ThemeControl from './ThemeControl.jsx';
 import MapIcon from '../map/MapIcon.jsx';
 import { useLayoutEffect, useRef } from 'react';
@@ -147,8 +148,10 @@ export default function SettingsContent({
                 </div>
                 <div className="setting-row">
                   <div className="setting-label">
-                    <strong>云端 API 地址</strong>
-                    <span>默认：Java 服务 `http://localhost:8080`</span>
+                    <strong>账号与同步 API 地址</strong>
+                    <span>
+                      默认：{IS_WEB_BUILD ? '与网页同源的 Cloudflare API' : 'Cloudflare API；也可填写自建 Java 服务'}
+                    </span>
                   </div>
                   <input
                     style={{ width: '280px', maxWidth: '42%', minWidth: '180px', height: '34px', borderRadius: '8px', border: '1px solid #ddd', padding: '0 10px' }}

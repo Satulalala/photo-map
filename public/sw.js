@@ -1,8 +1,8 @@
 // Service Worker for Photo Map PWA
-const CACHE_NAME = 'photo-map-v1.0.0';
-const STATIC_CACHE = 'photo-map-static-v1.0.0';
-const DYNAMIC_CACHE = 'photo-map-dynamic-v1.0.0';
-const IMAGE_CACHE = 'photo-map-images-v1.0.0';
+const CACHE_NAME = 'photo-map-v1.0.1';
+const STATIC_CACHE = 'photo-map-static-v1.0.1';
+const DYNAMIC_CACHE = 'photo-map-dynamic-v1.0.1';
+const IMAGE_CACHE = 'photo-map-images-v1.0.1';
 
 // 检测是否为开发环境
 const isDev = location.hostname === 'localhost' || location.hostname === '127.0.0.1';
@@ -23,9 +23,11 @@ const STATIC_ASSETS = [
   '/',
   '/index.html',
   '/manifest.json',
-  '/static/js/main.js',
-  '/static/css/main.css',
-  '/static/media/logo.svg'
+  '/offline.html',
+  '/photomap-favicon-32-v2.png',
+  '/photomap-icon.svg',
+  '/photomap-icon-192.png',
+  '/photomap-icon-512.png'
 ];
 
 // 需要缓存的 API 路径
@@ -42,20 +44,18 @@ const IMAGE_EXTENSIONS = ['.jpg', '.jpeg', '.png', '.gif', '.webp', '.svg'];
 self.addEventListener('install', (event) => {
   console.log('Service Worker: Installing...');
   
-  event.waitUntil(
-    caches.open(STATIC_CACHE)
-      .then((cache) => {
-        console.log('Service Worker: Caching static assets');
-        return cache.addAll(STATIC_ASSETS);
-      })
-      .then(() => {
-        console.log('Service Worker: Static assets cached');
-        return self.skipWaiting();
-      })
-      .catch((error) => {
-        console.error('Service Worker: Failed to cache static assets', error);
-      })
-  );
+  event.waitUntil((async () => {
+    const cache = await caches.open(STATIC_CACHE);
+    await Promise.all(STATIC_ASSETS.map(async (asset) => {
+      try {
+        const response = await fetch(asset, { cache: 'reload' });
+        if (response.ok) await cache.put(asset, response);
+      } catch (error) {
+        console.warn('Service Worker: Could not precache asset', asset, error);
+      }
+    }));
+    await self.skipWaiting();
+  })());
 });
 
 // 激活事件 - 清理旧缓存
@@ -93,8 +93,10 @@ self.addEventListener('fetch', (event) => {
     return;
   }
 
-  // 根据请求类型选择缓存策略
-  if (isStaticAsset(request)) {
+  // 页面导航必须优先拿到最新 HTML，避免缓存继续引用已下线的旧资源文件名。
+  if (request.mode === 'navigate') {
+    event.respondWith(networkFirstDocument(request));
+  } else if (isStaticAsset(request)) {
     event.respondWith(cacheFirst(request, STATIC_CACHE));
   } else if (isImageRequest(request)) {
     event.respondWith(cacheFirst(request, IMAGE_CACHE));
@@ -108,9 +110,9 @@ self.addEventListener('fetch', (event) => {
 // 判断是否为静态资源
 function isStaticAsset(request) {
   const url = new URL(request.url);
-  return url.pathname.startsWith('/static/') || 
-         url.pathname === '/' || 
-         url.pathname === '/index.html' ||
+  return url.pathname.startsWith('/assets/') ||
+         url.pathname.startsWith('/static/') ||
+         url.pathname.startsWith('/photomap-icon') ||
          url.pathname === '/manifest.json';
 }
 
@@ -194,6 +196,25 @@ async function networkFirst(request, cacheName) {
     }), {
       status: 503,
       headers: { 'Content-Type': 'application/json' }
+    });
+  }
+}
+
+async function networkFirstDocument(request) {
+  const cache = await caches.open(STATIC_CACHE);
+  try {
+    const response = await fetch(request);
+    if (response.ok) await cache.put(request, response.clone());
+    return response;
+  } catch (error) {
+    const cachedResponse = await cache.match(request, { ignoreSearch: true }) ||
+      await cache.match('/index.html') ||
+      await cache.match('/offline.html');
+    if (cachedResponse) return cachedResponse;
+
+    return new Response('网络不可用，请联网后重试。', {
+      status: 503,
+      headers: { 'Content-Type': 'text/plain; charset=utf-8' }
     });
   }
 }

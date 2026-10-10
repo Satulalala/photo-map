@@ -1,11 +1,10 @@
 import { getToken } from '../api/auth.js';
+import { DEFAULT_API_BASE, getApiBase as getConfiguredApiBase, IS_WEB_BUILD } from './apiBase.js';
 
 const SYNC_QUEUE_KEY = 'cloudSyncQueue_v1';
 const SYNC_ENABLED_KEY = 'cloudSyncEnabled';
 const SYNC_LAST_PULL_KEY = 'cloudSyncLastPullAt';
 const API_BASE_KEY = 'cloudSyncApiBase';
-
-const DEFAULT_API_BASE = 'http://localhost:8080';
 
 function safeParse(json, fallback) {
   try {
@@ -20,11 +19,7 @@ function now() {
 }
 
 function getApiBase() {
-  try {
-    return localStorage.getItem(API_BASE_KEY) || DEFAULT_API_BASE;
-  } catch {
-    return DEFAULT_API_BASE;
-  }
+  return getConfiguredApiBase();
 }
 
 function getQueue() {
@@ -70,6 +65,7 @@ function authHeaders() {
 async function post(path, body) {
   const res = await fetch(`${getApiBase()}${path}`, {
     method: 'POST',
+    credentials: IS_WEB_BUILD ? 'same-origin' : 'include',
     headers: authHeaders(),
     body: JSON.stringify(body),
   });
@@ -79,6 +75,7 @@ async function post(path, body) {
 
 async function get(path) {
   const res = await fetch(`${getApiBase()}${path}`, {
+    credentials: IS_WEB_BUILD ? 'same-origin' : 'include',
     headers: authHeaders(),
   });
   if (!res.ok) throw new Error(`HTTP ${res.status}`);
@@ -104,7 +101,7 @@ const syncService = {
 
   setApiBase(apiBase) {
     try {
-      localStorage.setItem(API_BASE_KEY, apiBase || DEFAULT_API_BASE);
+      localStorage.setItem(API_BASE_KEY, apiBase ?? DEFAULT_API_BASE);
     } catch {}
   },
 

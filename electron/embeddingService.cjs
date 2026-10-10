@@ -4,6 +4,7 @@
  * 模型在首次使用时下载并缓存
  */
 const fs = require('fs');
+const { app } = require('electron');
 const log = require('electron-log');
 
 const MODEL_NAME = 'Xenova/chinese-clip-vit-base-patch16';
@@ -22,7 +23,7 @@ env.remoteHost = 'https://hf-mirror.com/';
 
 // 使用项目内的缓存目录，方便管理
 const path = require('path');
-const CACHE_DIR = path.join(__dirname, '.model-cache');
+const CACHE_DIR = path.join(app.isPackaged ? app.getPath('userData') : __dirname, '.model-cache');
 env.cacheDir = CACHE_DIR;
 
 // 加载进度回调

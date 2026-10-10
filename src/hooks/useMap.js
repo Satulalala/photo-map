@@ -2,6 +2,15 @@ import { useState, useCallback, useRef, useEffect } from 'react';
 import api from '../api/index.js';
 import { hasMapSession } from '../api/auth.js';
 
+function getMarkerPreview(marker) {
+  const photo = marker.firstPhoto || marker.photos?.[0];
+  return {
+    photoId: photo?.id || '',
+    photoData: typeof photo === 'string' ? photo : photo?.data || '',
+    photoCount: marker.photoCount ?? marker.photos?.length ?? (photo ? 1 : 0),
+  };
+}
+
 /**
  * 地图管理 Hook
  * 从 App.jsx 提取的地图初始化、事件处理、标记渲染等逻辑
@@ -401,9 +410,10 @@ export function useMap({
     el.className = 'marker-pin';
     el.style.cssText = 'cursor:pointer;display:flex;flex-direction:column;align-items:center;';
 
-    const firstPhoto = m.firstPhoto;
-    const photoCount = m.photoCount ?? 0;
-    const hasPhoto = firstPhoto && (firstPhoto.id || firstPhoto.data);
+    const preview = getMarkerPreview(m);
+    const { photoId, photoData, photoCount } = preview;
+    el.__photoPreview = preview;
+    const hasPhoto = photoId || photoData;
 
     if (hasPhoto) {
       el.innerHTML = `
@@ -416,17 +426,25 @@ export function useMap({
 
       const img = el.querySelector('img');
       if (img) {
-        if (firstPhoto.data && firstPhoto.data.startsWith('data:')) {
+        if (photoData.startsWith('data:')) {
           img.onload = () => { img.style.opacity = '1'; };
-          img.src = firstPhoto.data;
+          img.src = photoData;
         }
-        else if (firstPhoto.id && window.electronAPI?.getThumbnailUrl) {
-          window.electronAPI.getThumbnailUrl(firstPhoto.id).then(url => {
+        else if (photoId) {
+          const loadPreview = async () => {
+            let url;
+            try {
+              url = await window.electronAPI?.getThumbnailUrl?.(photoId);
+            } catch {
+              // 缩略图缺失或读取失败时，继续尝试原照片。
+            }
+            if (!url) url = await getPhotoUrl({ id: photoId });
             if (url) {
               img.onload = () => { img.style.opacity = '1'; };
               img.src = url;
             }
-          });
+          };
+          void loadPreview().catch(error => console.warn('标记照片预览加载失败:', error));
         }
       }
     } else {
@@ -468,7 +486,7 @@ export function useMap({
     });
 
     return el;
-  }, []);
+  }, [getPhotoUrl]);
 
   // ---- 渲染所有标记 ----
   const renderMarkers = useCallback(() => {
@@ -485,12 +503,20 @@ export function useMap({
       }
     });
 
-    // 只创建尚未存在的标记
+    // 封面或数量变化时只刷新对应标记；备注变化不重新加载预览。
     let created = 0;
     markers.forEach(m => {
-      if (mapMarkersRef.current[m.id]) return;
+      const existing = mapMarkersRef.current[m.id];
+      if (existing) {
+        const previous = existing.getElement().__photoPreview;
+        const next = getMarkerPreview(m);
+        if (previous && previous.photoId === next.photoId &&
+            previous.photoData === next.photoData && previous.photoCount === next.photoCount) return;
+        existing.remove();
+        delete mapMarkersRef.current[m.id];
+      }
       created++;
-      const isNew = newMarkerIds.has(m.id);
+      const isNew = !existing && newMarkerIds.has(m.id);
       const el = createMarkerElement(m, isNew);
 
       el.style.display = heatmapMode ? 'none' : 'flex';
