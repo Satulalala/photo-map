@@ -22,7 +22,7 @@ permissions:
 jobs:
   # ========== 构建 Windows 版本 ==========
   build-windows:
-    runs-on: windows-latest
+    runs-on: windows-2022
     
     steps:
       - name: 检出代码
