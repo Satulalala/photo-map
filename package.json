@@ -71,7 +71,7 @@
   "build": {
     "appId": "com.photomap.app",
     "productName": "地图相册",
-    "artifactName": "${productName}-${version}-${os}-${arch}.${ext}",
+    "artifactName": "PhotoMap-${version}-${os}-${arch}.${ext}",
     "directories": {
       "output": "dist",
     "buildResources": "build-resources"
@@ -121,7 +121,7 @@
       "requestedExecutionLevel": "asInvoker"
     },
     "nsis": {
-      "artifactName": "${productName}-${version}-win-${arch}-setup.${ext}",
+      "artifactName": "PhotoMap-${version}-win-${arch}-setup.${ext}",
       "oneClick": false,
       "allowToChangeInstallationDirectory": true,
       "installerLanguages": [
@@ -138,7 +138,7 @@
       "installerHeaderIcon": "build-resources/photomap.ico"
     },
     "portable": {
-      "artifactName": "${productName}-${version}-win-${arch}-portable.${ext}"
+      "artifactName": "PhotoMap-${version}-win-${arch}-portable.${ext}"
     },
     "mac": {
       "target": [
@@ -209,7 +209,7 @@
       "maintainer": "Satula <1920393579@qq.com>"
     },
     "appImage": {
-      "artifactName": "${productName}-${version}-${arch}.${ext}"
+      "artifactName": "PhotoMap-${version}-${arch}.${ext}"
     },
     "publish": {
       "provider": "github",
