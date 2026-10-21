@@ -34,6 +34,7 @@ const paths = {
   trash: 'M5 7h14m-9 4v6m4-6v6M9 7V4h6v3m-9 0 1 14h10l1-14',
   ruler: 'm4 17 13-13 3 3L7 20H4v-3Zm5-5 3 3m-1-7 3 3m-1-7 3 3',
   download: 'M12 3v12m0 0 5-5m-5 5-5-5M4 21h16',
+  desktopDownload: 'M4 4.5h16v11H4zM9 20h6m-3-4.5V20m0-10v3m-2-2 2 2 2-2',
   logout: 'M10 17l5-5-5-5m5 5H3m9-9V3h9v18h-9v-3',
   check: 'm5 12 4 4L19 6',
   chevron: 'm8 10 4 4 4-4',

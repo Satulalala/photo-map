@@ -1,7 +1,7 @@
 .desktop-download-overlay {
   position: fixed;
   inset: 0;
-  z-index: 2200;
+  z-index: 11000;
   display: grid;
   place-items: center;
   padding: 16px;
@@ -9,7 +9,7 @@
   backdrop-filter: blur(10px);
 }
 .desktop-download-dialog {
-  width: min(420px, 100%);
+  width: min(460px, 100%);
   border: 1px solid var(--border);
   border-radius: 20px;
   padding: 24px;
@@ -49,18 +49,45 @@
   line-height: 1.7;
   font-size: 14px;
 }
+.desktop-download-dialog .desktop-download-intro {
+  margin: 14px 0 18px;
+}
 .desktop-download-features {
   display: grid;
-  gap: 12px;
+  gap: 14px;
   padding: 16px;
   border-radius: 12px;
   background: var(--surface-muted);
 }
-.desktop-download-features span,
+.desktop-download-features > div,
 .desktop-download-link {
   display: flex;
   align-items: center;
   gap: 8px;
+}
+.desktop-download-features > div {
+  align-items: flex-start;
+  gap: 12px;
+}
+.desktop-download-features > div > .map-icon {
+  width: 19px;
+  height: 19px;
+  flex: 0 0 19px;
+  margin-top: 2px;
+  color: var(--accent);
+}
+.desktop-download-features > div > span {
+  display: grid;
+  gap: 3px;
+}
+.desktop-download-features strong {
+  font-size: 14px;
+  font-weight: 600;
+}
+.desktop-download-features small {
+  color: var(--text-secondary);
+  font-size: 12px;
+  line-height: 1.55;
 }
 .desktop-download-link {
   justify-content: center;
@@ -74,14 +101,142 @@
 .desktop-download-link:hover {
   background: var(--accent-hover);
 }
+.desktop-download-dialog .download-note {
+  margin: 14px 0;
+  font-size: 12px;
+  line-height: 1.6;
+}
+.desktop-download-dialog .download-signature-note {
+  margin: 10px 0 0;
+  color: var(--text-secondary);
+  font-size: 11px;
+  line-height: 1.5;
+}
 .desktop-download-dialog button:focus-visible,
 .desktop-download-link:focus-visible {
   outline: 2px solid var(--accent);
   outline-offset: 3px;
 }
 .app .web-dl-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  animation: none;
+}
+.app .web-dl-btn-icon {
+  display: grid;
+  place-items: center;
+  width: 28px;
+  height: 28px;
+  flex: 0 0 28px;
+  border-radius: 9px;
+  background: var(--accent-light);
+  color: var(--accent);
+  transition:
+    background var(--transition-fast),
+    color var(--transition-fast),
+    transform var(--transition-fast);
+}
+.app .web-dl-btn-icon .map-icon {
+  width: 16px;
+  height: 16px;
+  stroke-width: 1.9;
+}
+.app .web-dl-btn-label {
+  line-height: 1;
+  white-space: nowrap;
+}
+.app .web-dl-btn:hover .web-dl-btn-icon {
+  background: var(--accent);
+  color: var(--on-accent);
+  transform: translateY(-1px);
+}
+
+.globe-title-row {
   display: flex;
   align-items: center;
-  gap: 6px;
-  animation: none;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 18px;
+}
+.globe-title-row .globe-title {
+  flex: 0 0 auto;
+  margin: 0;
+  white-space: nowrap;
+}
+.globe-title-row .web-dl-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  height: clamp(36.8px, 3.68vw, 55.2px);
+  min-height: 0;
+  box-sizing: border-box;
+  padding: 0 12px 0 8px;
+  border: 1px solid rgba(226, 232, 240, 0.24);
+  border-radius: 11px;
+  background: rgba(15, 23, 42, 0.3);
+  color: #e2e8f0;
+  font: inherit;
+  font-size: 13px;
+  cursor: pointer;
+  transition:
+    background 160ms ease,
+    border-color 160ms ease,
+    transform 160ms ease;
+}
+.globe-title-row .web-dl-btn:hover {
+  transform: translateY(-1px);
+  border-color: rgba(226, 232, 240, 0.48);
+  background: rgba(226, 232, 240, 0.12);
+}
+.globe-title-row .web-dl-btn:focus-visible {
+  outline: 2px solid #93c5fd;
+  outline-offset: 3px;
+}
+.globe-title-row .web-dl-btn-icon {
+  display: grid;
+  place-items: center;
+  width: 28px;
+  height: 28px;
+  flex: 0 0 28px;
+  border-radius: 8px;
+  background: rgba(147, 197, 253, 0.14);
+  color: #bfdbfe;
+}
+.globe-title-row .web-dl-btn-icon .map-icon {
+  width: 16px;
+  height: 16px;
+}
+.globe-title-row .web-dl-btn-label {
+  white-space: nowrap;
+}
+
+@media (max-width: 760px) {
+  .globe-title-row {
+    margin-bottom: 10px;
+  }
+}
+@media (max-width: 380px) {
+  .globe-title-row .web-dl-btn {
+    padding-right: 8px;
+  }
+  .globe-title-row .web-dl-btn-label {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border: 0;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .app .web-dl-btn-icon,
+  .globe-title-row .web-dl-btn {
+    transition: none;
+  }
 }

@@ -9,33 +9,20 @@ afterEach(() => {
   vi.restoreAllMocks();
 });
 
-it('debounces description searches and ignores results after the query is cleared', async () => {
-  let finishSearch;
+it('keeps note search but does not invoke local image search or subscribe to model progress', async () => {
   vi.spyOn(api.photos, 'searchNotes').mockResolvedValue([]);
-  const search = vi.spyOn(api.photos, 'searchByContent').mockImplementation(() =>
-    new Promise(resolve => { finishSearch = resolve; })
-  );
-  const { result } = setup();
-  act(() => {
-    result.current.handleMarkerListSearch('海');
-    result.current.handleMarkerListSearch('海边');
-  });
-  await waitFor(() => expect(search).toHaveBeenCalledWith('海边', 20));
-  expect(search).toHaveBeenCalledOnce();
-  act(() => result.current.handleMarkerListSearch(''));
-  await act(async () => finishSearch([{ photoId: 'old' }]));
-  expect(result.current.semanticResults).toEqual([]);
-  expect(result.current.isSemanticSearching).toBe(false);
-});
-
-it('reports description search failures instead of silently treating them as no matches', async () => {
-  vi.spyOn(api.photos, 'searchNotes').mockResolvedValue([]);
-  vi.spyOn(api.photos, 'searchByContent').mockRejectedValue(new Error('模型正在加载'));
-  const showToast = vi.fn();
-  const { result } = renderHook(() => useMarkerListUI({ showToast }));
+  const imageSearch = vi.spyOn(api.photos, 'searchByContent');
+  const progressListener = vi.fn(() => vi.fn());
+  window.electronAPI = {
+    loadMarkers: vi.fn(),
+    onEmbeddingProgress: progressListener,
+    searchPhotosByContent: vi.fn(async () => []),
+  };
+  const { result } = renderHook(() => useMarkerListUI());
   act(() => result.current.handleMarkerListSearch('海边'));
-  await waitFor(() => expect(showToast).toHaveBeenCalledWith('info', '模型正在加载'));
-  expect(result.current.isSemanticSearching).toBe(false);
+  await waitFor(() => expect(api.photos.searchNotes).toHaveBeenCalledWith('海边'));
+  expect(imageSearch).not.toHaveBeenCalled();
+  expect(progressListener).not.toHaveBeenCalled();
 });
 
 function setup() {

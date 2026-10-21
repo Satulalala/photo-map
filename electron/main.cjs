@@ -78,7 +78,6 @@ const getStore = lazyRequire('electron-store', () => require('electron-store'));
 const getDb = lazyRequire('database', () => require('./database.cjs'));
 const getSharp = lazyRequire('sharp', () => require('sharp'));
 const getExifParser = lazyRequire('exif-parser', () => require('exif-parser'));
-const getEmbedding = lazyRequire('embedding', () => require('./embeddingService.cjs'));
 
 // ========== 日志系统配置 ==========
 log.transports.file.level = 'info';
@@ -131,15 +130,40 @@ const getStoreInstance = () => {
   return store;
 };
 
-// 目录
-const TILE_CACHE_DIR = path.join(app.getPath('userData'), 'tile-cache');
-const PHOTO_DIR = path.join(app.getPath('userData'), 'photos');
-const THUMB_DIR = path.join(app.getPath('userData'), 'thumbnails');
+// 游客保留旧目录，登录账户使用独立 SQLite 和照片目录。
+const USER_DATA_ROOT = app.getPath('userData');
+const TILE_CACHE_DIR = path.join(USER_DATA_ROOT, 'tile-cache');
+let activeStorageRoot = USER_DATA_ROOT;
+let PHOTO_DIR = path.join(activeStorageRoot, 'photos');
+let THUMB_DIR = path.join(activeStorageRoot, 'thumbnails');
 
 const THUMB_SIZE = 200;
 const THUMB_QUALITY = 80;
 const PLACEHOLDER_SIZE = 20;
-const PLACEHOLDER_DIR = path.join(app.getPath('userData'), 'placeholders');
+let PLACEHOLDER_DIR = path.join(activeStorageRoot, 'placeholders');
+
+function getStoragePaths() {
+  return { PHOTO_DIR, THUMB_DIR, PLACEHOLDER_DIR };
+}
+
+function switchAccountStorage(accountId) {
+  let nextRoot = USER_DATA_ROOT;
+  if (accountId !== null && accountId !== undefined) {
+    const id = Number(accountId);
+    if (!Number.isSafeInteger(id) || id <= 0) throw new TypeError('账户编号无效');
+    nextRoot = path.join(USER_DATA_ROOT, 'accounts', `account-${id}`);
+  }
+  if (nextRoot === activeStorageRoot) return true;
+
+  getDb().closeDatabase();
+  activeStorageRoot = nextRoot;
+  PHOTO_DIR = path.join(activeStorageRoot, 'photos');
+  THUMB_DIR = path.join(activeStorageRoot, 'thumbnails');
+  PLACEHOLDER_DIR = path.join(activeStorageRoot, 'placeholders');
+  ensurePhotoDir();
+  getDb().initDatabase(activeStorageRoot);
+  return true;
+}
 
 function ensurePhotoDir() {
   if (!fs.existsSync(PHOTO_DIR)) fs.mkdirSync(PHOTO_DIR, { recursive: true });
@@ -325,11 +349,8 @@ const ctx = {
   getSharp,
   getExifParser,
   getDb,
-  getEmbedding,
   getStoreInstance,
-  PHOTO_DIR,
-  THUMB_DIR,
-  PLACEHOLDER_DIR,
+  getStoragePaths,
   TILE_CACHE_DIR,
   ensurePhotoDir,
   generateThumbnail,
@@ -341,8 +362,8 @@ const ctx = {
 
 require('./ipc-handlers/photo-handlers.cjs')(ctx);
 require('./ipc-handlers/database-handlers.cjs')(ctx);
+ipcMain.handle('switch-account-storage', (_, accountId) => switchAccountStorage(accountId));
 require('./ipc-handlers/search-handlers.cjs')(ctx);
-require('./ipc-handlers/ai-handlers.cjs')(ctx);
 require('./ipc-handlers/cache-handlers.cjs')(ctx);
 require('./ipc-handlers/system-handlers.cjs')(ctx);
 
@@ -371,48 +392,6 @@ app.whenReady().then(async () => {
   createWindow();
 
   setImmediate(preheatDatabase);
-
-  setImmediate(async () => {
-    try {
-      const start = Date.now();
-      log.info('[Embedding] 后台预加载语义搜索模型...');
-
-      const embedding = getEmbedding();
-      let lastDownloadPercent = -1;
-      embedding.setProgressCallback((progressData) => {
-        // Transformers.js 的 progress_callback 会发送多种事件类型
-        // 只有含有效 progress 字段的才是实际下载/加载进度
-        if (progressData == null || typeof progressData.progress !== 'number') return;
-        if (!Number.isFinite(progressData.progress)) return;
-
-        const { progress, loaded, total } = progressData;
-        const pct = Math.max(0, Math.min(100, Math.round(progress)));
-        if (pct === lastDownloadPercent) return;
-        lastDownloadPercent = pct;
-        const loadedMb = (loaded / 1024 / 1024).toFixed(1);
-        const totalMb = (total / 1024 / 1024).toFixed(1);
-        log.info(`[Embedding] 下载中 ${pct}% (${loadedMb}MB / ${totalMb}MB)`);
-
-        if (mainWindow && !mainWindow.isDestroyed()) {
-          mainWindow.webContents.send('embedding-progress', {
-            percent: pct,
-            loaded: loadedMb,
-            total: totalMb,
-          });
-        }
-      });
-
-      await embedding.warmup();
-      log.info(`[Embedding] 模型预加载完成: ${Date.now() - start}ms`);
-
-      // 通知前端模型已加载完毕
-      if (mainWindow && !mainWindow.isDestroyed()) {
-        mainWindow.webContents.send('embedding-progress', { percent: 100, loaded: '0', total: '0' });
-      }
-    } catch (e) {
-      log.warn('[Embedding] 模型预加载跳过:', e.message);
-    }
-  });
 });
 
 app.on('window-all-closed', () => {

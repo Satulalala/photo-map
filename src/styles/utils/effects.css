@@ -1,6 +1,7 @@
 /* ========== 测量模式 ========== */
 .map-container.measure-mode { cursor: crosshair !important; }
-.map-container.measure-mode .mapboxgl-canvas { cursor: crosshair !important; }
+.map-container.measure-mode .mapboxgl-canvas,
+.map-container.measure-mode .maplibregl-canvas { cursor: crosshair !important; }
 
 .measure-hint {
   position: fixed;

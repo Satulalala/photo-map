@@ -9,7 +9,6 @@ export default function MapHeader({
   isOnline,
   onOpenVillage,
   isWeb,
-  isLoggedIn,
 }) {
   return (
     <header className="map-header" aria-label="地图搜索" data-ui="map-header">
@@ -28,9 +27,9 @@ export default function MapHeader({
           <MapIcon name="globe" />
         </button>
         <SearchBar {...searchProps} />
-        {isWeb && isLoggedIn && (
+        {isWeb && (
           <div className="web-download-beside-search">
-            <WebDownloadButton />
+            <WebDownloadButton label="下载桌面版" />
           </div>
         )}
       </div>

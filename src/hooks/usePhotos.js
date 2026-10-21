@@ -1,5 +1,6 @@
 import { useState, useCallback, useEffect } from 'react';
 import { photoUrlCache } from '../utils/LRUCache.ts';
+import { getPhotoDisplayUrl, getPhotoDisplayCacheKey } from '../api/photoFileAccess.js';
 
 export function usePhotos() {
   const [photoViewer, setPhotoViewer] = useState(null);
@@ -19,16 +20,7 @@ export function usePhotos() {
     // 新格式：photo.id 是文件名
     const photoId = photo.id;
     if (!photoId) return null;
-    // 检查 LRU 缓存
-    const cached = photoUrlCache.get(photoId);
-    if (cached) return cached;
-    // 从文件获取URL
-    if (window.electronAPI) {
-      const url = await window.electronAPI.getPhotoUrl(photoId);
-      if (url) photoUrlCache.set(photoId, url);
-      return url;
-    }
-    return null;
+    return getPhotoDisplayUrl(photoId, false);
   }, []);
 
   // 同步获取照片URL（用于已缓存的情况）
@@ -37,7 +29,7 @@ export function usePhotos() {
     if (typeof photo === 'string') return photo;
     if (photo.data && photo.data.startsWith('data:')) return photo.data;
     const photoId = photo.id;
-    return photoUrlCache.get(photoId) || '';
+    return photoUrlCache.get(getPhotoDisplayCacheKey(photoId)) || '';
   }, []);
 
   // 获取照片备注

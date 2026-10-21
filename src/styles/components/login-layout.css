@@ -77,11 +77,29 @@
   max-width: none;
   transform: none;
 }
+.globe-split .login-buttons-container.login-actions-card {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 8px;
+  padding: 12px;
+  border: 1px solid rgb(255 255 255 / 14%);
+  border-radius: 16px;
+  background: rgb(8 13 27 / 20%);
+  box-shadow: 0 14px 36px rgb(0 0 0 / 12%), inset 0 1px rgb(255 255 255 / 7%);
+  -webkit-backdrop-filter: blur(10px) saturate(112%);
+  backdrop-filter: blur(10px) saturate(112%);
+}
+.globe-split .login-provider-actions {
+  display: grid;
+  gap: 9px;
+}
 .globe-split .login-drop-btn {
   width: 100%;
   min-width: 0;
-  padding: 0 12px;
-  height: 44px;
+  padding: 0 14px;
+  height: 48px;
+  min-height: 48px;
   border-radius: 10px;
 }
 .globe-split .login-drop-btn.primary {
@@ -94,16 +112,29 @@
   border-color: #fff;
 }
 .globe-split .login-drop-btn.tertiary {
+  align-self: center;
+  width: auto;
+  height: 36px;
+  min-height: 36px;
+  padding: 0 10px;
   background: transparent;
   border-color: #ffffff30;
 }
 .globe-split .login-drop-btn.secondary {
-  grid-column: 1 / -1;
-  justify-self: start;
-  justify-content: flex-start;
-  width: auto;
-  height: 36px;
-  padding: 0;
+  justify-content: center;
+  width: 100%;
+  height: 48px;
+  min-height: 48px;
+  padding: 0 14px;
+  border-color: rgb(255 255 255 / 24%);
+  background: rgb(255 255 255 / 4%);
+  color: #e2e8f0;
+}
+.globe-split .login-drop-btn.secondary:disabled {
+  border-color: transparent;
+  background: transparent;
+  color: rgb(226 232 240 / 50%);
+  cursor: not-allowed;
 }
 .globe-split .logged-in-bar {
   position: static;
@@ -206,7 +237,8 @@
 }
 @media (prefers-reduced-motion: reduce) {
   .globe-split .globe-content,
-  .globe-split::before {
+  .globe-split::before,
+  .globe-split .login-actions-card {
     transition: none;
   }
 }

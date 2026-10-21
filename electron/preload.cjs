@@ -1,6 +1,7 @@
 const { contextBridge, ipcRenderer } = require('electron');
 
 contextBridge.exposeInMainWorld('electronAPI', {
+  switchAccountStorage: (accountId) => ipcRenderer.invoke('switch-account-storage', accountId),
   // 照片文件管理
   selectPhotos: () => ipcRenderer.invoke('select-photos'),
   getPhotoUrl: (photoId) => ipcRenderer.invoke('get-photo-url', photoId),
@@ -9,12 +10,17 @@ contextBridge.exposeInMainWorld('electronAPI', {
   getPhotoInfo: (photoId) => ipcRenderer.invoke('get-photo-info', photoId),
   deletePhotoFile: (photoId) => ipcRenderer.invoke('delete-photo-file', photoId),
   savePhotoFromBase64: (base64) => ipcRenderer.invoke('save-photo-from-base64', base64),
+  readPhotoFile: (photoId) => ipcRenderer.invoke('read-photo-file', photoId),
+  readThumbnailFile: (photoId) => ipcRenderer.invoke('read-thumbnail-file', photoId),
+  savePhotoFile: (photoId, bytes) => ipcRenderer.invoke('save-photo-file', { photoId, bytes }),
+  saveThumbnailFile: (photoId, bytes) => ipcRenderer.invoke('save-thumbnail-file', { photoId, bytes }),
   
   // 数据库操作 - 标记
   loadMarkers: () => ipcRenderer.invoke('load-markers'),
   getMarkersInBounds: (bounds) => ipcRenderer.invoke('get-markers-in-bounds', bounds),
   getMarkerDetail: (markerId) => ipcRenderer.invoke('get-marker-detail', markerId),
   addMarker: (marker) => ipcRenderer.invoke('add-marker', marker),
+  upsertMarkerSnapshot: (marker) => ipcRenderer.invoke('upsert-marker-snapshot', marker),
   updateMarker: (marker) => ipcRenderer.invoke('update-marker', marker),
   deleteMarker: (markerId) => ipcRenderer.invoke('delete-marker', markerId),
   
@@ -55,15 +61,4 @@ contextBridge.exposeInMainWorld('electronAPI', {
   openDevTools: () => ipcRenderer.invoke('open-devtools'),
   getRecentLogs: () => ipcRenderer.invoke('get-recent-logs'),
 
-  // 语义搜索（AI 向量搜索）
-  searchPhotosByContent: (text, topK) => ipcRenderer.invoke('search-photos-by-content', { text, topK }),
-  generatePhotoEmbedding: (photoId, markerId) => ipcRenderer.invoke('generate-photo-embedding', { photoId, markerId }),
-  batchGenerateEmbeddings: () => ipcRenderer.invoke('batch-generate-embeddings'),
-  getEmbeddingStatus: () => ipcRenderer.invoke('get-embedding-status'),
-  // 监听模型下载进度
-  onEmbeddingProgress: (callback) => {
-    const handler = (_event, data) => callback(data);
-    ipcRenderer.on('embedding-progress', handler);
-    return () => ipcRenderer.removeListener('embedding-progress', handler);
-  },
 });

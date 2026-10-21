@@ -1,4 +1,3 @@
-import { IS_WEB_BUILD } from '../../api/apiBase.js';
 import ThemeControl from './ThemeControl.jsx';
 import MapIcon from '../map/MapIcon.jsx';
 import { useLayoutEffect, useRef } from 'react';
@@ -12,8 +11,9 @@ export default function SettingsContent({
   markersCount,
   totalPhotos,
   isOnline,
-  syncQueueSize,
+  syncConflictCount,
   cloudSyncEnabled,
+  guestImportDone,
   syncingNow,
   syncApiBase,
   onLogout,
@@ -24,6 +24,7 @@ export default function SettingsContent({
   onCloudSyncChange,
   onSyncApiBaseChange,
   onRunCloudSync,
+  onImportGuestData,
   onClearTileCache,
 }) {
   const scrollRef = useRef(null);
@@ -135,7 +136,7 @@ export default function SettingsContent({
                 <div className="setting-row">
                   <div className="setting-label">
                     <strong>同步状态</strong>
-                    <span>当前网络：{isOnline ? '在线' : '离线'}，队列：{syncQueueSize} 条</span>
+                    <span>当前网络：{isOnline ? '在线' : '离线'}，待处理冲突：{syncConflictCount} 条</span>
                   </div>
                   <label className="switch" aria-label="启用云端同步">
                     <input
@@ -148,10 +149,8 @@ export default function SettingsContent({
                 </div>
                 <div className="setting-row">
                   <div className="setting-label">
-                    <strong>账号与同步 API 地址</strong>
-                    <span>
-                      默认：{IS_WEB_BUILD ? '与网页同源的 Cloudflare API' : 'Cloudflare API；也可填写自建 Java 服务'}
-                    </span>
+                    <strong>Cloudflare 同步 API 地址</strong>
+                    <span>网页默认与站点同源；桌面端默认使用 PhotoMap Cloudflare 服务</span>
                   </div>
                   <input
                     style={{ width: '280px', maxWidth: '42%', minWidth: '180px', height: '34px', borderRadius: '8px', border: '1px solid #ddd', padding: '0 10px' }}
@@ -164,9 +163,18 @@ export default function SettingsContent({
                     <MapIcon name="refresh" />
                     <div>
                       <strong>{syncingNow ? '同步中...' : '立即同步'}</strong>
-                      <small>将本地标记与照片元数据同步到云端并拉取最新数据</small>
+                      <small>同步地点、备注、照片顺序、原图和缩略图</small>
                     </div>
                   </button>
+                  {!guestImportDone && (
+                    <button className="action-btn" disabled={syncingNow} onClick={onImportGuestData}>
+                      <MapIcon name="download" />
+                      <div>
+                        <strong>导入此设备的游客数据</strong>
+                        <small>需确认后复制地点、备注和照片；游客空间原数据保留</small>
+                      </div>
+                    </button>
+                  )}
                 </div>
               </div>
 
@@ -315,7 +323,7 @@ export default function SettingsContent({
             <div className="setting-row">
               <div className="setting-label">
                 <strong>瓦片缓存上限</strong>
-                <span>自动按当前窗口分配缓存；手动数值仅限制上限，不会预先加载对应数量</span>
+                <span>自动保留当前视野及周边预加载瓦片；手动数值仅限制缓存上限</span>
               </div>
               <div className="range-control wide">
                 <input type="range" min="0" max="6000" step="500" value={tempSettings.maxTileCacheSize ?? 0} onChange={e => onTempSettingsChange(s => ({ ...s, maxTileCacheSize: Number(e.target.value) || null }))} aria-label="瓦片缓存上限，0 为自动" />

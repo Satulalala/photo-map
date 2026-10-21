@@ -1,14 +1,16 @@
 import { useState, useEffect, useRef, useCallback, useMemo, memo, lazy, Suspense, useDeferredValue } from 'react';
-import { startPeriodicCleanup, stopPeriodicCleanup } from './utils/memoryManager.ts';
+import { startPeriodicCleanup, stopPeriodicCleanup, clearAllImageCaches } from './utils/memoryManager.ts';
 import PhotoViewer from './components/photos/PhotoViewer.jsx';
 import PhotoEditor from './components/photos/PhotoEditor.jsx';
 import ErrorBoundary from './components/ErrorBoundary.jsx';
 import { useSEO } from './utils/seoManager.js';
 import { useAnalytics } from './utils/webAnalytics.js';
-import { usePWA } from './utils/pwaManager.js';
+import './utils/pwaManager.js';
 import api from './api/index.js';
 import { savePhotoNotes } from './api/photoNotes.js';
 import syncService from './api/syncService.js';
+import { getCurrentUser } from './api/auth.js';
+import { loadLocalMarkerSnapshots } from './api/localMarkerSnapshots.js';
 import LoginButtons from './components/LoginButtons.jsx';
 import MapHeader from './components/map/MapHeader.jsx';
 import AlbumButton from './components/map/AlbumButton.jsx';
@@ -40,8 +42,17 @@ import { createPortal } from 'react-dom';
 import MinimalLoader from './components/MinimalLoader.jsx';
 
 // 简洁优雅的加载动画
-const FilmLoader = ({ onComplete, onShowLogin, canEnter, children }) => {
-  return <MinimalLoader onComplete={onComplete} onShowLogin={onShowLogin || (() => {})} canEnter={canEnter}>{children}</MinimalLoader>;
+const FilmLoader = ({ onComplete, onShowLogin, canEnter, isWebVersion, children }) => {
+  return (
+    <MinimalLoader
+      onComplete={onComplete}
+      onShowLogin={onShowLogin || (() => {})}
+      canEnter={canEnter}
+      isWebVersion={isWebVersion}
+    >
+      {children}
+    </MinimalLoader>
+  );
 };
 
 // 懒加载组件 - 减少首屏 JS 体积，按需加载
@@ -53,8 +64,6 @@ function App() {
   // Web 优化功能 Hooks
   const seo = useSEO();
   const analytics = useAnalytics();
-  const pwa = usePWA();
-
   // 标记管理 Hook
   const {
     markers, markersLoading, newMarkerIds, markersStateRef,
@@ -125,6 +134,12 @@ function App() {
 
   const [toast, setToast] = useState(null);
   const [cloudSyncEnabled, setCloudSyncEnabled] = useState(() => syncService.isCloudSyncEnabled());
+  const [storageReady, setStorageReady] = useState(false);
+  const [guestImportDone, setGuestImportDone] = useState(() => {
+    const accountId = getCurrentUser()?.id;
+    try { return accountId ? localStorage.getItem(`guestImportDone:${accountId}`) === '1' : false; }
+    catch { return false; }
+  });
 
   const showToast = useCallback((type, message, duration = 2500) => {
     setToast({ type, message });
@@ -138,7 +153,6 @@ function App() {
     markerListSort, markerListLayout, showSortMenu, showLayoutMenu,
     markerListSearch, noteSearchResults, isNoteSearching,
     semanticResults, isSemanticSearching,
-    embeddingProgress, setEmbeddingProgress,
     searchFocusIndex, markerListTimeFilter, markerListTimeRange, showTimeFilterMenu,
     handleMarkerListSearch, handleMarkerListSort, handleMarkerListLayout,
     handleMarkerListTimeFilter, handleMarkerListTimeRangeChange,
@@ -161,14 +175,16 @@ function App() {
   );
 
   const {
-    isOnline, syncingNow, syncQueueSize, syncApiBase,
-    setSyncingNow, setSyncQueueSize, setSyncApiBase,
+    isOnline, syncingNow, syncConflictCount, syncApiBase,
+    setSyncApiBase,
     runCloudSync,
-  } = useSync({ showToast, setMarkers, cloudSyncEnabled });
+  } = useSync({ showToast, setMarkers, cloudSyncEnabled, storageReady });
 
   const handleCloudSyncChange = useCallback(enabled => {
+    const accountId = getCurrentUser()?.id;
+    if (!accountId) return;
     setCloudSyncEnabled(enabled);
-    syncService.setCloudSyncEnabled(enabled);
+    syncService.setCloudSyncEnabled(enabled, accountId);
     if (enabled) runCloudSync();
   }, [setCloudSyncEnabled, runCloudSync]);
 
@@ -202,34 +218,6 @@ function App() {
     setSelectedResultIndex(-1);
   }, [setSearchQuery, setSearchResults, setShowSearchResults, setSelectedResultIndex]);
 
-  // 监听语义搜索模型下载进度
-  useEffect(() => {
-    // 先检查模型是否已加载（之前会话已下载过）
-    api.photos.getEmbeddingStatus?.().then(status => {
-      if (status?.isLoaded) {
-        setEmbeddingProgress(null);
-        return;
-      }
-    }).catch(() => {});
-
-    let hideTimer = null;
-    const unsubscribe = api.photos.onEmbeddingProgress?.(data => {
-      if (data.percent >= 100) {
-        // 下载完成，2秒后隐藏
-        clearTimeout(hideTimer);
-        hideTimer = setTimeout(() => setEmbeddingProgress(null), 2000);
-        return;
-      }
-      if (typeof data.percent === 'number' && Number.isFinite(data.percent)) {
-        setEmbeddingProgress(data);
-      }
-    });
-    return () => {
-      unsubscribe?.();
-      clearTimeout(hideTimer);
-    };
-  }, []);
-
   // 计算总照片数 - 使用 useMemo 避免重复计算
   // 数据库版本使用 photoCount 字段，旧版本使用 photos.length
   const totalPhotos = useMemo(() => 
@@ -237,18 +225,69 @@ function App() {
   [markers]
   );
 
-  useEffect(() => {
-    if (!cloudSyncEnabled) return;
-    syncService.enqueueSnapshot(markers);
-    setSyncQueueSize(syncService.getQueueLength());
-  }, [markers, cloudSyncEnabled]);
-
   // 认证管理 Hook
   const {
     isLoggedIn, userChose, user, showLoginModal, offlinePrompted,
     setIsLoggedIn, setUserChose, setUser, setShowLoginModal, setOfflinePrompted,
-    handleLogin, handleSkipLogin, handleLogout: handleLogoutBase, handleEnterMapFromLoader,
+    handleLogin: handleLoginBase, handleSkipLogin, handleLogout: handleLogoutBase, handleEnterMapFromLoader,
   } = useAuth(showToast);
+
+  const handleLogin = useCallback(async userData => {
+    try {
+      if (window.electronAPI?.switchAccountStorage) await window.electronAPI.switchAccountStorage(userData.id);
+      const accountMarkers = await loadLocalMarkerSnapshots();
+      clearAllImageCaches();
+      setMarkers(accountMarkers);
+      try { setGuestImportDone(localStorage.getItem(`guestImportDone:${userData.id}`) === '1'); }
+      catch { setGuestImportDone(false); }
+      syncService.setCloudSyncEnabled(true, userData.id);
+      setCloudSyncEnabled(true);
+      handleLoginBase(userData);
+    } catch (error) {
+      showToast('error', `切换账户数据空间失败：${error.message || '本地存储不可用'}`);
+    }
+  }, [handleLoginBase, setMarkers, showToast]);
+
+  const handleImportGuestData = useCallback(async () => {
+    if (!user?.id || guestImportDone) return;
+    if (!window.confirm('将此设备游客空间中的地点、备注和照片复制到当前账户并同步到云端？原游客数据会保留。')) return;
+
+    let guestMarkers = [];
+    const localFiles = [];
+    try {
+      if (window.electronAPI?.switchAccountStorage) {
+        await window.electronAPI.switchAccountStorage(null);
+        try {
+          guestMarkers = await loadLocalMarkerSnapshots();
+          for (const marker of guestMarkers) {
+            for (const photo of marker.photos || []) {
+              const file = await window.electronAPI.readPhotoFile(photo.id);
+              if (file?.bytes) localFiles.push({ photoId: photo.id, bytes: file.bytes });
+            }
+          }
+        } finally {
+          await window.electronAPI.switchAccountStorage(user.id);
+        }
+      } else if (window.electronAPI?.loadGuestData) {
+        guestMarkers = await window.electronAPI.loadGuestData();
+      }
+
+      const existing = await api.markers.getAll();
+      const existingIds = new Set(existing.map(marker => marker.id));
+      const importable = guestMarkers.filter(marker => !existingIds.has(marker.id));
+      for (const marker of importable) await api.markers.upsertSnapshot(marker);
+      for (const file of localFiles) await window.electronAPI.savePhotoFile(file.photoId, file.bytes);
+
+      localStorage.setItem(`guestImportDone:${user.id}`, '1');
+      setGuestImportDone(true);
+      setMarkers(await loadLocalMarkerSnapshots());
+      if (!guestMarkers.length) showToast('info', '游客空间没有可导入的地点');
+      else showToast('success', `已导入 ${importable.length} 个地点，游客原数据仍保留`);
+      await runCloudSync();
+    } catch (error) {
+      showToast('error', `导入游客数据失败：${error.message || '本地存储不可用'}`);
+    }
+  }, [user?.id, guestImportDone, setMarkers, showToast, runCloudSync]);
 
   // Village（地球村/好友）管理 Hook
   const {
@@ -263,11 +302,21 @@ function App() {
   } = useVillage(markers, user, showToast);
 
   // 包装 handleLogout，添加地图状态重置
-  const handleLogout = useCallback(() => {
-    handleLogoutBase();
+  const handleLogout = useCallback(async message => {
+    clearAllImageCaches();
+    handleLogoutBase(message);
+    setCloudSyncEnabled(false);
+    setGuestImportDone(false);
+    try {
+      if (window.electronAPI?.switchAccountStorage) await window.electronAPI.switchAccountStorage(null);
+      const guestMarkers = await loadLocalMarkerSnapshots();
+      setMarkers(guestMarkers);
+    } catch (error) {
+      showToast('error', `切换游客数据空间失败：${error.message || '本地存储不可用'}`);
+    }
     setMapLoaded(false);
     setMapEntered(false);
-  }, [handleLogoutBase, setMapLoaded, setMapEntered]);
+  }, [handleLogoutBase, setMarkers, showToast, setMapLoaded, setMapEntered]);
 
   const handleSettingsLogout = useCallback(() => {
     if (!window.confirm('确定要退出登录吗？')) return;
@@ -308,75 +357,56 @@ function App() {
   useDialogFocus(showSettings, '.settings-panel', closeSettings);
 
   useEffect(() => {
+    let active = true;
     // 启动定时内存清理
     startPeriodicCleanup();
-    
-    if (window.electronAPI) {
-      // Electron 环境
-      setMarkersLoading(true);
-      window.electronAPI.loadMarkers().then(loaded => {
-        console.log('📍 初始加载标记数量:', loaded.length, loaded.map(m => m.id));
-        // 数据库返回轻量版标记（含 photoCount 和 firstPhoto）
-        setMarkers(loaded);
+    setMarkersLoading(true);
+    const initializeStorage = async () => {
+      const accountId = getCurrentUser()?.id;
+      if (window.electronAPI?.switchAccountStorage) await window.electronAPI.switchAccountStorage(accountId || null);
+      const loaded = await loadLocalMarkerSnapshots();
+      if (!active) return;
+      setMarkers(loaded);
+      setCloudSyncEnabled(syncService.isCloudSyncEnabled());
+      try {
+        const currentUser = getCurrentUser();
+        setGuestImportDone(currentUser?.id ? localStorage.getItem(`guestImportDone:${currentUser.id}`) === '1' : false);
+      } catch { setGuestImportDone(false); }
+      setMarkersLoading(false);
+      setStorageReady(true);
+      if (window.electronAPI?.getCacheStats) window.electronAPI.getCacheStats().then(setCacheStats);
+
+      if (window.electronAPI && loaded.some(marker => !marker.name)) {
+        const needName = loaded.filter(marker => !marker.name);
+        Promise.all(needName.map(async marker => {
+          try {
+            const response = await fetch(
+              `https://api.mapbox.com/geocoding/v5/mapbox.places/${marker.lng},${marker.lat}.json?access_token=${window.mapboxgl?.accessToken}&language=zh&limit=1`
+            );
+            const data = await response.json();
+            const place = data.features?.[0]?.place_name_zh || data.features?.[0]?.place_name || '';
+            const name = place.replace(/\s*\d{5,6}\s*$/, '').replace(/,\s*$/, '');
+            if (!name) return null;
+            await window.electronAPI.updateMarker({ id: marker.id, lat: marker.lat, lng: marker.lng, name });
+            return { id: marker.id, name };
+          } catch { return null; }
+        })).then(results => {
+          const names = Object.fromEntries(results.filter(Boolean).map(result => [result.id, result.name]));
+          if (Object.keys(names).length) setMarkers(current => current.map(marker => names[marker.id] ? { ...marker, name: names[marker.id] } : marker));
+        });
+      }
+    };
+    void initializeStorage().catch(error => {
+      console.error('❌ 加载本地账户数据失败:', error);
+      if (active) {
         setMarkersLoading(false);
-        
-        // 后台为没有地名的旧标记补充地名
-        const needName = loaded.filter(m => !m.name);
-        if (needName.length > 0) {
-          Promise.all(needName.map(async m => {
-            try {
-              const res = await fetch(
-                `https://api.mapbox.com/geocoding/v5/mapbox.places/${m.lng},${m.lat}.json?access_token=${window.mapboxgl?.accessToken}&language=zh&limit=1`
-              );
-              const data = await res.json();
-              if (data.features?.[0]) {
-                const place = data.features[0].place_name_zh || data.features[0].place_name || '';
-                const name = place.replace(/\s*\d{5,6}\s*$/, '').replace(/,\s*$/, '');
-                // 更新数据库
-                window.electronAPI.updateMarker({ id: m.id, lat: m.lat, lng: m.lng, name });
-                return { id: m.id, name };
-              }
-            } catch {}
-            return null;
-          })).then(results => {
-            const nameMap = {};
-            results.forEach(r => { if (r) nameMap[r.id] = r.name; });
-            if (Object.keys(nameMap).length > 0) {
-              setMarkers(prev => prev.map(m => nameMap[m.id] ? { ...m, name: nameMap[m.id] } : m));
-            }
-          });
-        }
-      });
-      window.electronAPI.getCacheStats().then(setCacheStats);
-    } else {
-      // Web 环境 - 从 IndexedDB 加载标记（轻量版格式）
-      setMarkersLoading(true);
-      console.log('🔄 Web: 开始加载标记...');
-      api.markers.getAll().then(async loaded => {
-        console.log('📍 Web: 已加载', loaded.length, '个标记');
-        // 为每个标记统计照片数量
-        const markersWithCounts = await Promise.all(
-          loaded.map(async marker => {
-            const photos = await api.photos.getByMarkerId(marker.id);
-            return {
-              ...marker,
-              photoCount: photos.length,
-              firstPhoto: photos.length > 0 ? photos[0] : null
-            };
-          })
-        );
-        
-        console.log('✅ Web: 标记加载完成，共', markersWithCounts.length, '个');
-        setMarkers(markersWithCounts);
-        setMarkersLoading(false);
-      }).catch(error => {
-        console.error('❌ 加载标记失败:', error);
-        setMarkersLoading(false);
-      });
-    }
-    
+        setStorageReady(false);
+      }
+    });
+
     // 组件卸载时停止定时清理
     return () => {
+      active = false;
       stopPeriodicCleanup();
     };
   }, []);
@@ -554,7 +584,8 @@ function App() {
   };
 
   // 检测是否为 Web 版本 - 多重检测确保准确性
-  const isWebVersion = !window.electronAPI || 
+  const isWebVersion = !window.electronAPI ||
+                       window.electronAPI.__isWebAdapter ||
                        window.location.pathname.includes('index-web') ||
                        window.location.port === '3001' ||
                        window.location.hostname.includes('netlify') ||
@@ -574,6 +605,7 @@ function App() {
           onComplete={() => {}}
           onShowLogin={() => {}}
           canEnter={false}
+          isWebVersion={isWebVersion}
         >
         {/* 登录按钮和禁用的进入地图按钮 */}
         <LoginButtons
@@ -582,6 +614,7 @@ function App() {
           onLogout={handleLogout}
           isLoggedIn={false}
           showButtons
+          landingLayout
         />
         </FilmLoader>
       </>
@@ -597,6 +630,7 @@ function App() {
           onComplete={() => {}}
           onShowLogin={() => handleEnterMapFromLoader(setMapEntered)}
           canEnter
+          isWebVersion={isWebVersion}
         >
         {/* 右上角退出按钮 */}
         <LoginButtons
@@ -635,7 +669,7 @@ function App() {
         <MapHeader
           villageButtonRef={globeVillageBtnRef} showVillage={showVillageModal}
           isOnline={isOnline} onOpenVillage={handleOpenVillage}
-          isWeb={isWebVersion} isLoggedIn={isLoggedIn}
+          isWeb={isWebVersion}
           searchProps={{
             searchQuery, searchResults, showSearchResults, selectedResultIndex,
             isSearching, searchHistory, searchInputRef,
@@ -699,7 +733,6 @@ function App() {
         semanticResults={semanticResults}
         isNoteSearching={isNoteSearching}
         isSemanticSearching={isSemanticSearching}
-        embeddingProgress={embeddingProgress}
         searchFocusIndex={searchFocusIndex}
         markerListReady={markerListReady}
         markerListClosing={markerListClosing}
@@ -850,8 +883,9 @@ function App() {
               markersCount={markers.length}
               totalPhotos={totalPhotos}
               isOnline={isOnline}
-              syncQueueSize={syncQueueSize}
+              syncConflictCount={syncConflictCount}
               cloudSyncEnabled={cloudSyncEnabled}
+              guestImportDone={guestImportDone}
               syncingNow={syncingNow}
               syncApiBase={syncApiBase}
               onLogout={handleSettingsLogout}
@@ -862,6 +896,7 @@ function App() {
               onCloudSyncChange={handleCloudSyncChange}
               onSyncApiBaseChange={handleSyncApiBaseChange}
               onRunCloudSync={runCloudSync}
+              onImportGuestData={handleImportGuestData}
               onClearTileCache={handleClearTileCache}
             />
           </div>

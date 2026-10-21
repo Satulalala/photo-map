@@ -1,6 +1,9 @@
 import { useState, useCallback, useRef, useEffect } from 'react';
 import api from '../api/index.js';
 import { hasMapSession } from '../api/auth.js';
+import { getMapLibreStyleUrl, isMapLibreTestRoute } from '../utils/mapLibreTestMode.js';
+import { attachNeighborTilePrefetch, getNeighborTileCacheSize } from '../utils/mapTilePrefetch.js';
+import { getPhotoDisplayUrl } from '../api/photoFileAccess.js';
 
 function getMarkerPreview(marker) {
   const photo = marker.firstPhoto || marker.photos?.[0];
@@ -9,6 +12,40 @@ function getMarkerPreview(marker) {
     photoData: typeof photo === 'string' ? photo : photo?.data || '',
     photoCount: marker.photoCount ?? marker.photos?.length ?? (photo ? 1 : 0),
   };
+}
+
+function isMapEngineSupported(mapLibrary) {
+  if (typeof mapLibrary?.supported === 'function') return mapLibrary.supported();
+
+  // MapLibre GL JS exposes no `supported()` namespace helper. Its current
+  // renderer requires WebGL 2, so check that directly for this engine.
+  const canvas = document.createElement('canvas');
+  return Boolean(canvas.getContext('webgl2'));
+}
+
+function recordMapResourceMetrics(container, mapStyleUrl, isMapLibreTest, startedAt, tileStats) {
+  if (!container || typeof performance === 'undefined') return;
+
+  const styleHost = isMapLibreTest ? new URL(mapStyleUrl).host : 'api.mapbox.com';
+  const entries = performance.getEntriesByType('resource').filter(entry => {
+    if (entry.startTime < startedAt) return false;
+    try {
+      return new URL(entry.name).host === styleHost;
+    } catch {
+      return false;
+    }
+  });
+  const styleEntries = entries.filter(entry => /\/styles\//i.test(new URL(entry.name).pathname));
+  container.dataset.mapStyleRequestMs = String(Math.round(Math.max(0, ...styleEntries.map(entry => entry.duration))));
+  container.dataset.mapSourceTileCount = String(tileStats.count);
+  container.dataset.mapTileLoadMaxMs = String(Math.round(tileStats.maxDurationMs));
+}
+
+function getSourceTileKey(event) {
+  if (!event.coord) return null;
+  const tile = event.coord;
+  const canonical = tile.canonical || tile;
+  return `${event.sourceId || ''}:${tile.wrap || 0}:${tile.overscaledZ ?? canonical.z}/${canonical.x}/${canonical.y}`;
 }
 
 /**
@@ -27,6 +64,8 @@ export function useMap({
   markerMenu,
   setMarkerMenu,
 }) {
+  const isMapLibreTest = isMapLibreTestRoute();
+
   // ---- 状态 ----
   const [mapboxReady, setMapboxReady] = useState(false);
   const [mapboxAvailable, setMapboxAvailable] = useState(false);
@@ -42,6 +81,8 @@ export function useMap({
   // ---- Refs ----
   const mapContainerRef = useRef(null);
   const mapRef = useRef(null);
+  const mapLibraryRef = useRef(null);
+  const mapSdkLoadDurationRef = useRef(null);
   const mapMarkersRef = useRef({});
   const userLocationRef = useRef(null);
   const measureModeRef = useRef(false);
@@ -50,11 +91,34 @@ export function useMap({
   const markerMenuRef = useRef(markerMenu);
   markerMenuRef.current = markerMenu;
 
-  // ---- Mapbox 加载检查 ----
+  // ---- 地图渲染引擎加载 ----
   useEffect(() => {
     let timer;
+    let cancelled = false;
+
+    if (isMapLibreTest) {
+      const sdkLoadStartedAt = performance.now();
+      import('../maplibre/maplibreRuntime.js')
+        .then(({ default: maplibregl }) => {
+          if (cancelled) return;
+          mapLibraryRef.current = maplibregl;
+          mapSdkLoadDurationRef.current = Math.round(performance.now() - sdkLoadStartedAt);
+          setMapboxAvailable(true);
+          setMapboxReady(true);
+        })
+        .catch(error => {
+          console.error('MapLibre GL JS 加载失败:', error);
+          if (!cancelled) setMapboxAvailable(false);
+        });
+
+      return () => {
+        cancelled = true;
+      };
+    }
+
     const checkMapbox = () => {
       if (typeof window !== 'undefined' && window.mapboxgl) {
+        mapLibraryRef.current = window.mapboxgl;
         setMapboxAvailable(true);
         setMapboxReady(true);
       } else {
@@ -63,7 +127,7 @@ export function useMap({
     };
     checkMapbox();
     return () => clearTimeout(timer);
-  }, []);
+  }, [isMapLibreTest]);
 
   // ---- 获取地名（国内用高德，国外用 Mapbox）----
   const fetchPlaceName = useCallback(async (lat, lng) => {
@@ -128,8 +192,9 @@ export function useMap({
   useEffect(() => {
     if (!mapEntered || !mapContainerRef.current || mapRef.current || !mapboxAvailable) return;
 
-    if (!window.mapboxgl) {
-      console.error('Mapbox GL JS 未加载');
+    const mapLibrary = mapLibraryRef.current;
+    if (!mapLibrary) {
+      console.error(isMapLibreTest ? 'MapLibre GL JS 未加载' : 'Mapbox GL JS 未加载');
       return;
     }
 
@@ -143,7 +208,7 @@ export function useMap({
 
     try {
       // 检查 WebGL 支持
-      if (!window.mapboxgl.supported()) {
+      if (!isMapEngineSupported(mapLibrary)) {
         console.error('WebGL not supported by browser');
         alert('您的浏览器不支持 WebGL，地图功能无法使用。\n\n请尝试：\n1. 在浏览器设置中启用硬件加速\n2. 更新显卡驱动\n3. 使用 Chrome 或 Edge 浏览器');
         return;
@@ -151,25 +216,53 @@ export function useMap({
 
       setMapLoaded(false);
       let flyTimer;
-      const entryMap = window.__entryMap;
-      delete window.__entryMap;
-      window.mapboxgl.accessToken = import.meta.env.VITE_MAPBOX_TOKEN || '';
-      window.mapboxgl.prewarm?.();
-      const map = entryMap || new window.mapboxgl.Map({
+      let cleanupNeighborPrefetch = () => {};
+      const entryMap = isMapLibreTest ? null : window.__entryMap;
+      if (isMapLibreTest && window.__entryMap) {
+        window.__entryMap.remove();
+        delete window.__entryMap;
+      } else if (entryMap) {
+        delete window.__entryMap;
+      }
+      if (window.mapboxgl) {
+        window.mapboxgl.accessToken = import.meta.env.VITE_MAPBOX_TOKEN || '';
+      }
+      if (!isMapLibreTest) {
+        mapLibrary.accessToken = import.meta.env.VITE_MAPBOX_TOKEN || '';
+        mapLibrary.prewarm?.();
+      }
+      mapContainerRef.current.dataset.mapEngine = isMapLibreTest ? 'maplibre' : 'mapbox';
+      mapContainerRef.current.setAttribute('aria-label', isMapLibreTest ? 'MapLibre 测试地图，数据只读' : 'PhotoMap 地图');
+      if (isMapLibreTest && mapSdkLoadDurationRef.current !== null) {
+        mapContainerRef.current.dataset.mapSdkLoadMs = String(mapSdkLoadDurationRef.current);
+      } else if (!isMapLibreTest) {
+        const sdkResource = performance.getEntriesByType('resource')
+          .find(entry => entry.name.includes('mapbox-gl-js/v3.32.0/mapbox-gl.js'));
+        if (sdkResource) mapContainerRef.current.dataset.mapSdkLoadMs = String(Math.round(sdkResource.duration));
+      }
+      const mapStyleUrl = isMapLibreTest
+        ? getMapLibreStyleUrl()
+        : 'mapbox://styles/mapbox/streets-v12?optimize=true';
+      const mapInitStartedAt = performance.now();
+      const minTileCacheSize = isMapLibreTest ? 0 : getNeighborTileCacheSize(mapContainerRef.current);
+      const map = entryMap || new mapLibrary.Map({
         container: mapContainerRef.current,
-        style: 'mapbox://styles/mapbox/streets-v12',
+        style: mapStyleUrl,
         center: userLocation,
         zoom: initialZoom,
         pitch: 0,
-        projection: 'globe',
-        language: 'zh-Hans',
+        ...(!isMapLibreTest ? { projection: 'globe' } : {}),
+        ...(!isMapLibreTest ? { language: 'zh-Hans' } : {}),
         antialias: mapSettingsRef.current?.antialias ?? true,
         fadeDuration: mapSettingsRef.current?.fadeDuration ?? 200,
         maxTileCacheSize: mapSettingsRef.current?.maxTileCacheSize ?? undefined,
+        ...(!isMapLibreTest && minTileCacheSize ? { minTileCacheSize } : {}),
         dragRotate: mapSettingsRef.current?.dragRotate ?? false,
         renderWorldCopies: mapSettingsRef.current?.renderWorldCopies ?? false,
         maxZoom: mapSettingsRef.current?.maxZoom ?? 18,
-        minZoom: mapSettingsRef.current?.minZoom ?? 0,
+        minZoom: isMapLibreTest
+          ? Math.max(mapSettingsRef.current?.minZoom ?? 0, 1.3)
+          : mapSettingsRef.current?.minZoom ?? 0,
         trackResize: true,
         refreshExpiredTiles: true,
         scrollZoom: true,
@@ -178,7 +271,57 @@ export function useMap({
         collectResourceTiming: false,
         preserveDrawingBuffer: false,
         failIfMajorPerformanceCaveat: false,
+        ...(isMapLibreTest ? {
+          attributionControl: false,
+          canvasContextAttributes: {
+            alpha: true,
+            antialias: mapSettingsRef.current?.antialias ?? true,
+            preserveDrawingBuffer: false,
+            failIfMajorPerformanceCaveat: false,
+            powerPreference: 'high-performance',
+          },
+          maplibreLogo: false,
+        } : {}),
       });
+      if (isMapLibreTest) {
+        map.addControl(new mapLibrary.AttributionControl({ compact: true }), 'bottom-left');
+      }
+      const tileResourceStats = { count: 0, maxDurationMs: 0 };
+      const tileLoadStartedAt = new Map();
+      const loadedTileKeys = new Set();
+      const markMapTiming = name => {
+        if (mapContainerRef.current) {
+          mapContainerRef.current.dataset[name] = String(Math.round(performance.now() - mapInitStartedAt));
+        }
+      };
+      if (isMapLibreTest || !entryMap) {
+        map.once('style.load', () => markMapTiming('mapStyleLoadedMs'));
+        map.once('render', () => markMapTiming('mapFirstRenderMs'));
+        map.once('load', () => markMapTiming('mapInitialLoadMs'));
+        const onTileLoading = event => {
+          const key = getSourceTileKey(event);
+          if (key) tileLoadStartedAt.set(key, performance.now());
+        };
+        const onTileData = event => {
+          const key = getSourceTileKey(event);
+          if (!key) return;
+          loadedTileKeys.add(key);
+          tileResourceStats.count = loadedTileKeys.size;
+          const startedAt = tileLoadStartedAt.get(key);
+          if (startedAt !== undefined) {
+            tileResourceStats.maxDurationMs = Math.max(tileResourceStats.maxDurationMs, performance.now() - startedAt);
+            tileLoadStartedAt.delete(key);
+          }
+        };
+        map.on('sourcedataloading', onTileLoading);
+        map.on('sourcedata', onTileData);
+        map.once('idle', () => {
+          markMapTiming('mapFirstIdleMs');
+          recordMapResourceMetrics(mapContainerRef.current, mapStyleUrl, isMapLibreTest, mapInitStartedAt, tileResourceStats);
+          map.off('sourcedataloading', onTileLoading);
+          map.off('sourcedata', onTileData);
+        });
+      }
       if (entryMap) {
         mapContainerRef.current.appendChild(map.getContainer());
         map.resize();
@@ -196,14 +339,52 @@ export function useMap({
 
       // 设置地球大气层效果
       map.on('style.load', () => {
-        map.setFog({
-          color: 'rgb(186, 210, 235)',
-          'high-color': 'rgb(36, 92, 223)',
-          'horizon-blend': 0.02,
-          'space-color': 'rgb(11, 11, 25)',
-          'star-intensity': 0.6
-        });
+        if (isMapLibreTest) {
+          try {
+            map.setProjection({ type: 'globe' });
+            map.setSky({
+              'sky-color': 'rgba(8, 11, 27, 0)',
+              'horizon-color': 'rgba(40, 76, 144, 0)',
+              'sky-horizon-blend': 0.18,
+              'horizon-fog-blend': 0.32,
+              'atmosphere-blend': 1,
+            });
+          } catch (error) {
+            console.warn('MapLibre 大气层样式不可用，继续使用基础地球渲染:', error);
+          }
+          const backgroundLayer = map.getStyle()?.layers?.find(layer => layer.type === 'background');
+          if (backgroundLayer) {
+            map.setPaintProperty(backgroundLayer.id, 'background-opacity', [
+              'interpolate', ['linear'], ['zoom'],
+              3, 0,
+              4.5, 1,
+            ]);
+          }
+        } else {
+          map.setFog({
+            color: 'rgb(186, 210, 235)',
+            'high-color': 'rgb(36, 92, 223)',
+            'horizon-blend': 0.02,
+            'space-color': 'rgb(11, 11, 25)',
+            'star-intensity': 0.6
+          });
+        }
       });
+
+      let starOffsetFrame = 0;
+      const updateStarOffset = () => {
+        if (!isMapLibreTest || starOffsetFrame) return;
+        starOffsetFrame = requestAnimationFrame(() => {
+          starOffsetFrame = 0;
+          const center = map.getCenter();
+          mapContainerRef.current?.style.setProperty('--map-star-offset-x', String(Math.round(center.lng * -0.7)) + 'px');
+          mapContainerRef.current?.style.setProperty('--map-star-offset-y', String(Math.round(center.lat * 0.35)) + 'px');
+        });
+      };
+      if (isMapLibreTest) {
+        map.on('move', updateStarOffset);
+        updateStarOffset();
+      }
 
       // 拖动状态
       map.on('dragstart', () => setIsDragging(true));
@@ -246,6 +427,11 @@ export function useMap({
             measureStartRef.current = null;
             setMeasureStart(null);
           }
+          return;
+        }
+        if (isMapLibreTest) {
+          setContextMenu(null);
+          setPreviewPin(null);
           return;
         }
 
@@ -302,6 +488,7 @@ export function useMap({
         });
 
         setMapLoaded(true);
+        mapContainerRef.current.dataset.mapReady = 'true';
         if (!entryMap && !finalState.center) flyTimer = setTimeout(() => {
           if (mapRef.current === map && userLocationRef.current) {
             map.flyTo({ center: userLocationRef.current, zoom: 13, duration: 2000 });
@@ -314,10 +501,14 @@ export function useMap({
       else map.once('load', initializeLayers);
 
       mapRef.current = map;
+      if (!isMapLibreTest) cleanupNeighborPrefetch = attachNeighborTilePrefetch(map);
       return () => {
+        cleanupNeighborPrefetch();
         if (previewMarkerRef.current) { previewMarkerRef.current.remove(); previewMarkerRef.current = null; }
         clearTimeout(flyTimer);
         map.remove();
+        if (starOffsetFrame) cancelAnimationFrame(starOffsetFrame);
+        if (mapContainerRef.current) delete mapContainerRef.current.dataset.mapReady;
         mapRef.current = null;
         mapMarkersRef.current = {};
         setMapLoaded(false);
@@ -333,7 +524,7 @@ export function useMap({
         mapContainerRef.current.style.fontSize = '14px';
       }
     }
-  }, [mapEntered, mapboxAvailable]);
+  }, [isMapLibreTest, mapEntered, mapboxAvailable]);
 
   // ---- 简单距离计算（Haversine公式）----
   const turf_distance = (from, to) => {
@@ -393,11 +584,7 @@ export function useMap({
       `;
 
       const img = el.querySelector('img');
-      if (window.electronAPI?.getThumbnailUrl) {
-        window.electronAPI.getThumbnailUrl(photoId).then(url => {
-          if (url) img.src = url;
-        });
-      }
+      getPhotoDisplayUrl(photoId, true).then(url => { if (url) img.src = url; });
     } else {
       el.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="32" viewBox="0 0 24 32"><path d="M12 0C5.4 0 0 5.4 0 12c0 9 12 20 12 20s12-11 12-20C24 5.4 18.6 0 12 0z" fill="#2563eb"/><circle cx="12" cy="12" r="5" fill="white"/></svg>';
     }
@@ -434,7 +621,7 @@ export function useMap({
           const loadPreview = async () => {
             let url;
             try {
-              url = await window.electronAPI?.getThumbnailUrl?.(photoId);
+              url = await getPhotoDisplayUrl(photoId, true);
             } catch {
               // 缩略图缺失或读取失败时，继续尝试原照片。
             }
@@ -522,7 +709,9 @@ export function useMap({
       el.style.display = heatmapMode ? 'none' : 'flex';
       el.classList.add('marker-pin-hidden');
 
-      const marker = new window.mapboxgl.Marker({
+      const Marker = mapLibraryRef.current?.Marker || window.mapboxgl?.Marker;
+      if (!Marker) return;
+      const marker = new Marker({
         element: el,
         anchor: 'bottom'
       })
@@ -595,7 +784,9 @@ export function useMap({
 
     if (previewPin) {
       const el = createMarkerEl('#00b894');
-      previewMarkerRef.current = new window.mapboxgl.Marker({ element: el, anchor: 'bottom' })
+      const Marker = mapLibraryRef.current?.Marker || window.mapboxgl?.Marker;
+      if (!Marker) return;
+      previewMarkerRef.current = new Marker({ element: el, anchor: 'bottom' })
         .setLngLat([previewPin.lng, previewPin.lat])
         .addTo(mapRef.current);
     }

@@ -1,6 +1,14 @@
 import { useEffect, useState, useRef, useCallback } from 'react';
+import WebDownloadButton from './WebDownloadButton.jsx';
+import { getNeighborTileCacheSize } from '../utils/mapTilePrefetch.js';
 
-const MinimalLoader = ({ onComplete, onShowLogin, canEnter = true, children }) => {
+const MinimalLoader = ({
+  onComplete,
+  onShowLogin,
+  canEnter = true,
+  isWebVersion = false,
+  children,
+}) => {
   const [phase, setPhase] = useState('loading');
   const [userLocation, setUserLocation] = useState(null);
   const mapContainerRef = useRef(null);
@@ -59,9 +67,10 @@ const MinimalLoader = ({ onComplete, onShowLogin, canEnter = true, children }) =
 
         const map = new window.mapboxgl.Map({
           container: mapContainerRef.current,
-          style: 'mapbox://styles/mapbox/streets-v12',
+          style: 'mapbox://styles/mapbox/streets-v12?optimize=true',
           center: [30, 20],
           zoom: window.innerWidth <= 760 ? 0.4 : 1.5,
+          minTileCacheSize: getNeighborTileCacheSize(mapContainerRef.current) || undefined,
           projection: 'globe',
           language: 'zh-Hans',
           interactive: true,
@@ -239,30 +248,29 @@ const MinimalLoader = ({ onComplete, onShowLogin, canEnter = true, children }) =
           <div className="globe-bottom-gradient" />
           <div className="globe-content" aria-hidden={isFlying}>
             <div className="globe-header">
-              <h1 className="globe-title">地图相册</h1>
+              <div className="globe-title-row">
+                <h1 className="globe-title">地图相册</h1>
+                {isWebVersion && <WebDownloadButton label="下载桌面版" />}
+              </div>
               <p className="globe-subtitle">记录每一个值得纪念的地点</p>
               <p className="globe-description">把照片留在地图上，让每一段旅程都有迹可循。</p>
             </div>
             <div className="globe-account-actions">{isReady && children}</div>
-            <div className={`globe-action ${isReady ? 'is-ready' : ''}`}>
-              <button
-                type="button"
-                className="globe-bar"
-                onClick={isReady && canEnter ? handleEnter : undefined}
-                disabled={!isReady || !canEnter}
-                style={
-                  isReady && !canEnter
-                    ? { cursor: 'not-allowed', opacity: 0.5, pointerEvents: 'none' }
-                    : {}
-                }
-              >
-                <div className="globe-bar-fill" style={{ width: isReady ? '100%' : '0%' }} />
-                <span className="globe-bar-text">
-                  {isReady || isFlying ? '进入地图' : '正在加载地球…'}
-                </span>
-              </button>
-              {isReady && !canEnter && <p className="globe-bar-hint">选择登录方式后进入地图</p>}
-            </div>
+            {(!isReady || canEnter) && (
+              <div className={`globe-action ${isReady ? 'is-ready' : ''}`}>
+                <button
+                  type="button"
+                  className="globe-bar"
+                  onClick={isReady && canEnter ? handleEnter : undefined}
+                  disabled={!isReady || !canEnter}
+                >
+                  <div className="globe-bar-fill" style={{ width: isReady ? '100%' : '0%' }} />
+                  <span className="globe-bar-text">
+                    {isReady || isFlying ? '进入地图' : '正在加载地球…'}
+                  </span>
+                </button>
+              </div>
+            )}
           </div>
         </>
       )}

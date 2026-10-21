@@ -3,6 +3,16 @@
   "name": "photo-map-web",
   "main": "cloudflare/worker.js",
   "compatibility_date": "2026-10-10",
+  "vars": {
+    "AUTH_APP_ORIGIN": "https://photomap.satula.top",
+    "AUTH_EMAIL_FROM": "no-reply@mail.photomap.satula.top",
+    "AUTH_EMAIL_ENABLED": "true",
+    "TENCENT_SES_REGION": "ap-hongkong",
+    "GITHUB_CALLBACK_URL": "https://photomap.satula.top/api/v1/auth/github/callback",
+    "CLOUD_SYNC_V2_ENABLED": "true",
+    "CLOUD_PHOTO_STORAGE_ENABLED": "true",
+    "PHOTO_USER_QUOTA_BYTES": "5368709120"
+  },
   "routes": [
     {
       "pattern": "photomap.satula.top",
@@ -23,6 +33,12 @@
       "migrations_dir": "cloudflare/migrations"
     }
   ],
+  "r2_buckets": [
+    {
+      "binding": "PHOTOS",
+      "bucket_name": "photomap-photos-prod"
+    }
+  ],
   "ratelimits": [
     {
       "name": "AUTH_RATE_LIMITER",
@@ -35,5 +51,48 @@
   ],
   "observability": {
     "enabled": true
+  },
+  "env": {
+    "staging": {
+      "name": "photo-map-web-staging",
+      "workers_dev": true,
+      "routes": [],
+      "vars": {
+        "AUTH_EMAIL_ENABLED": "false",
+        "CLOUD_SYNC_V2_ENABLED": "true",
+        "CLOUD_PHOTO_STORAGE_ENABLED": "true",
+        "PHOTO_USER_QUOTA_BYTES": "5368709120"
+      },
+      "assets": {
+        "directory": "./dist-web",
+        "binding": "ASSETS",
+        "not_found_handling": "single-page-application",
+        "run_worker_first": ["/api/*"]
+      },
+      "d1_databases": [
+        {
+          "binding": "DB",
+          "database_name": "photo-map-staging",
+          "database_id": "0fee76ce-86c6-4d6e-9fd0-6b8354819304",
+          "migrations_dir": "cloudflare/migrations"
+        }
+      ],
+      "r2_buckets": [
+        {
+          "binding": "PHOTOS",
+          "bucket_name": "photomap-photos-staging"
+        }
+      ],
+      "ratelimits": [
+        {
+          "name": "AUTH_RATE_LIMITER",
+          "namespace_id": "20261018",
+          "simple": {
+            "limit": 8,
+            "period": 60
+          }
+        }
+      ]
+    }
   }
 }

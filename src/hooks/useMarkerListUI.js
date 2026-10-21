@@ -31,9 +31,8 @@ export function useMarkerListUI({
   const [markerListSearch, setMarkerListSearch] = useState('');
   const [noteSearchResults, setNoteSearchResults] = useState([]);
   const [isNoteSearching, setIsNoteSearching] = useState(false);
-  const [semanticResults, setSemanticResults] = useState([]);
-  const [isSemanticSearching, setIsSemanticSearching] = useState(false);
-  const [embeddingProgress, setEmbeddingProgress] = useState(null);
+  const semanticResults = [];
+  const isSemanticSearching = false;
   const [searchFocusIndex, setSearchFocusIndex] = useState(-1);
   const searchResultsRef = useRef(null);
   const [markerListTimeFilter, setMarkerListTimeFilter] = useState('all');
@@ -45,13 +44,6 @@ export function useMarkerListUI({
   const markerOpenRequest = useRef(0);
   const cancelMapWait = useRef(null);
   const searchRequest = useRef(0);
-  const searchToast = useRef(showToast);
-  searchToast.current = showToast;
-  useEffect(() => {
-    return window.electronAPI?.onEmbeddingProgress?.(progress => {
-      setEmbeddingProgress(progress.percent >= 100 ? null : progress);
-    });
-  }, []);
   useEffect(() => () => {
     clearTimeout(closeTimer.current);
     ++markerOpenRequest.current;
@@ -86,23 +78,13 @@ export function useMarkerListUI({
     const request = ++searchRequest.current;
     const query = markerListSearch.trim();
     setNoteSearchResults([]);
-    setSemanticResults([]);
     setIsNoteSearching(!!query);
-    setIsSemanticSearching(!!query);
     if (!query) return;
-    // Avoid running expensive model inference for every keystroke.
     const timer = setTimeout(() => {
       api.photos.searchNotes(query).then(results => {
         if (request === searchRequest.current) setNoteSearchResults(results || []);
       }).catch(() => {}).finally(() => {
         if (request === searchRequest.current) setIsNoteSearching(false);
-      });
-      api.photos.searchByContent(query, 20).then(results => {
-        if (request === searchRequest.current) setSemanticResults(results || []);
-      }).catch(error => {
-        if (request === searchRequest.current) searchToast.current?.('info', error.message || '图片描述搜索暂时不可用');
-      }).finally(() => {
-        if (request === searchRequest.current) setIsSemanticSearching(false);
       });
     }, 350);
     return () => {
@@ -315,8 +297,6 @@ export function useMarkerListUI({
     isNoteSearching,
     semanticResults,
     isSemanticSearching,
-    embeddingProgress,
-    setEmbeddingProgress,
     searchFocusIndex,
     searchResultsRef,
     markerListTimeFilter,

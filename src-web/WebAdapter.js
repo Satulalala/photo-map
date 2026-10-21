@@ -26,6 +26,7 @@ class WebElectronAPI {
     this.deletePhotoFromMarker = this.deletePhotoFromMarker.bind(this);
     this.getMarkerPhotos = this.getMarkerPhotos.bind(this);
     this.getPhotoInfo = this.getPhotoInfo.bind(this);
+    this.loadGuestData = this.loadGuestData.bind(this);
   }
 
   // 照片管理 - 使用 Web File API
@@ -65,6 +66,7 @@ class WebElectronAPI {
   async getPhotoUrl(photoId) {
     // 从 IndexedDB 或内存中获取
     const photo = await this.getStoredPhoto(photoId);
+    if (photo?.data instanceof Blob) return URL.createObjectURL(photo.data);
     return photo?.data || null;
   }
 
@@ -72,6 +74,7 @@ class WebElectronAPI {
   async getThumbnailUrl(photoId) {
     // Web 版本可以使用 Canvas 生成缩略图
     const photo = await this.getStoredPhoto(photoId);
+    if (photo?.thumbnailData instanceof Blob) return URL.createObjectURL(photo.thumbnailData);
     if (!photo?.data) return null;
     
     return this.generateThumbnail(photo.data);
@@ -118,6 +121,7 @@ class WebElectronAPI {
       request.onerror = () => reject(request.error);
     });
     if (photo) return photo;
+    if (webStorage.dbName !== 'photo-map-db') return null;
     // Keep legacy photos readable without deleting or replacing the old database.
     return new Promise((resolve, reject) => {
       const request = indexedDB.open('PhotoMapDB', 1);
@@ -140,24 +144,50 @@ class WebElectronAPI {
     });
   }
 
+  async loadGuestData() {
+    const readStore = async (databaseName, storeName) => {
+      const known = await indexedDB.databases?.();
+      if (known && !known.some(database => database.name === databaseName)) return [];
+      return new Promise((resolve, reject) => {
+        const request = indexedDB.open(databaseName);
+        request.onerror = () => reject(request.error);
+        request.onsuccess = () => {
+          const db = request.result;
+          if (!db.objectStoreNames.contains(storeName)) {
+            db.close();
+            resolve([]);
+            return;
+          }
+          const tx = db.transaction(storeName, 'readonly');
+          const get = tx.objectStore(storeName).getAll();
+          get.onsuccess = () => { const values = get.result || []; db.close(); resolve(values); };
+          get.onerror = () => { const error = get.error; db.close(); reject(error); };
+        };
+      });
+    };
+    const [markers, localPhotos, legacyPhotos] = await Promise.all([
+      readStore('photo-map-db', 'markers'),
+      readStore('photo-map-db', 'photos'),
+      readStore('PhotoMapDB', 'photos'),
+    ]);
+    const photosById = new Map([...localPhotos, ...legacyPhotos].map(photo => [photo.id, photo]));
+    return markers.map(marker => {
+      const stored = localPhotos.filter(photo => photo.markerId === marker.id);
+      const referenced = (marker.photos || []).map(photo => {
+        const value = typeof photo === 'string' ? { id: photo } : photo;
+        return { ...(photosById.get(value.id) || {}), ...value };
+      });
+      const photos = (stored.length ? stored : referenced).sort((a, b) =>
+        (a.sortOrder ?? 0) - (b.sortOrder ?? 0)
+      );
+      return { ...marker, photos, photoCount: photos.length, firstPhoto: photos[0] || null };
+    });
+  }
+
   // 标记管理 - 使用 IndexedDB（与 api/index.js 的 webStorage 共用同一数据库）
   async loadMarkers() {
     try {
-      const db = await new Promise((resolve, reject) => {
-        const request = indexedDB.open('photo-map-db', 1);
-        request.onerror = () => reject(request.error);
-        request.onsuccess = () => resolve(request.result);
-        request.onupgradeneeded = (event) => {
-          const db = event.target.result;
-          if (!db.objectStoreNames.contains('markers')) {
-            db.createObjectStore('markers', { keyPath: 'id' });
-          }
-          if (!db.objectStoreNames.contains('photos')) {
-            const ps = db.createObjectStore('photos', { keyPath: 'id' });
-            ps.createIndex('markerId', 'markerId');
-          }
-        };
-      });
+      const db = await webStorage.init();
 
       if (!db.objectStoreNames.contains('markers')) return [];
 
@@ -182,11 +212,11 @@ class WebElectronAPI {
           req.onsuccess = () => resolve(req.result || []);
           req.onerror = () => reject(req.error);
         });
-        return {
+          return {
           ...marker,
           photoCount: photos.length,
           firstPhoto: photos.length > 0 ? photos[0] : null,
-          photos: photos
+            photos: photos.sort((a, b) => (a.sortOrder ?? 0) - (b.sortOrder ?? 0))
         };
       }));
 
@@ -205,43 +235,28 @@ class WebElectronAPI {
   // 添加标记
   async addMarker(marker) {
     try {
+      const db = await webStorage.init();
+      const lightMarker = {
+        id: marker.id,
+        lat: marker.lat,
+        lng: marker.lng,
+        name: marker.name || '',
+        photoCount: marker.photoCount || 0,
+        firstPhoto: marker.firstPhoto ? { id: marker.firstPhoto.id, note: marker.firstPhoto.note || '' } : null,
+        createdAt: marker.createdAt || Date.now()
+      };
+      const hasPhotos = db.objectStoreNames.contains('photos') && marker.photos && marker.photos.length > 0;
+      const storeNames = hasPhotos ? ['markers', 'photos'] : ['markers'];
+      const tx = db.transaction(storeNames, 'readwrite');
+      tx.objectStore('markers').put(lightMarker);
+      if (hasPhotos) {
+        const photosStore = tx.objectStore('photos');
+        marker.photos.forEach(photo => photosStore.put({ ...photo, markerId: marker.id }));
+      }
       return await new Promise((resolve, reject) => {
-        const request = indexedDB.open('photo-map-db', 1);
-        request.onerror = () => reject(request.error);
-        request.onsuccess = () => {
-          const db = request.result;
-          // 只存轻量数据，不含大 base64
-          const lightMarker = {
-            id: marker.id,
-            lat: marker.lat,
-            lng: marker.lng,
-            name: marker.name || '',
-            photoCount: marker.photoCount || 0,
-            firstPhoto: marker.firstPhoto ? { id: marker.firstPhoto.id, note: marker.firstPhoto.note || '' } : null,
-            createdAt: marker.createdAt || Date.now()
-          };
-
-          const hasPhotos = db.objectStoreNames.contains('photos') && marker.photos && marker.photos.length > 0;
-          // 用单个事务同时写 markers 和 photos
-          const storeNames = hasPhotos ? ['markers', 'photos'] : ['markers'];
-          const tx = db.transaction(storeNames, 'readwrite');
-
-          tx.objectStore('markers').put(lightMarker);
-
-          if (hasPhotos) {
-            const photosStore = tx.objectStore('photos');
-            marker.photos.forEach(photo => {
-              photosStore.put({ ...photo, markerId: marker.id });
-            });
-          }
-
-          tx.oncomplete = () => {
-            console.log('📍 WebAdapter.addMarker: 标记已保存', lightMarker.id, '照片数:', marker.photos?.length || 0);
-            resolve(lightMarker);
-          };
-          tx.onerror = () => reject(tx.error);
-          tx.onabort = () => reject(tx.error);
-        };
+        tx.oncomplete = () => resolve(lightMarker);
+        tx.onerror = () => reject(tx.error);
+        tx.onabort = () => reject(tx.error);
       });
     } catch (e) {
       console.error('addMarker 失败:', e);
@@ -249,25 +264,51 @@ class WebElectronAPI {
     }
   }
 
+  async upsertMarkerSnapshot(marker) {
+    const db = await webStorage.init();
+    const photos = Array.isArray(marker.photos) ? marker.photos : [];
+    const tx = db.transaction(['markers', 'photos'], 'readwrite');
+    tx.objectStore('markers').put({
+      id: marker.id,
+      lat: marker.lat,
+      lng: marker.lng,
+      name: marker.name || '',
+      createdAt: marker.createdAt || Date.now(),
+      updatedAt: marker.updatedAt || marker.createdAt || Date.now(),
+      photoCount: photos.length,
+      firstPhoto: photos[0] ? { id: photos[0].id, note: photos[0].note || '' } : null,
+    });
+    const photoStore = tx.objectStore('photos');
+    const getRequest = photoStore.index('markerId').getAll(marker.id);
+    getRequest.onsuccess = () => {
+      const existingPhotos = new Map((getRequest.result || []).map(photo => [photo.id, photo]));
+      const ids = new Set(photos.map(photo => photo.id));
+      for (const existing of getRequest.result || []) {
+        if (!ids.has(existing.id)) photoStore.delete(existing.id);
+      }
+      for (const [sortOrder, photo] of photos.entries()) {
+        photoStore.put({ ...(existingPhotos.get(photo.id) || {}), ...photo, markerId: marker.id, sortOrder });
+      }
+    };
+    return new Promise((resolve, reject) => {
+      tx.oncomplete = () => resolve(true);
+      tx.onerror = () => reject(tx.error);
+      tx.onabort = () => reject(tx.error);
+    });
+  }
+
   // 更新标记
   async updateMarker(updatedMarker) {
     try {
+      const db = await webStorage.init();
+      const tx = db.transaction('markers', 'readwrite');
+      const store = tx.objectStore('markers');
+      const getReq = store.get(updatedMarker.id);
+      getReq.onsuccess = () => store.put({ ...(getReq.result || {}), ...updatedMarker });
       return await new Promise((resolve, reject) => {
-        const request = indexedDB.open('photo-map-db', 1);
-        request.onerror = () => reject(request.error);
-        request.onsuccess = () => {
-          const db = request.result;
-          const tx = db.transaction('markers', 'readwrite');
-          const store = tx.objectStore('markers');
-          // 先读取现有数据再合并
-          const getReq = store.get(updatedMarker.id);
-          getReq.onsuccess = () => {
-            const existing = getReq.result || {};
-            store.put({ ...existing, ...updatedMarker });
-            tx.oncomplete = () => resolve(true);
-          };
-          tx.onerror = () => reject(tx.error);
-        };
+        tx.oncomplete = () => resolve(true);
+        tx.onerror = () => reject(tx.error);
+        tx.onabort = () => reject(tx.error);
       });
     } catch (e) {
       console.error('updateMarker 失败:', e);
@@ -278,24 +319,19 @@ class WebElectronAPI {
   // 删除标记
   async deleteMarker(markerId) {
     try {
+      const db = await webStorage.init();
+      const tx = db.transaction(['markers', 'photos'], 'readwrite');
+      tx.objectStore('markers').delete(markerId);
+      const photosStore = tx.objectStore('photos');
+      const cursorReq = photosStore.index('markerId').openCursor(IDBKeyRange.only(markerId));
+      cursorReq.onsuccess = event => {
+        const cursor = event.target.result;
+        if (cursor) { cursor.delete(); cursor.continue(); }
+      };
       return await new Promise((resolve, reject) => {
-        const request = indexedDB.open('photo-map-db', 1);
-        request.onerror = () => reject(request.error);
-        request.onsuccess = () => {
-          const db = request.result;
-          const tx = db.transaction(['markers', 'photos'], 'readwrite');
-          tx.objectStore('markers').delete(markerId);
-          // 同时删除该标记的所有照片
-          const photosStore = tx.objectStore('photos');
-          const idx = photosStore.index('markerId');
-          const cursorReq = idx.openCursor(IDBKeyRange.only(markerId));
-          cursorReq.onsuccess = (e) => {
-            const cursor = e.target.result;
-            if (cursor) { cursor.delete(); cursor.continue(); }
-          };
-          tx.oncomplete = () => resolve(true);
-          tx.onerror = () => reject(tx.error);
-        };
+        tx.oncomplete = () => resolve(true);
+        tx.onerror = () => reject(tx.error);
+        tx.onabort = () => reject(tx.error);
       });
     } catch (e) {
       console.error('deleteMarker 失败:', e);

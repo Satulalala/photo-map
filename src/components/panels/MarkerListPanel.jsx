@@ -23,7 +23,6 @@ export default function MarkerListPanel({
   semanticResults,
   isNoteSearching,
   isSemanticSearching,
-  embeddingProgress,
   searchFocusIndex,
   markerListReady,
   markerListClosing,
@@ -165,20 +164,6 @@ export default function MarkerListPanel({
             markerListTimeRange={markerListTimeRange}
             onTimeRangeChange={onTimeRangeChange}
           />
-
-          {embeddingProgress && (
-            <div className="embedding-progress">
-              <div className="embedding-progress-bar">
-                <div
-                  className="embedding-progress-fill"
-                  style={{ width: `${embeddingProgress.percent}%` }}
-                />
-              </div>
-              <span className="embedding-progress-text">
-                下载语义搜索模型 {embeddingProgress.percent}%
-              </span>
-            </div>
-          )}
 
           <div className="marker-list-content">
             {markersLoading ? (

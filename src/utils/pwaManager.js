@@ -1,5 +1,4 @@
-import { useState, useEffect } from 'react';
-import { showNetworkStatus, showInstallButton, hideInstallButton } from './pwaNotifications.js';
+import { showNetworkStatus } from './pwaNotifications.js';
 
 const isDev = typeof window !== 'undefined' &&
   (window.location.hostname === 'localhost' ||
@@ -10,7 +9,6 @@ class PWAManager {
   constructor() {
     this.registration = null;
     this.isOnline = navigator.onLine;
-    this.installPrompt = null;
     this.updateAvailable = false;
 
     this.init();
@@ -39,10 +37,14 @@ class PWAManager {
 
   async registerServiceWorker() {
     try {
-      const hadController = Boolean(navigator.serviceWorker.controller);
+      let hasBeenControlled = Boolean(navigator.serviceWorker.controller);
       this.reloadingForControllerChange = false;
       navigator.serviceWorker.addEventListener('controllerchange', () => {
-        if (!hadController || this.reloadingForControllerChange) return;
+        if (!hasBeenControlled) {
+          hasBeenControlled = true;
+          return;
+        }
+        if (this.reloadingForControllerChange) return;
         this.reloadingForControllerChange = true;
         window.location.reload();
       });
@@ -78,18 +80,6 @@ class PWAManager {
       this.onNetworkChange(false);
     });
 
-    window.addEventListener('beforeinstallprompt', event => {
-      event.preventDefault();
-      this.installPrompt = event;
-      showInstallButton(() => this.promptInstall());
-    });
-
-    window.addEventListener('appinstalled', () => {
-      this.installPrompt = null;
-      hideInstallButton();
-      this.trackEvent('pwa_installed');
-    });
-
     navigator.serviceWorker.addEventListener('message', event => {
       this.handleServiceWorkerMessage(event.data);
     });
@@ -118,26 +108,6 @@ class PWAManager {
   async applyUpdate() {
     if (!this.registration || !this.registration.waiting) return;
     this.registration.waiting.postMessage({ type: 'SKIP_WAITING' });
-  }
-
-  async promptInstall() {
-    if (!this.installPrompt) return;
-
-    try {
-      const result = await this.installPrompt.prompt();
-      console.log('Install prompt result:', result);
-
-      this.installPrompt = null;
-      hideInstallButton();
-
-      if (result.outcome === 'accepted') {
-        this.trackEvent('pwa_install_accepted');
-      } else {
-        this.trackEvent('pwa_install_dismissed');
-      }
-    } catch (error) {
-      console.error('Install prompt failed:', error);
-    }
   }
 
   async syncOfflineData() {
@@ -201,57 +171,8 @@ class PWAManager {
     });
   }
 
-  isPWA() {
-    return window.matchMedia('(display-mode: standalone)').matches ||
-           window.navigator.standalone ||
-           document.referrer.includes('android-app://');
-  }
-
-  getStatus() {
-    return {
-      isOnline: this.isOnline,
-      isPWA: this.isPWA(),
-      hasServiceWorker: !!this.registration,
-      updateAvailable: this.updateAvailable,
-      canInstall: !!this.installPrompt
-    };
-  }
-
-  trackEvent(eventName, properties = {}) {
-    if (window.monitoring) {
-      window.monitoring.trackEvent(eventName, {
-        ...properties,
-        pwa: true,
-        isOnline: this.isOnline
-      });
-    }
-  }
 }
 
 const pwaManager = new PWAManager();
-
-export const usePWA = () => {
-  const [status, setStatus] = useState(pwaManager.getStatus());
-
-  useEffect(() => {
-    const updateStatus = () => setStatus(pwaManager.getStatus());
-
-    window.addEventListener('networkchange', updateStatus);
-    window.addEventListener('appinstalled', updateStatus);
-
-    return () => {
-      window.removeEventListener('networkchange', updateStatus);
-      window.removeEventListener('appinstalled', updateStatus);
-    };
-  }, []);
-
-  return {
-    ...status,
-    promptInstall: () => pwaManager.promptInstall(),
-    checkForUpdates: () => pwaManager.checkForUpdates(),
-    getCacheSize: () => pwaManager.getCacheSize(),
-    clearCache: () => pwaManager.clearCache()
-  };
-};
 
 export default pwaManager;

@@ -2,14 +2,25 @@
  * Web 版本存储实现（IndexedDB）
  */
 import { getDefaultSettings } from './utils.js';
+import { getCurrentUser } from './auth.js';
+import { getApiBase } from './apiBase.js';
+import { getWebStorageDatabaseName } from './accountStorage.js';
+import { assertPhotoMapWritesAllowed } from '../utils/mapLibreTestMode.js';
 
 export const webStorage = {
   dbName: 'photo-map-db',
   dbVersion: 1,
   db: null,
+  getDatabaseName() {
+    return getWebStorageDatabaseName(getApiBase(), getCurrentUser()?.id, window.location?.origin);
+  },
 
   async init() {
-    if (this.db) return this.db;
+    const databaseName = this.getDatabaseName();
+    if (this.db && this.dbName === databaseName) return this.db;
+    if (this.db) this.db.close();
+    this.db = null;
+    this.dbName = databaseName;
 
     return new Promise((resolve, reject) => {
       const request = indexedDB.open(this.dbName, this.dbVersion);
@@ -44,6 +55,7 @@ export const webStorage = {
   },
 
   async getTransaction(storeNames, mode = 'readonly') {
+    assertPhotoMapWritesAllowed(storeNames, mode);
     const db = await this.init();
     return db.transaction(storeNames, mode);
   },
@@ -55,7 +67,7 @@ export const webStorage = {
 
       return new Promise((resolve, reject) => {
         const request = store.getAll();
-        request.onsuccess = () => resolve(request.result);
+        request.onsuccess = () => resolve(request.result || []);
         request.onerror = () => reject(request.error);
       });
     },
@@ -110,7 +122,9 @@ export const webStorage = {
 
       return new Promise((resolve, reject) => {
         const request = index.getAll(markerId);
-        request.onsuccess = () => resolve(request.result);
+        request.onsuccess = () => resolve((request.result || []).sort((a, b) =>
+          (a.sortOrder ?? 0) - (b.sortOrder ?? 0)
+        ));
         request.onerror = () => reject(request.error);
       });
     },

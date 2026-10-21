@@ -10,7 +10,8 @@
 @import './components/loader.css';
 
 /* 防止 Mapbox 自定义标记初始闪现在左上角 */
-.mapboxgl-marker {
+.mapboxgl-marker,
+.maplibregl-marker {
   will-change: transform;
 }
 .marker-pin-hidden {

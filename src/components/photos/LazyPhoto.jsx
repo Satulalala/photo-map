@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef, memo } from 'react';
+import { getPhotoDisplayUrl } from '../../api/photoFileAccess.js';
 
 /**
  * 使用 createImageBitmap 解码图片（减少主线程阻塞和内存占用）
@@ -87,10 +88,7 @@ const LazyPhoto = memo(function LazyPhoto({ photo, className, alt = '', useThumb
       }
       
       // 加载缩略图或原图
-      const getUrl = useThumbnail && window.electronAPI.getThumbnailUrl 
-        ? window.electronAPI.getThumbnailUrl 
-        : window.electronAPI.getPhotoUrl;
-      getUrl(photo.id).then(url => {
+      getPhotoDisplayUrl(photo.id, useThumbnail).then(url => {
         if (active && url) {
           setSrc(url);
         }

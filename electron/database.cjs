@@ -54,6 +54,7 @@ function initDatabase(userDataPath) {
       file_id TEXT,
       note TEXT DEFAULT '',
       sort_order INTEGER DEFAULT 0,
+      created_at INTEGER NOT NULL DEFAULT 0,
       FOREIGN KEY (marker_id) REFERENCES markers(id) ON DELETE CASCADE
     );
 
@@ -64,6 +65,11 @@ function initDatabase(userDataPath) {
     CREATE INDEX IF NOT EXISTS idx_markers_lat_lng ON markers(lat, lng);
     CREATE INDEX IF NOT EXISTS idx_photos_marker_order ON photos(marker_id, sort_order);
   `);
+
+  const markerColumns = db.pragma('table_info(markers)').map(column => column.name);
+  if (!markerColumns.includes('updated_at')) db.exec('ALTER TABLE markers ADD COLUMN updated_at INTEGER NOT NULL DEFAULT 0');
+  const photoColumns = db.pragma('table_info(photos)').map(column => column.name);
+  if (!photoColumns.includes('created_at')) db.exec('ALTER TABLE photos ADD COLUMN created_at INTEGER NOT NULL DEFAULT 0');
 
   try {
     db.exec(`
@@ -173,7 +179,8 @@ function getMarkerById(markerId) {
     lng: marker.lng,
     name: marker.name,
     createdAt: marker.created_at,
-    photos: photos.map(p => ({ id: p.file_id, note: p.note }))
+    updatedAt: marker.updated_at || marker.created_at,
+    photos: photos.map(p => ({ id: p.file_id, note: p.note, createdAt: p.created_at }))
   };
 
   if (queryCache.markerDetails.size >= queryCache.maxDetailEntries) {
@@ -204,18 +211,19 @@ function getStats() {
 // ========== 写入操作（清除缓存）==========
 function addMarker(marker) {
   const insertMarker = db.prepare(`
-    INSERT INTO markers (id, lat, lng, name, created_at) VALUES (?, ?, ?, ?, ?)
+    INSERT INTO markers (id, lat, lng, name, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?)
   `);
   const insertPhoto = db.prepare(`
-    INSERT INTO photos (id, marker_id, file_id, note, sort_order) VALUES (?, ?, ?, ?, ?)
+    INSERT INTO photos (id, marker_id, file_id, note, sort_order, created_at) VALUES (?, ?, ?, ?, ?, ?)
   `);
 
   const add = db.transaction(() => {
-    insertMarker.run(marker.id, marker.lat, marker.lng, marker.name || null, marker.createdAt || Date.now());
+    const createdAt = marker.createdAt || Date.now();
+    insertMarker.run(marker.id, marker.lat, marker.lng, marker.name || null, createdAt, marker.updatedAt || createdAt);
     if (marker.photos && marker.photos.length > 0) {
       marker.photos.forEach((p, i) => {
         const photoId = `${marker.id}_${i}_${Date.now()}`;
-        insertPhoto.run(photoId, marker.id, p.id || null, p.note || '', i);
+        insertPhoto.run(photoId, marker.id, p.id || null, p.note || '', i, p.createdAt || createdAt);
       });
     }
   });
@@ -226,8 +234,8 @@ function addMarker(marker) {
 }
 
 function updateMarker(marker) {
-  db.prepare(`UPDATE markers SET lat = ?, lng = ?, name = ? WHERE id = ?`)
-    .run(marker.lat, marker.lng, marker.name || null, marker.id);
+  db.prepare(`UPDATE markers SET lat = ?, lng = ?, name = ?, updated_at = ? WHERE id = ?`)
+    .run(marker.lat, marker.lng, marker.name || null, marker.updatedAt || Date.now(), marker.id);
   invalidateMarkerCache(marker.id);
   return true;
 }
@@ -252,18 +260,50 @@ function addPhotosToMarker(markerId, photos) {
   const now = Date.now();
 
   const insert = db.prepare(`
-    INSERT INTO photos (id, marker_id, file_id, note, sort_order) VALUES (?, ?, ?, ?, ?)
+    INSERT INTO photos (id, marker_id, file_id, note, sort_order, created_at) VALUES (?, ?, ?, ?, ?, ?)
   `);
 
   const batchInsert = db.transaction((items) => {
     for (let i = 0; i < items.length; i++) {
       const p = items[i];
-      insert.run(`${markerId}_${order + i}_${now + i}`, markerId, p.id || null, p.note || '', order + i);
+      insert.run(`${markerId}_${order + i}_${now + i}`, markerId, p.id || null, p.note || '', order + i, p.createdAt || now + i);
     }
   });
 
   batchInsert(photos);
   invalidateMarkerCache(markerId);
+  return true;
+}
+
+function upsertMarkerSnapshot(marker) {
+  if (!marker || typeof marker.id !== 'string' || !marker.id || !Number.isFinite(marker.lat) || !Number.isFinite(marker.lng)) {
+    throw new TypeError('地点信息无效');
+  }
+  const photos = Array.isArray(marker.photos) ? marker.photos : [];
+  const upsert = db.transaction(() => {
+    const createdAt = Number.isSafeInteger(marker.createdAt) ? marker.createdAt : Date.now();
+    db.prepare(
+      'INSERT INTO markers (id, lat, lng, name, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?) ' +
+        'ON CONFLICT(id) DO UPDATE SET lat = excluded.lat, lng = excluded.lng, name = excluded.name, updated_at = excluded.updated_at'
+    ).run(marker.id, marker.lat, marker.lng, marker.name || null, createdAt, marker.updatedAt || createdAt);
+    const existing = db.prepare('SELECT id, file_id FROM photos WHERE marker_id = ?').all(marker.id);
+    const incomingIds = new Set(photos.map(photo => photo.id).filter(id => typeof id === 'string'));
+    const remove = db.prepare('DELETE FROM photos WHERE id = ?');
+    existing.filter(photo => !incomingIds.has(photo.file_id)).forEach(photo => remove.run(photo.id));
+    const update = db.prepare('UPDATE photos SET note = ?, sort_order = ?, created_at = ? WHERE id = ?');
+    const insert = db.prepare(
+      'INSERT INTO photos (id, marker_id, file_id, note, sort_order, created_at) VALUES (?, ?, ?, ?, ?, ?)'
+    );
+    for (const [index, photo] of photos.entries()) {
+      if (typeof photo.id !== 'string' || !photo.id || photo.id.includes('/') || photo.id.includes('\\')) continue;
+      const found = existing.find(item => item.file_id === photo.id);
+      const values = [photo.note || '', index, photo.createdAt || createdAt];
+      if (found) update.run(...values, found.id);
+      else insert.run(require('crypto').randomUUID(), marker.id, photo.id, ...values);
+    }
+  });
+  upsert();
+  invalidateCache('all');
   return true;
 }
 
@@ -385,6 +425,7 @@ module.exports = {
   getMarkersInBounds,
   getMarkerById,
   addMarker,
+  upsertMarkerSnapshot,
   updateMarker,
   deleteMarker,
   addPhotosToMarker,

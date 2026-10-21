@@ -43,6 +43,10 @@ it('keeps the newest photo when earlier loading completes out of order', async (
   const photos = [{ id: 'race-first' }, { id: 'race-second' }];
   act(() => result.current.setPhotoViewer({ photos, index: 0 }));
   act(() => result.current.setPhotoViewer({ photos, index: 1 }));
+  await waitFor(() => {
+    expect(pending['race-first']).toBeTypeOf('function');
+    expect(pending['race-second']).toBeTypeOf('function');
+  });
   await act(async () => pending['race-second']('second.jpg'));
   await waitFor(() => expect(result.current.currentPhotoUrl).toBe('second.jpg'));
   await act(async () => pending['race-first']('first.jpg'));

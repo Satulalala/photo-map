@@ -36,12 +36,14 @@
 }
 
 /* 确保 Mapbox 标记容器可见 */
-.mapboxgl-marker {
+.mapboxgl-marker,
+.maplibregl-marker {
   z-index: 1 !important;
 }
 
 /* 确保标记容器不被裁剪 */
-.mapboxgl-canvas-container {
+.mapboxgl-canvas-container,
+.maplibregl-canvas-container {
   overflow: visible !important;
 }
 

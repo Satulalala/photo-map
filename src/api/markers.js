@@ -3,6 +3,7 @@
  */
 import { isElectron, generateId } from './utils.js';
 import { webStorage } from './webStorage.js';
+import { getPhotoDisplayUrl } from './photoFileAccess.js';
 
 export const markersApi = {
   async getAll() {
@@ -54,11 +55,39 @@ export const markersApi = {
     return updateData;
   },
 
+  async upsertSnapshot(marker) {
+    if (window.electronAPI?.upsertMarkerSnapshot) return window.electronAPI.upsertMarkerSnapshot(marker);
+    const photos = Array.isArray(marker.photos) ? marker.photos : [];
+    const existing = await webStorage.photos.getByMarkerId(marker.id);
+    const incomingIds = new Set(photos.map(photo => photo.id));
+    for (const photo of existing) {
+      if (!incomingIds.has(photo.id)) await webStorage.photos.delete(marker.id, photo.id);
+    }
+    await webStorage.markers.save({ ...marker, photoCount: photos.length });
+    if (photos.length) await webStorage.photos.addBatch(marker.id, photos);
+    return true;
+  },
+
   async delete(id) {
     if (isElectron()) {
       await window.electronAPI.deleteMarker(id);
     } else {
-      await webStorage.markers.delete(id);
+      const tx = await webStorage.getTransaction(['markers', 'photos'], 'readwrite');
+      const photos = tx.objectStore('photos');
+      const request = photos.index('markerId').openKeyCursor(id);
+      request.onsuccess = () => {
+        const cursor = request.result;
+        if (cursor) {
+          photos.delete(cursor.primaryKey);
+          cursor.continue();
+        }
+      };
+      tx.objectStore('markers').delete(id);
+      await new Promise((resolve, reject) => {
+        tx.oncomplete = resolve;
+        tx.onerror = () => reject(tx.error);
+        tx.onabort = () => reject(tx.error);
+      });
     }
     return true;
   },
@@ -160,31 +189,19 @@ export const photosApi = {
     return webStorage.photos.searchNotes(keyword);
   },
 
-  async searchByContent(text, topK = 20) {
-    if (isElectron()) {
-      return window.electronAPI.searchPhotosByContent(text, topK);
-    }
-    throw new Error('Web 版暂不支持图片内容搜索，请使用桌面版；地名和备注搜索仍可使用');
+  async searchByContent() {
+    return { available: false, results: [], reason: 'semantic-search-disabled' };
   },
 
   async batchGenerateEmbeddings() {
-    if (isElectron()) {
-      return window.electronAPI.batchGenerateEmbeddings();
-    }
-    return { count: 0 };
+    return { available: false, count: 0, reason: 'semantic-search-disabled' };
   },
 
   async getEmbeddingStatus() {
-    if (isElectron()) {
-      return window.electronAPI.getEmbeddingStatus();
-    }
-    return { isLoaded: false, isLoading: false, hasError: false, error: null, modelName: '' };
+    return { isLoaded: false, isLoading: false, hasError: false, error: null, modelName: '', available: false };
   },
 
-  onEmbeddingProgress(callback) {
-    if (isElectron() && window.electronAPI.onEmbeddingProgress) {
-      return window.electronAPI.onEmbeddingProgress(callback);
-    }
+  onEmbeddingProgress() {
     return () => {};
   },
 
@@ -193,15 +210,14 @@ export const photosApi = {
       return photo.data;
     }
 
+    if (photo.data instanceof Blob) return URL.createObjectURL(photo.data);
     if (isElectron() && photo.originalPath) {
       return window.electronAPI.getPhotoUrl(photo.originalPath);
     }
-
     if (photo.data) {
       return `data:image/jpeg;base64,${photo.data}`;
     }
-
-    return '';
+    return photo.id ? getPhotoDisplayUrl(photo.id, false) : '';
   },
 
   async getThumbnailUrl(photo) {
@@ -212,6 +228,6 @@ export const photosApi = {
       return `data:image/jpeg;base64,${photo.thumbnail}`;
     }
 
-    return this.getUrl(photo);
+    return photo.id ? getPhotoDisplayUrl(photo.id, true) : this.getUrl(photo);
   },
 };

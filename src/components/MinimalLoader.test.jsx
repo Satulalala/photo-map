@@ -62,6 +62,7 @@ it('does not restart the entry button during flight after early map failure', ()
   const complete = vi.fn();
   const enter = vi.fn();
   const { unmount } = render(<MinimalLoader onComplete={complete} onShowLogin={enter} />);
+  expect(map.options.style).toBe('mapbox://styles/mapbox/streets-v12?optimize=true');
   expect(map.options.language).toBe('zh-Hans');
   expect(map.options.refreshExpiredTiles).toBe(true);
   act(() => map.error(new Error('map unavailable')));

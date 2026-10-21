@@ -4,6 +4,15 @@
 
 PhotoMap 是一个基于 React、Electron 和 Mapbox 的照片地图项目。你可以在地图上添加地点、上传照片、记录备注，再通过相册、搜索和生活足迹回看自己的记录。项目同时提供桌面版和 Web 版。
 
+## 项目截图
+
+<p align="center">
+  <img src="docs/screenshots/photomap-login.png" width="49%" alt="PhotoMap 登录页与地球入口" />
+  <img src="docs/screenshots/photomap-map.png" width="49%" alt="PhotoMap 游客模式地图工作区，展示公开地标" />
+</p>
+
+截图使用公开界面，不包含个人照片或私人地点。
+
 ## 获取桌面版
 
 在 [GitHub Releases](https://github.com/Satulalala/photo-map/releases/latest) 下载最新版本。Windows x64 提供安装版和免安装版；macOS 提供 Intel 与 Apple 芯片安装包；Linux 提供 AppImage、deb 和 rpm。GitHub Actions 通过仓库 Secret `MAPBOX_TOKEN` 为各平台桌面包注入地图访问令牌；未配置时地图无法加载。macOS 版本目前未签名，首次打开时需在系统安全设置中手动允许。
@@ -14,8 +23,8 @@ PhotoMap 是一个基于 React、Electron 和 Mapbox 的照片地图项目。你
 - **照片与备注**：一个地点关联多张照片，支持预览、旋转、裁剪、备注编辑及批量管理。
 - **我的相册**：查看照片与地点数量，通过标记列表跳转到拍摄位置并打开详情。
 - **生活足迹**：按国内地区、海外国家整理已有地点记录。
-- **图片描述搜索**：桌面版使用 Chinese CLIP 将中文描述与照片匹配，例如“海边的日落”；首次使用需要下载模型并生成照片索引。
-- **账号与同步**：邮箱注册、登录与暂不登录入口，后端提供地点和照片备注等元数据的增量同步。
+- **语义搜索**：当前暂未开放，不会下载或加载本地嵌入模型；后续再评估服务器端模型服务。
+- **账号与同步**：登录后按账号同步地点、照片备注与照片文件；照片存 R2，元数据存 D1，桌面版和 Web 版共用云端数据。
 - **界面与交互**：浅色、深色及跟随系统主题，响应式浮层、键盘操作和减少动画支持。
 
 地图默认优先显示中文；未提供中文名称的地点仍可能显示当地语言。进入地图使用设备定位或默认坐标，拖动登录页地球用于浏览，不会改变进入地图的定位目标。
@@ -28,10 +37,18 @@ PhotoMap 是一个基于 React、Electron 和 Mapbox 的照片地图项目。你
 | 本地存储 | SQLite 与本地照片文件 | 浏览器 IndexedDB |
 | 照片旋转、裁剪 | 支持 | 支持 |
 | 地名、备注文字搜索 | 支持 | 支持 |
-| 图片描述搜索 | Chinese CLIP + sqlite-vec | 暂不支持 |
-| 地点元数据同步 | 默认 Cloudflare Worker + D1；也可连接 Java 服务 | Cloudflare Worker + D1 持久化 |
+| 语义搜索 | 暂未开放，不加载模型 | 暂未开放 |
+| 云端同步 | 登录后同步到 Cloudflare Worker + D1/R2 | 登录后同步到 Cloudflare Worker + D1/R2 |
 
-桌面照片和地点仍存放在本机 SQLite 与照片目录；登录后可将地点、照片 ID 与备注同步到 Cloudflare D1。默认服务为 `https://photomap.satula.top`，也可在设置中改为自建 Java API。选择“暂不登录”仍可使用本地相册；进入地图后刷新会保留地图页面，在登录页刷新则仍停留在登录页。
+桌面版保留本机 SQLite 与照片文件，Web 版使用浏览器 IndexedDB；登录后地点和备注同步到 D1，原图与缩略图上传到 R2，并按账号隔离。游客数据不会自动上传，可在设置中导入到登录账户。默认服务为 `https://photomap.satula.top`；选择“暂不登录”仍可使用本地相册。
+
+## MapLibre 测试版
+
+本地 Web 开发时访问 `http://localhost:3001/maplibre-test`。该路由继续使用 PhotoMap 原有登录、会话、页面布局、相册数据和地图业务组件；只有地图渲染引擎切换为 MapLibre，正式首页仍使用 Mapbox。Cloudflare Worker 配置了 SPA fallback，部署包含此版本后也可直接访问 `/maplibre-test`；当前修改不会自动部署生产环境。
+
+测试页读取现有浏览器 IndexedDB 中的地点和照片。为了避免测试内容写入真实相册，地点、照片和设置的 IndexedDB 写事务会被拦截，云同步队列和云端推送/拉取在此路由禁用；认证仍沿用原有账号与 Session。页面会显示“MapLibre 测试 · 数据只读”标识。
+
+默认底图使用 OpenFreeMap Liberty 全球矢量样式（OpenStreetMap 数据），无需 API Key；可通过 `.env` 中的 `VITE_MAPLIBRE_STYLE_URL` 替换为符合项目用途和授权条件的 MapLibre 样式服务。当前地点搜索仍复用既有高德 / Mapbox 地理编码 API。MapLibre 使用透明天空、CSS 星点和 GL JS 大气层样式模拟正式版的星空边缘；Mapbox 专属的 `fog`、`space-color` 和 `star-intensity` 效果无法完全等同。
 
 ## 技术栈
 
@@ -39,9 +56,9 @@ PhotoMap 是一个基于 React、Electron 和 Mapbox 的照片地图项目。你
 | --- | --- |
 | 前端 | React 18、Vite 8、Zustand、CSS |
 | 桌面运行时 | Electron 44、IPC |
-| 地图 | Mapbox GL JS 3.32.0 |
+| 地图 | Mapbox GL JS 3.32.0（正式版）；MapLibre GL JS 6.13.0（只读测试版） |
 | 桌面数据与图像处理 | better-sqlite3、sqlite-vec、Sharp |
-| 图片描述搜索 | Transformers.js、Chinese CLIP、ONNX Runtime |
+| 语义搜索 | 当前关闭；桌面端不下载或加载模型，相关依赖暂留待后续评估 |
 | Web 数据 | IndexedDB、LocalStorage |
 | 后端 | Web 生产：Cloudflare Workers + D1；桌面/本地：Java 17+、Spring Boot 3.5、JWT、Spring Data JPA |
 | 验证工具 | Vitest、Testing Library、Playwright、ESLint、TypeScript |
@@ -130,9 +147,9 @@ PHOTOMAP_CORS_ALLOWED_ORIGINS
 
 ### 部署到 Cloudflare
 
-当前线上站点为 [photomap.satula.top](https://photomap.satula.top)，健康检查为 [`/api/health`](https://photomap.satula.top/api/health)。一个 Cloudflare Worker 同时提供 `dist-web` 静态文件和 `/api/v1` API，D1 持久保存账号与按账号隔离的同步元数据。
+当前线上站点为 [photomap.satula.top](https://photomap.satula.top)，健康检查为 [`/api/health`](https://photomap.satula.top/api/health)。一个 Cloudflare Worker 同时提供 `dist-web` 静态文件与 `/api/v1` 认证、`/api/v2` 同步接口；D1 持久保存账号和同步元数据，R2 保存按账号隔离的原图与缩略图。
 
-Web 版使用同源 HttpOnly Cookie。打包桌面版通过固定的 `photomap://app` 安全源访问 Cloudflare API；Worker 只允许这个桌面源进行带凭据 CORS，并为其设置 24 小时有效的 `HttpOnly; Secure; SameSite=None` 会话 Cookie。桌面端仍将原始照片与 SQLite 数据保留在本机，云端只接收同步元数据。不要把 `JWT_SECRET` 或 Cloudflare API Token 放进前端配置。
+Web 版使用同源 HttpOnly Cookie。打包桌面版通过固定的 `photomap://app` 安全源访问 Cloudflare API；Worker 只允许这个桌面源进行带凭据 CORS，并为其设置 24 小时有效的 `HttpOnly; Secure; SameSite=None` 会话 Cookie。桌面端保留本地照片和 SQLite 数据，同时将登录账户的数据同步到云端。不要把 `JWT_SECRET` 或 Cloudflare API Token 放进前端配置。
 
 1. 使用 Cloudflare CLI 登录，并为自己的部署准备 D1 数据库：
 
@@ -153,9 +170,13 @@ Web 版使用同源 HttpOnly Cookie。打包桌面版通过固定的 `photomap:/
 
 4. 在 Worker 的 **Settings → Variables and Secrets** 设置 `JWT_SECRET`，使用随机生成的至少 32 字节密钥；也可运行 `npx wrangler secret put JWT_SECRET`。不要把该密钥写入 Git、`.env` 或 Wrangler 普通变量。缺少该密钥时 API 会返回 503，不会创建半成品账号。
 
-5. 检查 `https://<域名>/api/health`，确认 `ok` 与 `authReady` 为 `true`，然后将自定义域名路由绑定到 Worker。改动 D1 表结构后先运行 `npm run cloudflare:migrate`，再部署 Worker。
+5. 创建 GitHub OAuth App，将授权回调地址设为 `https://photomap.satula.top/api/v1/auth/github/callback`，并把 `GITHUB_CLIENT_ID` 与 `GITHUB_CLIENT_SECRET` 设为 Worker Secrets。OAuth 只请求 GitHub 用户资料和已验证邮箱权限。
 
-Worker 登录使用 Web Crypto PBKDF2（600,000 次迭代）。Cloudflare Workers Free 每请求 CPU 限额为 10 ms；请在真实部署后检查 CPU 用量，若触发 1102 资源限制，需要启用 Workers Paid 计划。不要为了适配免费 CPU 限额而降低密码哈希强度。[Cloudflare Workers 限额说明](https://developers.cloudflare.com/workers/platform/limits/)
+6. 在腾讯云邮件推送香港地域（`ap-hongkong`）验证发信域名 `mail.photomap.satula.top`，创建发信地址 `no-reply@mail.photomap.satula.top`，并上传 `cloudflare/password-reset-template.html`。模板保留固定域名 `https://photomap.satula.top/`，唯一变量 `{{resetToken}}` 仅包含重置令牌，不能将整个 URL 作为变量。将 `TENCENT_SECRET_ID`、`TENCENT_SECRET_KEY` 和 `TENCENT_SES_TEMPLATE_ID` 配置为 Worker Secrets；密钥应使用仅有邮件发送权限的 CAM 子用户凭据。模板审核通过并确认发信地址后，将 `wrangler.jsonc` 中的 `AUTH_EMAIL_ENABLED` 改为 `"true"` 再部署。邮件重置令牌只以哈希形式保存，有效期 30 分钟，使用后会使旧会话失效。
+
+7. 检查 `https://<域名>/api/health`，确认 `ok` 与 `authReady` 为 `true`，然后将自定义域名路由绑定到 Worker。改动 D1 表结构后先运行 `npm run cloudflare:migrate`，再部署 Worker。
+
+Worker 登录使用 PBKDF2-SHA256（100,000 次迭代），并先用只保存在 Worker Secret 中的 `PASSWORD_PEPPER` 做 HMAC-SHA256。Cloudflare 生产运行时的 Web Crypto PBKDF2 迭代上限为 100,000；创建密码后不要轮换 pepper，否则现有密码将无法验证。部署前需用 `wrangler secret put PASSWORD_PEPPER` 设置至少 32 字节的随机值。请关注线上 CPU 用量；若触发 1102 资源限制，应评估 Workers Paid 计划或其他适配方案，不要静默改弱认证保护。[Cloudflare Workers 限额说明](https://developers.cloudflare.com/workers/platform/limits/)
 
 本地联调 Cloudflare Worker 与本地 D1 可运行 `npm run cloudflare:dev`；需要先在被忽略的 `.dev.vars` 中配置本地 `JWT_SECRET`。一般 Web 本地开发仍可运行 `npm run web:dev`，它会把 `/api` 代理到本机 Java 服务。
 
@@ -201,12 +222,12 @@ PhotoMap/
 
 ## 当前限制
 
-- 图片描述搜索目前仅在桌面版实现，结果受模型与照片内容影响；Web 版仍可搜索地名和备注。
-- 同步传输地点、照片 ID 和备注等元数据，尚未上传照片原文件。Cloudflare Web 部署使用 D1 持久保存并按账号隔离；本地 Java 服务的同步记录仍保存在进程内存中，重启会丢失。
-- 后端的 `/api/v1/ai/search`、`ask`、`summarize` 使用文本匹配、规则和统计生成结果，尚未接入大语言模型；它们与桌面图片向量搜索是两条独立链路。
+- 语义搜索目前关闭，桌面端不会下载或加载嵌入模型；地名、地点名称和备注文本搜索可正常使用。
+- Cloudflare 同步上传地点和备注等元数据到 D1，并上传原图与缩略图到 R2；每个账户有 5 GiB 云端存储配额。已有游客数据需要手动导入账户。
+- 后端的 `/api/v1/ai/search`、`ask`、`summarize` 使用文本匹配、规则和统计生成结果，尚未接入大语言模型；语义照片搜索当前关闭。
 - Cloudflare Web 部署将 API 与页面放在同一域名；上线前需要创建 D1、设置 `JWT_SECRET` 和 Mapbox 公共令牌。已有 Java/PostgreSQL 账号不会自动迁移到新的 D1 数据库。
 - 地图使用 Mapbox 的数据和网络服务，加载速度与数据时效取决于服务及连接情况。当前使用原生视口缓存与进入地图前预加载，不提供完整离线地图。
-- 本地照片、数据库、模型缓存、个人权限配置与测试截图不纳入 Git。Web 数据随浏览器站点数据保存，清除站点数据会影响本地相册。
+- 本地照片、数据库、模型缓存、个人权限配置与测试截图不纳入 Git；README 中的项目截图不包含个人数据。Web 本地副本随浏览器站点数据保存，清除站点数据会影响本地相册。
 
 ## License
 

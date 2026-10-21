@@ -220,17 +220,18 @@ body {
 
 .map-header .web-download-beside-search {
   position: absolute;
-  top: 0;
+  top: 50%;
   left: calc(100% + 8px);
   max-width: none;
-  transform: none;
+  transform: translateY(-50%);
 }
 
 .map-header .web-dl-btn {
   min-width: auto;
-  padding: 0 14px;
+  padding: 0 12px 0 8px;
   color: var(--text-secondary);
   white-space: nowrap;
+  line-height: 1;
 }
 
 .map-header .search-results {

@@ -5,8 +5,40 @@
   position: relative;
 }
 
-.mapboxgl-canvas { cursor: crosshair; }
-.mapboxgl-ctrl-logo, .mapboxgl-ctrl-attrib { opacity: 0.5; }
+.mapboxgl-canvas,
+.maplibregl-canvas { cursor: crosshair; }
+.mapboxgl-ctrl-logo, .mapboxgl-ctrl-attrib,
+.maplibregl-ctrl-logo, .maplibregl-ctrl-attrib { opacity: 0.5; }
+
+.map-container[data-map-engine='maplibre'] {
+  background-color: #080b1b;
+  background-image:
+    radial-gradient(circle at 22px 19px, rgba(255, 255, 255, 0.82) 0 1px, transparent 1.5px),
+    radial-gradient(circle at 71px 43px, rgba(203, 218, 255, 0.68) 0 0.8px, transparent 1.4px),
+    radial-gradient(circle at 44px 87px, rgba(255, 255, 255, 0.48) 0 0.7px, transparent 1.3px);
+  background-size: 139px 127px, 211px 197px, 293px 271px;
+  background-position:
+    var(--map-star-offset-x, 0px) var(--map-star-offset-y, 0px),
+    var(--map-star-offset-x, 0px) var(--map-star-offset-y, 0px),
+    var(--map-star-offset-x, 0px) var(--map-star-offset-y, 0px);
+}
+
+.map-container[data-map-engine='maplibre']::after {
+  content: 'MapLibre 测试 · 数据只读';
+  position: absolute;
+  z-index: 5;
+  top: 136px;
+  left: 14px;
+  padding: 5px 9px;
+  border: 1px solid rgba(193, 211, 255, 0.2);
+  border-radius: 999px;
+  background: rgba(8, 11, 27, 0.76);
+  color: #dbeafe;
+  font: 500 11px/1.35 system-ui, sans-serif;
+  letter-spacing: 0.01em;
+  pointer-events: none;
+  backdrop-filter: blur(10px);
+}
 
 /* ========== 点击涟漪 ========== */
 .click-ripple {

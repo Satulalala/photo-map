@@ -27,7 +27,7 @@ export default function MarkerLibraryToolbar({
       <input
         type="search"
         aria-label="搜索相册"
-        placeholder="搜索地名、备注或图片描述..."
+        placeholder="搜索地点或备注..."
         value={markerListSearch}
         onChange={e => onSearch(e.target.value)}
         onKeyDown={e => {

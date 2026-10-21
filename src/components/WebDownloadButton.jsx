@@ -3,14 +3,25 @@ import { createPortal } from 'react-dom';
 import MapIcon from './map/MapIcon.jsx';
 import { useDialogFocus } from '../hooks/useDialogFocus.js';
 
-export default function WebDownloadButton() {
+const DESKTOP_INSTALLER_URL =
+  'https://video.satula.top/downloads/photomap/v1.3.0/PhotoMap-1.3.0-win-x64-setup.exe?release=1.3.0-r1';
+
+export default function WebDownloadButton({ label = '桌面版' }) {
   const [open, setOpen] = useState(false);
   useDialogFocus(open, '.desktop-download-dialog', () => setOpen(false));
   return (
     <>
-      <button type="button" className="web-dl-btn" onClick={() => setOpen(true)}>
-        <MapIcon name="download" />
-        桌面版
+      <button
+        type="button"
+        className="web-dl-btn"
+        aria-haspopup="dialog"
+        title="获取桌面版"
+        onClick={() => setOpen(true)}
+      >
+        <span className="web-dl-btn-icon" aria-hidden="true">
+          <MapIcon name="desktopDownload" />
+        </span>
+        <span className="web-dl-btn-label">{label}</span>
       </button>
       {open &&
         createPortal(
@@ -29,27 +40,44 @@ export default function WebDownloadButton() {
                   <MapIcon name="close" />
                 </button>
               </header>
-              <p>在桌面端使用本地照片存储和图片处理工具。</p>
+              <p className="desktop-download-intro">
+                把照片和地点记录留在自己的电脑里，用地图整理旅程，也能直接管理本地照片。
+              </p>
               <div className="desktop-download-features">
-                <span>
+                <div>
                   <MapIcon name="photo" />
-                  本地照片管理
-                </span>
-                <span>
+                  <span>
+                    <strong>照片保存在本机</strong>
+                    <small>桌面版使用本地数据库整理照片与地点记录。</small>
+                  </span>
+                </div>
+                <div>
+                  <MapIcon name="edit" />
+                  <span>
+                    <strong>直接管理电脑里的照片</strong>
+                    <small>导入本地照片，查看并编辑照片信息。</small>
+                  </span>
+                </div>
+                <div>
                   <MapIcon name="map" />
-                  地图与地点记录
-                </span>
+                  <span>
+                    <strong>照片与地点放在一起</strong>
+                    <small>在地图上查看照片、地点和备注。</small>
+                  </span>
+                </div>
               </div>
-              <p className="download-note">当前站点未提供安装包，请到项目发布页面查看可用版本。</p>
+              <p className="download-note">Windows 10+ · 64 位 · 安装包约 261 MB</p>
               <a
                 className="desktop-download-link"
-                href="https://github.com/Satulalala/photo-map/releases"
-                target="_blank"
-                rel="noopener noreferrer"
+                href={DESKTOP_INSTALLER_URL}
+                download="PhotoMap-Setup-win-x64.exe"
               >
                 <MapIcon name="download" />
-                查看发布页面
+                下载 Windows 安装包
               </a>
+              <p className="download-signature-note">
+                安装包尚未进行代码签名，Windows 可能显示“未知发布者”提示。
+              </p>
             </div>
           </div>,
           document.body

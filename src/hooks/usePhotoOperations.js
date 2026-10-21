@@ -2,6 +2,7 @@ import { useCallback } from 'react';
 import { v4 as uuidv4 } from 'uuid';
 import api, { webStorage } from '../api/index.js';
 import { photoUrlCache, thumbnailCache } from '../utils/LRUCache.ts';
+import { getPhotoDisplayCacheKey } from '../api/photoFileAccess.js';
 
 export function usePhotoOperations(
   markers,
@@ -380,8 +381,8 @@ export function usePhotoOperations(
     if (result) {
       showToast('success', '照片已旋转');
       // 清除 LRU 缓存，强制重新加载
-      photoUrlCache.delete(photoId);
-      thumbnailCache.delete(photoId.replace(/\.[^.]+$/, '.webp'));
+      photoUrlCache.delete(getPhotoDisplayCacheKey(photoId));
+      thumbnailCache.delete(getPhotoDisplayCacheKey(photoId, true));
     } else {
       showToast('error', '旋转失败');
     }
@@ -395,8 +396,8 @@ export function usePhotoOperations(
     if (result) {
       showToast('success', '照片已裁剪');
       // 清除 LRU 缓存，强制重新加载
-      photoUrlCache.delete(photoId);
-      thumbnailCache.delete(photoId.replace(/\.[^.]+$/, '.webp'));
+      photoUrlCache.delete(getPhotoDisplayCacheKey(photoId));
+      thumbnailCache.delete(getPhotoDisplayCacheKey(photoId, true));
     } else {
       showToast('error', '裁剪失败');
     }

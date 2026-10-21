@@ -46,6 +46,7 @@ it('sets the access token before constructing the map on a direct page refresh',
     return state;
   });
   await waitFor(() => expect(tokenAtConstruction).toBe('test-public-token'));
+  expect(mapOptions.style).toBe('mapbox://styles/mapbox/streets-v12?optimize=true');
   expect(mapOptions.refreshExpiredTiles).toBe(true);
   expect(mapOptions.maxTileCacheSize).toBeUndefined();
 });

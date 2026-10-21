@@ -31,12 +31,12 @@ export function useAuth(showToast) {
     showToast('info', '以游客模式继续');
   }, [showToast]);
 
-  const handleLogout = useCallback(() => {
+  const handleLogout = useCallback((message = '已退出登录') => {
     authLogout();
     setUser(null);
     setIsLoggedIn(false);
     setUserChose(false);
-    showToast('info', '已退出登录');
+    showToast('info', message);
   }, [showToast]);
 
   const handleEnterMapFromLoader = useCallback(
