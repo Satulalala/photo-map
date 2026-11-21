@@ -7,6 +7,14 @@
   padding: 24px;
   background: var(--overlay);
   backdrop-filter: blur(10px);
+  animation: overlay-in 220ms ease both;
+}
+.app .life-panel-overlay.closing,
+.app .village-modal-overlay.closing,
+.app .notes-panel-overlay.closing,
+.app .merge-dialog-overlay.closing {
+  pointer-events: none;
+  animation: overlay-out 180ms var(--motion-ease-in, ease) both;
 }
 .app .life-panel,
 .app .village-modal-shell,
@@ -14,11 +22,18 @@
 .app .merge-dialog {
   background: var(--surface);
   color: var(--text-primary);
-  border: 1px solid var(--border);
+  border: 1px solid var(--surface-elevated-border, var(--border));
   border-radius: 20px;
-  box-shadow: var(--shadow-xl);
+  box-shadow: var(--shadow-xl), inset 0 1px 0 var(--surface-glass-highlight);
   min-height: 0;
-  animation: panel-in 220ms cubic-bezier(0.2, 0.8, 0.2, 1) both;
+  animation: panel-in var(--motion-dur-panel, 280ms) var(--motion-ease-out, cubic-bezier(0.22, 1, 0.36, 1)) both;
+}
+.app .life-panel.closing,
+.app .village-modal-shell.closing,
+.app .notes-panel.closing,
+.app .merge-dialog.closing {
+  pointer-events: none;
+  animation: panel-out 180ms var(--motion-ease-in, ease) both;
 }
 .app .life-panel {
   width: min(clamp(480px, 40vw, 620px), 100%);
@@ -37,7 +52,13 @@
   height: 100%;
 }
 .app .life-view-enter {
-  animation: content-in 160ms ease both;
+  animation: content-in var(--motion-dur-subview, 220ms) var(--motion-ease-out, ease) both;
+}
+.app .life-view-forward {
+  animation: life-slide-forward var(--motion-dur-subview, 220ms) var(--motion-ease-out, ease) both;
+}
+.app .life-view-back {
+  animation: life-slide-back var(--motion-dur-subview, 220ms) var(--motion-ease-out, ease) both;
 }
 .app .life-panel-header {
   background: var(--surface);
@@ -106,31 +127,48 @@
 }
 .app .soc-card {
   border: 1px solid var(--border);
-  border-radius: 12px;
+  border-radius: 14px;
   background: var(--surface-muted);
   box-shadow: none;
-  padding: 10px 8px;
+  padding: 12px 12px;
   display: grid;
-  grid-template-columns: 20px minmax(0, 1fr);
-  column-gap: 8px;
-  row-gap: 3px;
+  grid-template-columns: 22px minmax(0, 1fr);
+  column-gap: 10px;
+  row-gap: 2px;
   text-align: left;
+  transition:
+    border-color var(--motion-dur-micro, 150ms) ease,
+    background var(--motion-dur-micro, 150ms) ease,
+    transform 180ms var(--motion-ease-out, ease);
 }
 .app .soc-card:hover {
-  transform: none;
-  box-shadow: none;
+  border-color: var(--border);
+  background: var(--surface);
+  transform: translateY(-1px);
+  box-shadow: var(--shadow-sm);
 }
 .app .soc-card-icon {
-  color: var(--text-muted);
+  width: 22px;
+  height: 22px;
+  border-radius: 0;
+  background: transparent;
+  color: var(--text-secondary);
   font-size: 0;
   grid-row: 1 / 3;
   align-self: center;
+  display: grid;
+  place-items: center;
   margin: 0;
+}
+.app .soc-card-icon .map-icon {
+  width: 17px;
+  height: 17px;
 }
 .app .soc-card-value {
   color: var(--text-primary);
   font-size: 20px;
   font-weight: 600;
+  font-variant-numeric: tabular-nums;
   line-height: 1.2;
   margin: 0;
 }
@@ -144,27 +182,31 @@
 .app .life-global-cards {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: 8px;
+  gap: 10px;
 }
 .app .life-globe-card {
   width: 100%;
   display: flex;
-  gap: 10px;
+  align-items: center;
+  gap: 12px;
   text-align: left;
-  padding: 12px;
+  padding: 13px 14px;
   background: var(--surface-muted);
   color: var(--text-primary);
   border: 1px solid var(--border);
-  border-radius: 12px;
+  border-radius: 14px;
   box-shadow: none;
   transition:
-    border-color 150ms ease,
-    background 150ms ease;
+    border-color var(--motion-dur-micro, 150ms) ease,
+    background var(--motion-dur-micro, 150ms) ease,
+    box-shadow 180ms var(--motion-ease-out, ease),
+    transform 180ms var(--motion-ease-out, ease);
 }
 .app .life-globe-card:hover {
   background: var(--accent-light);
   border-color: var(--accent);
-  transform: none;
+  box-shadow: var(--shadow-sm);
+  transform: translateY(-1px);
 }
 .app .lgc-icon {
   font-size: 18px;
@@ -182,6 +224,13 @@
   width: 16px;
   height: 16px;
   color: var(--text-muted);
+  transition:
+    color var(--motion-dur-micro, 150ms) ease,
+    transform 180ms var(--motion-ease-out, ease);
+}
+.app .life-globe-card:hover .lgc-arrow {
+  color: var(--accent);
+  transform: translateX(3px);
 }
 .app .social-action-btn {
   min-height: 48px;
@@ -212,6 +261,8 @@
 }
 .app .pdl-bar {
   background: var(--accent);
+  transform-origin: left center;
+  animation: bar-grow 380ms var(--motion-ease-out, cubic-bezier(0.22, 1, 0.36, 1)) calc(var(--stagger-index, 0) * 25ms) both;
 }
 .app .life-edit-btn,
 .app .overseas-input,
@@ -235,6 +286,7 @@
 }
 .app .overseas-item.visited {
   border-color: var(--accent);
+  border-left: 3px solid var(--accent);
   background: var(--accent-light);
 }
 .app .overseas-name {

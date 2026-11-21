@@ -43,7 +43,7 @@ test.beforeEach(async ({ page }) => {
     }
   }, markers);
   await page.reload();
-  await page.getByText('暂不登录', { exact: true }).click();
+  await page.getByRole('button', { name: /暂不登录/ }).click();
   await page.getByText('进入地图', { exact: true }).click();
   await expect(page.getByRole('button', { name: /打开我的相册.*10 个地点/ })).toBeVisible();
   await page.getByRole('button', { name: '打开生活面板' }).click();

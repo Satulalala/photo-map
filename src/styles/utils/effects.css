@@ -281,21 +281,39 @@
   100% { stroke-dashoffset: 0; }
 }
 
+@keyframes toastPopIn {
+  0% {
+    transform: translate(-50%, -10px) scale(0.94);
+    opacity: 0;
+  }
+  100% {
+    transform: translate(-50%, 0) scale(1);
+    opacity: 1;
+  }
+}
+
+@keyframes toastShake {
+  0%, 100% { transform: translate(-50%, 0); }
+  20%, 60% { transform: translate(calc(-50% - 5px), 0); }
+  40%, 80% { transform: translate(calc(-50% + 5px), 0); }
+}
+
 .feedback-toast {
   position: fixed;
-  top: 20px;
+  top: max(20px, env(safe-area-inset-top));
   left: 50%;
   transform: translateX(-50%);
-  padding: 12px 24px;
-  border-radius: var(--radius-lg);
-  font-size: 14px;
+  padding: 10px 20px;
+  border-radius: var(--radius-pill, 9999px);
+  font-size: 13px;
   font-weight: 600;
   z-index: 9999;
   display: flex;
   align-items: center;
-  gap: 10px;
-  animation: successPop 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
-  box-shadow: var(--shadow-lg);
+  gap: 8px;
+  animation: toastPopIn 280ms var(--ease-spring-ui, cubic-bezier(0.22, 1, 0.36, 1)) both;
+  box-shadow: 0 12px 32px rgba(15, 23, 42, 0.2), inset 0 1px 0 rgba(255, 255, 255, 0.25);
+  backdrop-filter: blur(12px);
 }
 
 .feedback-toast.success {
@@ -306,7 +324,9 @@
 .feedback-toast.error {
   background: var(--danger);
   color: white;
-  animation: successPop 0.3s cubic-bezier(0.34, 1.56, 0.64, 1), errorShake 0.4s 0.3s;
+  animation:
+    toastPopIn 280ms var(--ease-spring-ui, cubic-bezier(0.22, 1, 0.36, 1)) both,
+    toastShake 360ms 280ms ease;
 }
 
 .feedback-toast.info {
@@ -315,7 +335,9 @@
 }
 
 .feedback-toast .toast-icon {
-  font-size: 18px;
+  display: inline-flex;
+  align-items: center;
+  font-size: 16px;
 }
 
 /* ========== 按钮点击效果增强 ========== */

@@ -7,17 +7,26 @@
   padding: 16px;
   background: var(--overlay);
   backdrop-filter: blur(10px);
+  animation: overlay-in 220ms ease both;
+}
+.desktop-download-overlay.closing {
+  pointer-events: none;
+  animation: overlay-out 180ms var(--motion-ease-in, ease) both;
 }
 .desktop-download-dialog {
   width: min(460px, 100%);
-  border: 1px solid var(--border);
+  border: 1px solid var(--surface-elevated-border, var(--border));
   border-radius: 20px;
   padding: 24px;
   background: var(--surface);
   color: var(--text-primary);
-  box-shadow: var(--shadow-xl);
+  box-shadow: var(--shadow-xl), inset 0 1px 0 var(--surface-glass-highlight);
   font-family: var(--font-sans);
-  animation: panel-in 220ms ease both;
+  animation: panel-in var(--motion-dur-panel, 280ms) var(--motion-ease-out, ease) both;
+}
+.desktop-download-dialog.closing {
+  pointer-events: none;
+  animation: panel-out 180ms var(--motion-ease-in, ease) both;
 }
 .desktop-download-dialog header {
   display: flex;
@@ -38,6 +47,17 @@
   border-radius: 10px;
   color: var(--text-secondary);
   background: var(--surface-muted);
+  transition:
+    background 150ms ease,
+    border-color 150ms ease,
+    color 150ms ease,
+    transform 160ms var(--motion-ease-out, ease);
+}
+.desktop-download-dialog header button:hover {
+  border-color: var(--accent);
+  background: var(--accent-light);
+  color: var(--accent);
+  transform: rotate(90deg);
 }
 .desktop-download-dialog .map-icon {
   width: 20px;
@@ -70,10 +90,14 @@
   gap: 12px;
 }
 .desktop-download-features > div > .map-icon {
-  width: 19px;
-  height: 19px;
-  flex: 0 0 19px;
-  margin-top: 2px;
+  width: 34px;
+  height: 34px;
+  padding: 8px;
+  border-radius: 10px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  flex: 0 0 34px;
+  margin-top: 0;
   color: var(--accent);
 }
 .desktop-download-features > div > span {
@@ -96,10 +120,18 @@
   background: var(--accent);
   color: var(--on-accent);
   font-size: 14px;
+  font-weight: 600;
   text-decoration: none;
+  box-shadow: 0 6px 16px var(--darkroom-red-glow);
+  transition:
+    background 160ms ease,
+    box-shadow 180ms ease,
+    transform 180ms var(--motion-ease-out, ease);
 }
 .desktop-download-link:hover {
   background: var(--accent-hover);
+  transform: translateY(-1px);
+  box-shadow: 0 10px 22px var(--darkroom-red-glow);
 }
 .desktop-download-dialog .download-note {
   margin: 14px 0;
@@ -127,29 +159,26 @@
 .app .web-dl-btn-icon {
   display: grid;
   place-items: center;
-  width: 28px;
-  height: 28px;
-  flex: 0 0 28px;
-  border-radius: 9px;
-  background: var(--accent-light);
-  color: var(--accent);
-  transition:
-    background var(--transition-fast),
-    color var(--transition-fast),
-    transform var(--transition-fast);
+  width: 18px;
+  height: 18px;
+  flex: 0 0 18px;
+  border-radius: 0;
+  background: transparent;
+  color: var(--text-primary);
+  transition: transform var(--transition-fast);
 }
 .app .web-dl-btn-icon .map-icon {
-  width: 16px;
-  height: 16px;
-  stroke-width: 1.9;
+  width: 17px;
+  height: 17px;
+  stroke-width: 1.75;
 }
 .app .web-dl-btn-label {
   line-height: 1;
   white-space: nowrap;
 }
 .app .web-dl-btn:hover .web-dl-btn-icon {
-  background: var(--accent);
-  color: var(--on-accent);
+  background: transparent;
+  color: var(--text-primary);
   transform: translateY(-1px);
 }
 
@@ -235,8 +264,17 @@
   }
 }
 @media (prefers-reduced-motion: reduce) {
+  .desktop-download-overlay,
+  .desktop-download-overlay.closing,
+  .desktop-download-dialog,
+  .desktop-download-dialog.closing {
+    animation: none;
+  }
+
   .app .web-dl-btn-icon,
-  .globe-title-row .web-dl-btn {
+  .globe-title-row .web-dl-btn,
+  .desktop-download-dialog header button,
+  .desktop-download-link {
     transition: none;
   }
 }

@@ -5,6 +5,15 @@
   flex-shrink: 0;
   fill: none;
 }
+.app button:hover .map-icon,
+.app button[aria-pressed="true"] .map-icon,
+.app button.active .map-icon {
+  --icon-tone-opacity: 0.26;
+}
+.app .pv-btn[aria-pressed="true"] [data-icon="star"],
+.app button[data-action="heatmap"][aria-pressed="true"] [data-icon="heatmap"] {
+  --icon-tone-opacity: 0.45;
+}
 .app button {
   font-family: var(--font-sans);
   cursor: pointer;
@@ -31,11 +40,11 @@
   margin: 0;
   opacity: 1;
   transform: none;
-  transition: none;
-  will-change: auto;
+  animation: panel-in 280ms var(--ease-spring-ui, cubic-bezier(0.22, 1, 0.36, 1)) both;
 }
 .app .marker-list-panel.closing {
-  animation: ui-panel-out 180ms ease both;
+  pointer-events: none;
+  animation: panel-out 180ms var(--motion-ease-in, ease) both;
 }
 .app .marker-list-panel-inner > * {
   opacity: 1;

@@ -3,6 +3,7 @@ import LazyPhoto from '../photos/LazyPhoto.jsx';
 import MarkerPhotos from './MarkerPhotos.jsx';
 import MapIcon from '../map/MapIcon.jsx';
 import { getMatchRanges } from '../../utils/searchUtils.js';
+import { usePresenceTransition } from '../../hooks/usePresenceTransition.js';
 
 // 搜索高亮
 function highlightText(text, query) {
@@ -44,6 +45,7 @@ const MarkerListItem = memo(function MarkerListItem(props) {
     dataIndex,
   } = props;
   const [expanded, setExpanded] = useState(false);
+  const photosPresence = usePresenceTransition(expanded, 220);
   const firstPhoto = marker.firstPhoto || marker.photos?.[0];
   const count = marker.photoCount ?? marker.photos?.length ?? 0;
   const selected =
@@ -95,7 +97,15 @@ const MarkerListItem = memo(function MarkerListItem(props) {
           </button>
         )}
       </div>
-      {expanded && <MarkerPhotos {...props} />}
+      {photosPresence.mounted && (
+        <div
+          className={`marker-photos-accordion ${photosPresence.exiting ? 'closing' : photosPresence.entered ? 'open' : ''}`}
+        >
+          <div className="marker-photos-accordion-inner">
+            <MarkerPhotos {...props} />
+          </div>
+        </div>
+      )}
     </div>
   );
 });

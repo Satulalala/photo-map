@@ -34,7 +34,7 @@ export default function SettingsContent({
       <button className="settings-close" onClick={onCloseSettings} aria-label="关闭设置"><MapIcon name="close" /></button>
       <div className="settings-scroll" ref={scrollRef}>
       {settingsTab === 'user' && (
-        <div className="settings-page">
+        <div key="user" className="settings-page">
           <h2><MapIcon name="user" />个人信息</h2>
           <p className="page-desc">查看和管理您的账号信息及数据</p>
 
@@ -62,7 +62,7 @@ export default function SettingsContent({
                   <div className="user-type">
                     {user.type === 'github' && <span className="badge badge-github">GitHub 账号</span>}
                     {user.type === 'email' && <span className="badge badge-email"><MapIcon name="info" />邮箱账号</span>}
-                    {(!user.type || user.type === 'guest') && <span className="badge" style={{ background:'#f3f4f6',color:'#6b7280' }}><MapIcon name="user" />游客</span>}
+                    {(!user.type || user.type === 'guest') && <span className="badge badge-guest"><MapIcon name="user" />游客</span>}
                   </div>
                   {user.email && <div className="user-email">{user.email}</div>}
                   {user.type === 'github' && user.username && <div className="user-email">@{user.username}</div>}
@@ -153,7 +153,7 @@ export default function SettingsContent({
                     <span>网页默认与站点同源；桌面端默认使用 PhotoMap Cloudflare 服务</span>
                   </div>
                   <input
-                    style={{ width: '280px', maxWidth: '42%', minWidth: '180px', height: '34px', borderRadius: '8px', border: '1px solid #ddd', padding: '0 10px' }}
+                    className="setting-text-input"
                     value={syncApiBase}
                     onChange={e => onSyncApiBaseChange(e.target.value)}
                   />
@@ -230,7 +230,7 @@ export default function SettingsContent({
       )}
 
       {settingsTab === 'appearance' && (
-        <div className="settings-page">
+        <div key="appearance" className="settings-page">
           <h2><MapIcon name="palette" />个性化与显示效果</h2>
           <p className="page-desc">统一调整视觉风格与地图显示体验</p>
           <ThemeControl />
@@ -300,7 +300,7 @@ export default function SettingsContent({
       )}
 
       {settingsTab === 'performance' && (
-        <div className="settings-page">
+        <div key="performance" className="settings-page">
           <h2><MapIcon name="performance" />性能优化</h2>
           <p className="page-desc">调整性能参数以获得更流畅的体验</p>
 
@@ -340,7 +340,7 @@ export default function SettingsContent({
       )}
 
       {settingsTab === 'about' && (
-        <div className="settings-page">
+        <div key="about" className="settings-page">
           <h2><MapIcon name="info" />关于</h2>
           <p className="page-desc">地图相册 - 在地图上记录你的旅行回忆</p>
 
@@ -348,11 +348,11 @@ export default function SettingsContent({
             <h3>应用信息</h3>
             <div className="setting-row">
               <div className="setting-label"><strong>应用名称</strong></div>
-              <span style={{ color:'var(--text-secondary)',fontSize:'14px' }}>地图相册</span>
+              <span className="setting-value-text">地图相册</span>
             </div>
             <div className="setting-row">
               <div className="setting-label"><strong>当前版本</strong></div>
-              <span style={{ color:'var(--text-secondary)',fontSize:'14px' }}>v1.0.0</span>
+              <span className="setting-value-text">v1.0.0</span>
             </div>
           </div>
 
@@ -360,7 +360,7 @@ export default function SettingsContent({
             <h3>核心功能</h3>
             <div className="feature-inline-grid">
               <div className="feature-inline-item"><span className="fi-icon"><MapIcon name="map" /></span><span className="fi-name">交互式地图</span></div>
-              <div className="feature-inline-item"><span className="fi-icon"><MapIcon name="photo" /></span><span className="fi-name">照片管理</span></div>
+              <div className="feature-inline-item"><span className="fi-icon"><MapIcon name="album" /></span><span className="fi-name">照片管理</span></div>
               <div className="feature-inline-item"><span className="fi-icon"><MapIcon name="search" /></span><span className="fi-name">智能搜索</span></div>
               <div className="feature-inline-item"><span className="fi-icon"><MapIcon name="download" /></span><span className="fi-name">本地存储</span></div>
               <div className="feature-inline-item"><span className="fi-icon"><MapIcon name="heatmap" /></span><span className="fi-name">热力图</span></div>

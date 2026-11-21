@@ -14,17 +14,17 @@
   min-width: 0;
   min-height: 48px;
   width: 176px;
-  padding: 7px 10px;
+  padding: 6px 10px 6px 8px;
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 9px;
   border-radius: 12px;
   color: var(--text-primary);
 }
 
 .app .marker-count-btn:hover {
-  border-color: var(--accent);
-  background: var(--accent-light);
+  border-color: var(--border);
+  background: var(--surface);
   box-shadow: var(--control-shadow-hover);
   transform: translateY(-1px);
 }
@@ -34,25 +34,79 @@
   transform: translateY(1px) scale(0.98);
 }
 
-.app .marker-count-btn .map-icon {
-  width: 16px;
-  height: 16px;
-  color: var(--accent);
+.app .marker-count-btn > .map-icon {
+  width: 14px;
+  height: 14px;
+  color: var(--text-muted);
+  transition: transform 180ms var(--ease-spring-ui), color 160ms ease;
 }
 
 .app .marker-count-btn .album-button-content {
   min-width: 0;
   flex: 1;
   text-align: left;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  line-height: 1.15;
 }
 
 .app .album-button-icon {
   display: grid;
   place-items: center;
+  width: 28px;
+  height: 28px;
+  flex: 0 0 28px;
+  border-radius: 7px;
+  background: transparent;
+  color: var(--text-primary);
+  opacity: 0.86;
+  transition: transform 200ms var(--ease-spring-ui);
+}
+
+.app .album-button-icon .map-icon {
+  width: 19px;
+  height: 19px;
+}
+
+.app .album-cover-stack {
+  position: relative;
   width: 30px;
   height: 30px;
-  border-radius: 8px;
-  background: var(--accent-light);
+  flex: 0 0 30px;
+  display: grid;
+  place-items: center;
+  transition: transform 200ms var(--ease-spring-ui);
+}
+
+.app .album-cover-back {
+  position: absolute;
+  width: 24px;
+  height: 24px;
+  border-radius: 6px;
+  background: var(--text-muted);
+  opacity: 0.36;
+  transform: rotate(-8deg) translate(-2px, -1px);
+  transition: transform 200ms var(--ease-spring-ui);
+}
+
+.app .album-cover-front {
+  position: relative;
+  width: 26px;
+  height: 26px;
+  border-radius: 6px;
+  overflow: hidden;
+  background: var(--surface-muted);
+  border: 1.5px solid var(--surface);
+  box-shadow: 0 2px 5px rgba(15, 23, 42, 0.2);
+  transform: rotate(2deg);
+  transition: transform 200ms var(--ease-spring-ui);
+}
+
+.app .album-cover-thumb {
+  width: 100%;
+  height: 100%;
+  display: block;
 }
 
 .app .life-entry-btn {
@@ -60,36 +114,65 @@
   display: inline-flex;
   align-items: center;
   gap: 7px;
-  padding: 0 12px;
+  padding: 0 13px;
   border: 1px solid var(--surface-elevated-border);
   border-radius: 12px;
   background: var(--surface-elevated);
-  color: var(--text-secondary);
-  box-shadow: var(--control-shadow);
-  backdrop-filter: blur(16px);
+  color: var(--text-primary);
+  font-weight: var(--weight-semibold);
+  box-shadow: var(--control-shadow), inset 0 1px 0 var(--surface-glass-highlight);
+  backdrop-filter: blur(18px) saturate(150%);
   font-size: 13px;
   transition:
-    background 150ms ease,
-    border-color 150ms ease,
-    transform 150ms ease;
+    background 200ms var(--ease-spring-ui),
+    border-color 200ms var(--ease-spring-ui),
+    color 200ms var(--ease-spring-ui),
+    box-shadow 200ms var(--ease-spring-ui),
+    transform 200ms var(--ease-spring-ui);
 }
 
 .app .life-entry-btn .map-icon {
   width: 18px;
   height: 18px;
-  color: var(--accent);
+  color: var(--text-primary);
+  opacity: 0.86;
 }
-.app .life-entry-btn:hover,
+.app .life-entry-btn:hover {
+  background: var(--surface);
+  border-color: var(--border);
+  color: var(--text-primary);
+  box-shadow: var(--control-shadow-hover);
+  transform: translateY(-1px);
+}
 .app .life-entry-btn[aria-pressed="true"] {
   background: var(--accent-light);
   border-color: var(--accent);
   color: var(--accent);
+  box-shadow: var(--control-shadow-hover);
 }
-.app .life-entry-btn:hover {
-  transform: translateY(-1px);
+.app .life-entry-btn[aria-pressed="true"] .map-icon {
+  color: var(--accent);
+  opacity: 1;
+}
+.app .life-entry-btn:hover .map-icon {
+  transform: scale(1.06);
 }
 .app .life-entry-btn:active {
   transform: scale(0.97);
+}
+.app .marker-count-btn:hover .album-button-icon,
+.app .marker-count-btn:hover .album-cover-stack {
+  transform: scale(1.04);
+}
+.app .marker-count-btn:hover .album-cover-back {
+  transform: rotate(-11deg) translate(-2.5px, -1.5px);
+}
+.app .marker-count-btn:hover .album-cover-front {
+  transform: rotate(0deg);
+}
+.app .marker-count-btn:hover > .map-icon {
+  color: var(--text-primary);
+  transform: translateX(2px);
 }
 
 .app .album-button-title {
@@ -99,19 +182,41 @@
 }
 
 .app .marker-stats {
-  gap: 6px;
+  display: flex;
+  align-items: center;
+  gap: 5px;
   color: var(--text-secondary);
+}
+
+.app .marker-stats .stat-item + .stat-item {
+  padding-left: 0;
+}
+
+.app .marker-stats .stat-item + .stat-item::before {
+  display: none;
+}
+
+.app .stat-dot {
+  width: 2.5px;
+  height: 2.5px;
+  border-radius: 50%;
+  background: var(--text-muted);
+  opacity: 0.72;
+  flex-shrink: 0;
 }
 
 .app .stat-item {
   gap: 2px;
   font-size: 11px;
+  white-space: nowrap;
 }
 
 .app .stat-num {
   color: var(--text-primary);
-  font-family: var(--font-mono);
+  font-family: var(--font-sans);
+  font-variant-numeric: tabular-nums;
   font-weight: var(--weight-semibold);
+  font-size: 11px;
 }
 
 .app .marker-count-btn.origin-hidden {

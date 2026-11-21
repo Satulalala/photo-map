@@ -70,7 +70,7 @@ test.beforeEach(async ({ page }) => {
   page.on('dialog', dialog => dialog.dismiss());
   await page.goto('/');
   await page.getByText('拒绝', { exact: true }).click();
-  await page.getByText('暂不登录', { exact: true }).click();
+  await page.getByRole('button', { name: /暂不登录/ }).click();
   await page.getByText('进入地图', { exact: true }).click();
   await expect(page.getByRole('combobox', { name: '搜索地点或地址' })).toBeVisible();
 });
@@ -80,7 +80,7 @@ test.afterEach(async ({ page }) => {
 });
 
 test('search empty state, Escape, album and theme settings work', async ({ page }) => {
-  const desktop = page.getByRole('button', { name: '桌面版', exact: true });
+  const desktop = page.getByRole('button', { name: '下载桌面版', exact: true });
   await expect(desktop).toHaveCSS('min-height', '44px');
   const desktopBox = await desktop.boundingBox();
   expect(desktopBox.y).toBeGreaterThanOrEqual(0);

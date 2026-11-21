@@ -4,6 +4,7 @@ import { hasMapSession } from '../api/auth.js';
 import { getMapLibreStyleUrl, isMapLibreTestRoute } from '../utils/mapLibreTestMode.js';
 import { attachNeighborTilePrefetch, getNeighborTileCacheSize } from '../utils/mapTilePrefetch.js';
 import { getPhotoDisplayUrl } from '../api/photoFileAccess.js';
+import { flyToMarkerTarget } from '../utils/markerFocusTiming.js';
 
 function getMarkerPreview(marker) {
   const photo = marker.firstPhoto || marker.photos?.[0];
@@ -88,6 +89,8 @@ export function useMap({
   const measureModeRef = useRef(false);
   const measureStartRef = useRef(null);
   const previewMarkerRef = useRef(null);
+  const markerOpenSeqRef = useRef(0);
+  const markerOpenCancelRef = useRef(null);
   const markerMenuRef = useRef(markerMenu);
   markerMenuRef.current = markerMenu;
 
@@ -392,6 +395,9 @@ export function useMap({
 
       // 点击事件
       map.on('click', e => {
+        markerOpenSeqRef.current += 1;
+        markerOpenCancelRef.current?.();
+        markerOpenCancelRef.current = null;
         if (markerMenuRef.current) {
           setMarkerMenu(null);
           setContextMenu(null);
@@ -504,6 +510,9 @@ export function useMap({
       if (!isMapLibreTest) cleanupNeighborPrefetch = attachNeighborTilePrefetch(map);
       return () => {
         cleanupNeighborPrefetch();
+        markerOpenSeqRef.current += 1;
+        markerOpenCancelRef.current?.();
+        markerOpenCancelRef.current = null;
         if (previewMarkerRef.current) { previewMarkerRef.current.remove(); previewMarkerRef.current = null; }
         clearTimeout(flyTimer);
         map.remove();
@@ -646,30 +655,47 @@ export function useMap({
 
     el.addEventListener('click', async e => {
       e.stopPropagation();
-      mapRef.current.flyTo({ center: [m.lng, m.lat], zoom: Math.max(mapRef.current.getZoom(), 15), duration: 800 });
-      setTimeout(async () => {
-        const point = mapRef.current.project([m.lng, m.lat]);
-        let fullMarker = m;
+      const map = mapRef.current;
+      if (!map) return;
 
-        // 加载完整的标记数据（包括所有照片）
-        if (window.electronAPI?.getMarkerDetail) {
-          const detail = await window.electronAPI.getMarkerDetail(m.id);
-          if (detail) fullMarker = detail;
-        } else {
-          const photos = await api.photos.getByMarkerId(m.id);
-          const sorted = [...photos].sort((a, b) => (a.order ?? 9999) - (b.order ?? 9999));
-          fullMarker = {
-            ...m,
-            photos: sorted,
-            photoCount: sorted.length,
-            firstPhoto: sorted[0] || null
-          };
-        }
-
-        setMarkerMenu({ x: point.x, y: point.y, marker: fullMarker });
-      }, 850);
+      markerOpenCancelRef.current?.();
+      const clickSeq = ++markerOpenSeqRef.current;
       setContextMenu(null);
       setPreviewPin(null);
+
+      // 详情读取与基于当前缩放/视口居中状态的镜头对齐并行启动
+      const detailPromise = (async () => {
+        if (window.electronAPI?.getMarkerDetail) {
+          const detail = await window.electronAPI.getMarkerDetail(m.id);
+          return detail || m;
+        }
+        const photos = await api.photos.getByMarkerId(m.id);
+        const sorted = [...photos].sort((a, b) => (a.order ?? 9999) - (b.order ?? 9999));
+        return {
+          ...m,
+          photos: sorted,
+          photoCount: sorted.length,
+          firstPhoto: sorted[0] || null,
+        };
+      })();
+
+      const flight = flyToMarkerTarget(map, [m.lng, m.lat], {
+        minZoom: 15,
+        preserveHigherZoom: true,
+        waitMode: 'card',
+      });
+      let cancelled = false;
+      markerOpenCancelRef.current = () => {
+        cancelled = true;
+        flight.cancel();
+      };
+
+      const [, fullMarker] = await Promise.all([flight.promise, detailPromise]);
+      if (cancelled || clickSeq !== markerOpenSeqRef.current || mapRef.current !== map) return;
+      markerOpenCancelRef.current = null;
+
+      const point = map.project([m.lng, m.lat]);
+      setMarkerMenu({ x: point.x, y: point.y, marker: fullMarker });
     });
 
     return el;

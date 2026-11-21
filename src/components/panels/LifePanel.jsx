@@ -38,22 +38,27 @@ function useStats(markers, totalPhotos) {
   }, [markers, totalPhotos]);
 }
 
-function viewClass(viewAnim) {
-  return `life-view ${viewAnim === 'enter' ? 'life-view-enter' : ''} ${viewAnim === 'exit' ? 'life-view-exit' : ''}`;
+function viewClass(direction) {
+  if (direction === 'back') return 'life-view life-view-back';
+  if (direction === 'forward') return 'life-view life-view-forward';
+  return 'life-view life-view-enter';
 }
 
-export default function LifePanel({ markers, totalPhotos, onClose }) {
-  useDialogFocus(true, '.life-panel', onClose);
+export default function LifePanel({ open = true, markers, totalPhotos, onClose }) {
+  useDialogFocus(open, '.life-panel', onClose);
   const [view, setView] = useState('global');
-  const viewAnim = 'enter';
+  const [direction, setDirection] = useState('enter');
   const stats = useStats(markers, totalPhotos);
 
-  const goView = target => setView(target);
+  const goView = (target, dir = 'forward') => {
+    setDirection(dir);
+    setView(target);
+  };
   if (view === 'china') {
     return (
-      <div key={view} className={viewClass(viewAnim)}>
+      <div key={view} className={viewClass(direction)}>
         <div className="life-panel-header">
-          <button className="life-back-btn" onClick={() => goView('global')}>
+          <button className="life-back-btn" onClick={() => goView('global', 'back')}>
             <MapIcon name="left" />
             返回
           </button>
@@ -108,6 +113,7 @@ export default function LifePanel({ markers, totalPhotos, onClose }) {
                     <div
                       className="pdl-bar"
                       style={{
+                        '--stagger-index': Math.min(i, 9),
                         width: `${Math.min(100, (count / stats.sortedProvinces[0][1]) * 100)}%`,
                       }}
                     />
@@ -127,13 +133,14 @@ export default function LifePanel({ markers, totalPhotos, onClose }) {
       <OverseasCountriesView
         key={view}
         countryCounts={stats.countryCounts}
-        onBack={() => goView('global')}
+        transitionClass={viewClass(direction)}
+        onBack={() => goView('global', 'back')}
       />
     );
   }
 
   return (
-    <div key={view} className={viewClass(viewAnim)}>
+    <div key={view} className={viewClass(direction)}>
       <div className="life-panel-header">
         <h3>
           <MapIcon name="life" />

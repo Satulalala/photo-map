@@ -1,26 +1,143 @@
 .app .context-menu {
-  width: min(280px, calc(100vw - 24px));
+  width: min(284px, calc(100vw - 24px));
+  max-width: none;
   max-height: calc(100dvh - 24px);
   overflow: auto;
-  padding: 18px;
-  border: 1px solid var(--border);
-  border-radius: 16px;
+  padding: 16px;
+  border: 1px solid var(--surface-elevated-border, var(--border));
+  border-radius: 18px;
   background: var(--surface-elevated);
   color: var(--text-primary);
-  box-shadow: var(--control-shadow-hover);
-  backdrop-filter: blur(16px);
-  animation: content-in 180ms ease both;
+  box-shadow: var(--control-shadow-hover), inset 0 1px 0 var(--surface-glass-highlight);
+  backdrop-filter: blur(18px) saturate(150%);
+  animation: popover-pop-in var(--motion-dur-popover, 200ms) var(--motion-ease-out, cubic-bezier(0.22, 1, 0.36, 1)) both;
 }
+
+.app .context-menu[data-origin="tl"] { transform-origin: top left; }
+.app .context-menu[data-origin="tr"] { transform-origin: top right; }
+.app .context-menu[data-origin="bl"] { transform-origin: bottom left; }
+.app .context-menu[data-origin="br"] { transform-origin: bottom right; }
+
+.app .context-menu.closing {
+  pointer-events: none;
+  animation: popover-pop-out 160ms var(--motion-ease-in, cubic-bezier(0.4, 0, 1, 1)) both;
+}
+
+.app .context-menu.marker-detail-card {
+  width: min(304px, calc(100vw - 24px));
+  padding: 14px;
+}
+
+.app .context-menu.marker-detail-card.has-collage {
+  padding-top: 10px;
+}
+
+.app .context-menu.drag-over {
+  border-color: var(--accent);
+  box-shadow:
+    0 0 0 3px var(--darkroom-red-glow),
+    var(--control-shadow-hover);
+}
+
+/* 方案 A：自适应精选拼图预览窗（0 / 1 / 2 / 3+） */
+.app .marker-collage {
+  display: grid;
+  gap: 4px;
+  margin-bottom: 12px;
+  border-radius: 12px;
+  overflow: hidden;
+  background: var(--surface-muted);
+}
+
+.app .marker-collage[data-count="1"] {
+  grid-template-columns: 1fr;
+  height: 148px;
+}
+
+.app .marker-collage[data-count="2"] {
+  grid-template-columns: repeat(2, 1fr);
+  height: 132px;
+}
+
+.app .marker-collage[data-count="3"] {
+  grid-template-columns: 1.55fr 1fr;
+  grid-template-rows: repeat(2, 1fr);
+  height: 156px;
+}
+
+.app .marker-collage[data-count="3"] .marker-collage-cell:first-child {
+  grid-row: 1 / -1;
+}
+
+.app .marker-collage-cell {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  min-height: 0;
+  padding: 0;
+  border: 0;
+  background: var(--surface-subtle);
+  overflow: hidden;
+}
+
+.app .marker-collage-img,
+.app .marker-collage-img img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+  transition: transform 240ms var(--motion-ease-out, cubic-bezier(0.22, 1, 0.36, 1));
+}
+
+.app .marker-collage-cell:hover .marker-collage-img {
+  transform: scale(1.04);
+}
+
+.app .marker-collage-more {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  background: rgba(15, 23, 42, 0.56);
+  color: #ffffff;
+  font-family: var(--font-mono);
+  font-size: 15px;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  backdrop-filter: blur(2px);
+}
+
 .app .context-menu-header {
   background: transparent;
-  border-bottom: 1px solid var(--border);
+  padding: 0 0 12px;
+  border-bottom: 1px solid var(--border-light);
 }
+
+.app .marker-detail-card.has-collage .context-menu-header {
+  padding-top: 2px;
+}
+
+.app .marker-detail-card:not(.has-collage) .context-menu-header {
+  padding-right: 34px;
+}
+
 .app .place-name {
+  display: flex;
+  align-items: flex-start;
+  gap: 6px;
+  padding-right: 0;
   color: var(--text-primary);
   font-size: 14px;
   font-weight: 600;
-  padding-right: 24px;
+  line-height: 1.45;
 }
+
+.app .place-name .map-icon {
+  margin-top: 3px;
+  flex: 0 0 14px;
+  color: var(--text-muted);
+}
+
 .app .place-name .map-icon,
 .app .coords .map-icon,
 .app .photo-count .map-icon {
@@ -28,6 +145,34 @@
   height: 14px;
   vertical-align: -2px;
 }
+
+.app .marker-detail-card .meta-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  margin-top: 6px;
+}
+
+.app .marker-detail-card .coords {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--text-muted);
+}
+
+.app .marker-detail-card .photo-count {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 2px 8px;
+  border-radius: 9999px;
+  background: var(--surface-subtle);
+  color: var(--text-secondary);
+  font-size: 11px;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+}
+
 .app .menu-close,
 .app .life-close-btn,
 .app .village-shell-close {
@@ -39,13 +184,65 @@
   border-radius: 10px;
   background: var(--surface-muted);
   color: var(--text-secondary);
+  transition:
+    background var(--motion-dur-micro, 150ms) ease,
+    border-color var(--motion-dur-micro, 150ms) ease,
+    color var(--motion-dur-micro, 150ms) ease,
+    transform var(--motion-dur-micro, 150ms) var(--motion-ease-out, ease);
 }
+
 .app .menu-close {
   top: 10px;
   right: 10px;
   width: 32px;
   height: 32px;
+  opacity: 1;
 }
+
+.app .menu-close:hover {
+  border-color: var(--border);
+  background: var(--surface-subtle);
+  color: var(--text-primary);
+  transform: rotate(90deg);
+}
+
+.app .menu-close.on-collage {
+  top: 16px;
+  right: 16px;
+  width: 30px;
+  height: 30px;
+  border-radius: 9999px;
+  border: 1px solid rgba(255, 255, 255, 0.24);
+  background: rgba(15, 23, 42, 0.62);
+  color: #ffffff;
+  backdrop-filter: blur(8px);
+}
+
+.app .menu-close.on-collage:hover {
+  background: rgba(15, 23, 42, 0.84);
+  color: #ffffff;
+}
+
+.app .marker-detail-card .menu-actions {
+  padding: 12px 0 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.app .marker-detail-card .menu-actions-primary,
+.app .marker-detail-card .menu-actions-secondary {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
+  margin: 0;
+}
+
+.app .marker-detail-card .menu-actions-primary.single,
+.app .marker-detail-card .menu-actions-secondary.single {
+  grid-template-columns: minmax(0, 1fr);
+}
+
 .app .add-photo-zone {
   width: 100%;
   background: var(--surface-muted);
@@ -53,11 +250,13 @@
   border: 1px dashed var(--border);
   border-radius: 12px;
 }
+
 .app .add-photo-zone:hover,
 .app .add-photo-zone.drag-active {
   border-color: var(--accent);
   background: var(--accent-light);
 }
+
 .app .zone-icon .map-icon {
   width: 28px;
   height: 28px;
@@ -68,17 +267,20 @@
 .app .photo-add-menu {
   padding: 14px;
 }
+
 .app .photo-add-menu .context-menu-header {
   padding: 0 28px 0 0;
   margin-bottom: 12px;
   border-bottom: none;
 }
+
 .app .photo-add-label {
   margin: 0 0 8px;
   color: var(--text-muted);
   font-size: 11px;
   font-weight: 500;
 }
+
 .app .photo-add-menu .place-name {
   display: flex;
   align-items: flex-start;
@@ -86,10 +288,12 @@
   padding: 0;
   line-height: 1.5;
 }
+
 .app .photo-add-menu .place-name .map-icon {
   margin-top: 3px;
   flex: 0 0 14px;
 }
+
 .app .photo-add-place {
   display: -webkit-box;
   min-width: 0;
@@ -97,6 +301,7 @@
   -webkit-line-clamp: 2;
   -webkit-box-orient: vertical;
 }
+
 .app .photo-add-menu .coords {
   display: flex;
   align-items: center;
@@ -104,19 +309,23 @@
   margin-top: 5px;
   font-size: 11px;
 }
+
 .app .photo-add-menu .menu-actions {
   padding: 0;
 }
+
 .app .photo-add-menu .menu-close {
   border-color: transparent;
   background: transparent;
   opacity: 1;
 }
+
 .app .photo-add-menu .menu-close:hover {
   background: var(--surface-muted);
   color: var(--text-primary);
   transform: none;
 }
+
 .app .photo-add-menu .add-photo-zone {
   min-height: 84px;
   margin: 0;
@@ -129,14 +338,17 @@
     background-color 150ms ease,
     border-color 150ms ease;
 }
+
 .app .photo-add-menu .add-photo-zone:hover,
 .app .photo-add-menu .add-photo-zone.drag-active {
   transform: none;
   animation: none;
 }
+
 .app .photo-add-menu .add-photo-zone:disabled {
   cursor: wait;
 }
+
 .app .photo-add-menu .zone-icon {
   display: grid;
   place-items: center;
@@ -145,51 +357,127 @@
   flex: 0 0 36px;
   border-radius: 9px;
   background: var(--accent-light);
+  transition: transform 200ms var(--motion-ease-spring, ease);
 }
+
+.app .photo-add-menu.drag-over .zone-icon {
+  transform: scale(1.08);
+}
+
 .app .photo-add-menu .zone-icon .map-icon {
   width: 20px;
   height: 20px;
 }
+
 .app .photo-add-menu .add-photo-zone:hover .zone-icon {
   transform: none;
 }
+
 .app .photo-add-copy {
   display: grid;
   gap: 3px;
 }
+
 .app .photo-add-menu .zone-text {
   color: var(--text-primary);
   font-size: 13px;
 }
+
 .app .photo-add-menu .zone-hint {
   font-size: 11px;
   font-weight: 400;
 }
-@media (prefers-reduced-motion: reduce) {
-  .app .photo-add-menu,
-  .app .photo-add-menu .add-photo-zone,
-  .app .photo-add-menu .zone-icon {
-    animation: none;
-    transition: none;
-  }
-}
+
 .app .menu-btn {
-  min-height: 42px;
+  min-height: 38px;
+  justify-content: center;
+  padding: 8px 10px;
   border: 1px solid var(--border);
   border-radius: 10px;
   background: var(--surface-muted);
   color: var(--text-primary);
   box-shadow: none;
+  font-size: 13px;
+  transition:
+    background var(--motion-dur-micro, 150ms) ease,
+    border-color var(--motion-dur-micro, 150ms) ease,
+    color var(--motion-dur-micro, 150ms) ease,
+    transform var(--motion-dur-micro, 150ms) var(--motion-ease-out, ease);
 }
-.app .menu-btn:hover {
-  border-color: var(--accent);
-  background: var(--accent-light);
-  color: var(--accent);
+
+.app .menu-btn::before {
+  display: none;
 }
+
+.app .menu-btn .map-icon {
+  width: 15px;
+  height: 15px;
+}
+
+.app .menu-btn.primary.view {
+  border-color: var(--text-primary);
+  background: var(--text-primary);
+  color: var(--surface);
+}
+
+.app .menu-btn.primary.view:hover {
+  background: var(--text-primary);
+  border-color: var(--text-primary);
+  color: var(--surface);
+  opacity: 0.9;
+  transform: translateY(-1px);
+  box-shadow: var(--shadow-md);
+}
+
+.app .menu-btn.primary.add {
+  border-color: var(--border);
+  background: var(--surface-muted);
+  color: var(--text-primary);
+}
+
+.app .menu-btn.primary.add:hover,
+.app .menu-btn.primary.add.drag-active {
+  border-color: var(--border);
+  background: var(--surface-subtle);
+  color: var(--text-primary);
+  transform: translateY(-1px);
+  box-shadow: none;
+  animation: none;
+}
+
+.app .menu-btn:not(.primary):hover {
+  border-color: var(--border);
+  background: var(--surface-subtle);
+  color: var(--text-primary);
+  transform: translateY(-1px);
+}
+
 .app .menu-btn.danger {
   color: var(--danger);
 }
+
 .app .menu-btn.danger:hover {
   border-color: var(--danger);
   background: var(--danger-light);
+  color: var(--danger);
+}
+
+.app .menu-btn:active {
+  transform: scale(0.97) !important;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .app .context-menu,
+  .app .context-menu.closing,
+  .app .photo-add-menu,
+  .app .photo-add-menu .add-photo-zone,
+  .app .photo-add-menu .zone-icon,
+  .app .marker-collage-img,
+  .app .marker-collage-img img,
+  .app .menu-btn,
+  .app .menu-close {
+    animation: none !important;
+    transition: none !important;
+    transform: none !important;
+  }
 }

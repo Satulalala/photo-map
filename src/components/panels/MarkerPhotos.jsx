@@ -65,6 +65,7 @@ export default function MarkerPhotos({
           return (
             <div
               key={photo.id}
+              style={{ '--stagger-index': Math.min(index, 7) }}
               className={`photo-item-expanded ${batchMode && selected ? 'selected' : ''}`}
             >
               <button

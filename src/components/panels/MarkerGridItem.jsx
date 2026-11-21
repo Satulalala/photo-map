@@ -2,10 +2,12 @@ import { useState, memo } from 'react';
 import LazyPhoto from '../photos/LazyPhoto.jsx';
 import MapIcon from '../map/MapIcon.jsx';
 import MarkerPhotos from './MarkerPhotos.jsx';
+import { usePresenceTransition } from '../../hooks/usePresenceTransition.js';
 
 const MarkerGridItem = memo(function MarkerGridItem(props) {
   const { marker, onClick, batchMode, selectedPhotos = [], onPhotoSelect } = props;
   const [expanded, setExpanded] = useState(false);
+  const photosPresence = usePresenceTransition(expanded, 220);
   const firstPhoto = marker.firstPhoto || marker.photos?.[0];
   const count = marker.photoCount ?? marker.photos?.length ?? 0;
   const selected =
@@ -24,13 +26,15 @@ const MarkerGridItem = memo(function MarkerGridItem(props) {
             batchMode && firstPhoto ? onPhotoSelect(marker.id, firstPhoto.id, 0) : onClick()
           }
         >
-          {firstPhoto ? (
-            <LazyPhoto photo={firstPhoto} className="marker-grid-thumb" alt={name} />
-          ) : (
-            <span className="marker-thumb-placeholder">
-              <MapIcon name="pin" />
-            </span>
-          )}
+          <span className="marker-grid-thumb-box">
+            {firstPhoto ? (
+              <LazyPhoto photo={firstPhoto} className="marker-grid-thumb" alt={name} />
+            ) : (
+              <span className="marker-thumb-placeholder">
+                <MapIcon name="pin" />
+              </span>
+            )}
+          </span>
           <span className="marker-grid-info">
             <span className="marker-grid-name">{name}</span>
             <span className="marker-grid-meta">
@@ -52,7 +56,15 @@ const MarkerGridItem = memo(function MarkerGridItem(props) {
           </button>
         )}
       </div>
-      {expanded && <MarkerPhotos {...props} />}
+      {photosPresence.mounted && (
+        <div
+          className={`marker-photos-accordion ${photosPresence.exiting ? 'closing' : photosPresence.entered ? 'open' : ''}`}
+        >
+          <div className="marker-photos-accordion-inner">
+            <MarkerPhotos {...props} />
+          </div>
+        </div>
+      )}
     </div>
   );
 });

@@ -34,14 +34,14 @@
   border: 1px solid var(--surface-elevated-border);
   background: var(--surface-elevated);
   color: var(--text-primary);
-  box-shadow: var(--control-shadow);
-  backdrop-filter: blur(16px);
+  box-shadow: var(--control-shadow), inset 0 1px 0 var(--surface-glass-highlight);
+  backdrop-filter: blur(18px) saturate(150%);
   transition:
-    background var(--transition-fast),
-    border-color var(--transition-fast),
-    box-shadow var(--transition-fast),
-    color var(--transition-fast),
-    transform var(--transition-fast);
+    background 200ms var(--ease-spring-ui),
+    border-color 200ms var(--ease-spring-ui),
+    box-shadow 200ms var(--ease-spring-ui),
+    color 200ms var(--ease-spring-ui),
+    transform 200ms var(--ease-spring-ui);
 }
 
 .app .toolbar button {
@@ -58,11 +58,11 @@
 }
 
 .app .toolbar button:hover:not(:disabled) {
-  border-color: var(--accent);
-  background: var(--accent-light);
-  color: var(--accent);
+  border-color: var(--border);
+  background: var(--surface);
+  color: var(--text-primary);
   box-shadow: var(--control-shadow-hover);
-  transform: translateY(-2px);
+  transform: translateY(-1px);
 }
 
 .app .toolbar button:active:not(:disabled) {

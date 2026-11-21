@@ -1,6 +1,8 @@
 .app .village-modal-shell {
   position: relative;
   inset: auto;
+  display: grid;
+  grid-template-columns: minmax(0, 1.35fr) minmax(260px, 0.95fr);
   width: min(1080px, 100%);
   height: min(720px, calc(100dvh - 48px));
   transform: none;
@@ -9,9 +11,16 @@
   gap: 24px;
   will-change: auto;
 }
+
 .app .village-modal-shell.open {
-  animation: panel-in 220ms ease both;
+  animation: panel-in var(--motion-dur-panel, 280ms) var(--motion-ease-out, cubic-bezier(0.22, 1, 0.36, 1)) both;
 }
+
+.app .village-modal-shell.closing {
+  pointer-events: none;
+  animation: panel-out 180ms var(--motion-ease-in, ease) both;
+}
+
 .app .village-modal-left,
 .app .village-modal-right {
   opacity: 1;
@@ -25,87 +34,178 @@
   animation: none;
   padding: 0;
 }
+
 .app .village-modal-right {
   border-left: 1px solid var(--border);
   padding-left: 24px;
 }
+
 .app .village-modal-head h3,
 .app .village-modal-right h4 {
   color: var(--text-primary);
   font-size: 18px;
 }
+
 .app .village-title-icon {
   display: inline-flex;
   vertical-align: -3px;
 }
+
 .app .village-shell-close {
   position: absolute;
-  top: 12px;
-  right: 12px;
+  top: 14px;
+  right: 14px;
   opacity: 1;
   transform: none;
   animation: none;
+  transition:
+    background var(--motion-dur-micro, 150ms) ease,
+    border-color var(--motion-dur-micro, 150ms) ease,
+    color var(--motion-dur-micro, 150ms) ease,
+    transform var(--motion-dur-micro, 150ms) var(--motion-ease-out, ease);
 }
+
+.app .village-shell-close:hover {
+  border-color: var(--accent);
+  background: var(--accent-light);
+  color: var(--accent);
+  transform: rotate(90deg);
+}
+
 .app .village-social-hero {
-  background: var(--surface-muted);
+  background: linear-gradient(135deg, var(--accent-light), var(--surface-muted));
   color: var(--text-primary);
   border: 1px solid var(--border);
   box-shadow: none;
-  border-radius: 12px;
+  border-radius: 14px;
+  padding: 16px;
 }
+
 .app .hero-main strong {
   color: var(--text-primary);
   font-size: 16px;
 }
+
 .app .hero-main span,
 .app .village-empty-state p {
   color: var(--text-secondary);
 }
+
 .app .village-empty-state,
 .app .village-feed-card,
 .app .village-stats-grid {
   background: var(--surface-muted);
   color: var(--text-primary);
   border: 1px solid var(--border);
-  border-radius: 12px;
+  border-radius: 14px;
   box-shadow: none;
 }
+
+.app .village-stats-grid > div strong {
+  font-variant-numeric: tabular-nums;
+}
+
 .app .village-empty-state h4 {
   color: var(--text-primary);
 }
+
 .app .village-empty-badge {
   background: var(--accent-light);
   color: var(--accent);
   border: 0;
 }
+
+.app .village-empty-actions {
+  gap: 10px;
+}
+
 .app .village-main-btn,
 .app .hero-post-btn,
 .app .village-friend-add button {
   min-height: 40px;
+  padding: 0 14px;
   border: 1px solid var(--border);
   background: var(--surface-subtle);
   color: var(--text-primary);
   box-shadow: none;
-  border-radius: 8px;
+  border-radius: 9px;
+  font-size: 13px;
+  font-weight: var(--weight-semibold);
 }
+
 .app .village-friend-add input,
 .app .village-friend-search {
   min-height: 42px;
+  padding: 0 12px;
   border: 1px solid var(--border);
+  border-radius: 10px;
   background: var(--surface);
   color: var(--text-primary);
+  transition:
+    border-color 160ms ease,
+    box-shadow 160ms ease;
 }
+
+.app .village-friend-add input:focus,
+.app .village-friend-search:focus {
+  border-color: var(--accent);
+  box-shadow: var(--focus-ring);
+}
+
 .app .village-friend-item {
   width: 100%;
   text-align: left;
   background: var(--surface-muted);
   border: 1px solid var(--border);
+  border-radius: 12px;
   color: var(--text-primary);
+  transition:
+    background var(--motion-dur-micro, 150ms) ease,
+    border-color var(--motion-dur-micro, 150ms) ease,
+    transform 180ms var(--motion-ease-out, ease);
 }
+
+.app .village-friend-item:hover {
+  border-color: var(--accent);
+  background: var(--surface);
+  transform: translateY(-1px);
+}
+
+.app .village-friend-actions-menu {
+  animation: popover-pop-in 160ms var(--motion-ease-out, ease) both;
+}
+
 .app .village-friend-text strong,
 .app .village-feed-title {
   color: var(--text-primary);
 }
+
 .app .village-friend-text span {
   color: var(--text-secondary);
+}
+
+@media (max-width: 820px) {
+  .app .village-modal-shell {
+    grid-template-columns: 1fr;
+  }
+
+  .app .village-modal-right {
+    border-left: 0;
+    border-top: 1px solid var(--border);
+    padding-left: 0;
+    padding-top: 20px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .app .village-modal-shell.open,
+  .app .village-modal-shell.closing,
+  .app .village-friend-actions-menu {
+    animation: none !important;
+  }
+
+  .app .village-shell-close,
+  .app .village-friend-item {
+    transition: none !important;
+  }
 }

@@ -116,3 +116,41 @@ it('handles synchronous arrival under reduced motion', async () => {
     expect.objectContaining({ marker: expect.objectContaining({ id: 'a' }) })
   );
 });
+
+it('opens immediately without flyTo when marker is already zoomed in and centered', async () => {
+  vi.stubGlobal('matchMedia', () => ({ matches: false }));
+  window.electronAPI = {
+    getMarkerDetail: vi.fn(async id => ({ id, photos: [{ id: `${id}-photo` }] })),
+  };
+  const map = {
+    getZoom: vi.fn(() => 15.5),
+    getContainer: vi.fn(() => ({ getBoundingClientRect: () => ({ width: 1000, height: 800 }) })),
+    project: vi.fn(() => ({ x: 504, y: 396 })),
+    flyTo: vi.fn(),
+    stop: vi.fn(),
+    once: vi.fn(),
+    off: vi.fn(),
+  };
+  const setMarkerMenu = vi.fn();
+  const { result } = renderHook(() =>
+    useMarkerListUI({
+      batchMode: false,
+      mapRef: { current: map },
+      setMarkerMenu,
+      showToast: vi.fn(),
+    })
+  );
+
+  await act(async () => {
+    await result.current.handleMarkerListMarkerClick({ id: 'centered', lng: 120, lat: 30 });
+  });
+
+  expect(map.flyTo).not.toHaveBeenCalled();
+  expect(setMarkerMenu).toHaveBeenLastCalledWith(
+    expect.objectContaining({
+      x: 504,
+      y: 396,
+      marker: expect.objectContaining({ id: 'centered' }),
+    })
+  );
+});

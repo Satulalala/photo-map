@@ -37,6 +37,7 @@ import SettingsContent from './components/panels/SettingsContent.jsx';
 import { usePhotoOperations } from './hooks/usePhotoOperations.js';
 import { useKeyboard } from './hooks/useKeyboard.js';
 import { useDialogFocus } from './hooks/useDialogFocus.js';
+import { usePresenceTransition } from './hooks/usePresenceTransition.js';
 
 import { createPortal } from 'react-dom';
 import MinimalLoader from './components/MinimalLoader.jsx';
@@ -220,10 +221,25 @@ function App() {
 
   // 计算总照片数 - 使用 useMemo 避免重复计算
   // 数据库版本使用 photoCount 字段，旧版本使用 photos.length
-  const totalPhotos = useMemo(() => 
-    markers.reduce((sum, m) => sum + (m.photoCount ?? m.photos?.length ?? 0), 0), 
+  const totalPhotos = useMemo(() =>
+    markers.reduce((sum, m) => sum + (m.photoCount ?? m.photos?.length ?? 0), 0),
   [markers]
   );
+
+  const albumCoverPhoto = useMemo(() => {
+    let latestPhoto = null;
+    let latestTime = -1;
+    for (const marker of markers) {
+      const candidate = marker.firstPhoto || marker.photos?.[0];
+      if (!candidate) continue;
+      const timestamp = marker.createdAt ?? 0;
+      if (!latestPhoto || timestamp >= latestTime) {
+        latestPhoto = candidate;
+        latestTime = timestamp;
+      }
+    }
+    return latestPhoto;
+  }, [markers]);
 
   // 认证管理 Hook
   const {
@@ -571,6 +587,10 @@ function App() {
   }, []);
 
 
+  const lifePresence = usePresenceTransition(showLife, 180);
+  const settingsPresence = usePresenceTransition(showSettings, 180);
+  const villagePresence = usePresenceTransition(showVillageModal, 180);
+
   const handleOpenVillage = () => {
     if (!isOnline) { showToast('info', '地球村功能需要联网后使用'); return; }
     setVillageReady(true);
@@ -711,9 +731,17 @@ function App() {
 
       {/* 右下角标记管理按钮 */}
       {!measureMode && (
-        <AlbumButton buttonRef={markerManageBtnRef} show={showMarkerList} reveal={markerBtnReveal}
-          onClick={handleOpenMarkerList} totalPhotos={totalPhotos} totalPlaces={markers.length}
-          showLife={showLife} onOpenLife={() => setShowLife(value => !value)} />
+        <AlbumButton
+          buttonRef={markerManageBtnRef}
+          show={showMarkerList}
+          reveal={markerBtnReveal}
+          onClick={handleOpenMarkerList}
+          totalPhotos={totalPhotos}
+          totalPlaces={markers.length}
+          coverPhoto={albumCoverPhoto}
+          showLife={showLife}
+          onOpenLife={() => setShowLife(value => !value)}
+        />
       )}
 
       {/* 标记列表面板 */}
@@ -802,9 +830,10 @@ function App() {
       )}
 
       <VillageModal
-        show={showVillageModal}
+        show={villagePresence.mounted}
+        focusOpen={showVillageModal}
         villageReady={villageReady}
-        villageClosing={villageClosing}
+        villageClosing={villageClosing || villagePresence.exiting}
         villageRect={villageRect}
         hasVillage={hasVillage}
         villageStats={villageStats}
@@ -825,11 +854,22 @@ function App() {
       />
 
       {/* 生活面板 */}
-      {showLife && (
+      {lifePresence.mounted && (
         <Suspense fallback={null}>
-          <div className="life-panel-overlay" onClick={() => setShowLife(false)}>
-            <div role="dialog" aria-modal="true" aria-label="生活足迹" tabIndex={-1} className={`life-panel themed-floating-panel theme-${uiThemeStyle}`} onClick={e => e.stopPropagation()}>
+          <div
+            className={`life-panel-overlay ${lifePresence.exiting ? 'closing' : ''}`}
+            onClick={() => setShowLife(false)}
+          >
+            <div
+              role="dialog"
+              aria-modal="true"
+              aria-label="生活足迹"
+              tabIndex={-1}
+              className={`life-panel themed-floating-panel theme-${uiThemeStyle} ${lifePresence.exiting ? 'closing' : ''}`}
+              onClick={e => e.stopPropagation()}
+            >
               <LifePanel
+                open={showLife}
                 markers={markers}
                 totalPhotos={totalPhotos}
                 user={user}
@@ -848,10 +888,19 @@ function App() {
       )}
 
       {/* 设置页面 - 横屏详细版 */}
-      {showSettings && (
-        <div className="settings-overlay" onClick={closeSettings}>
-          <div className={`settings-panel themed-floating-panel theme-${uiThemeStyle}`} onClick={e => e.stopPropagation()}
-            role="dialog" aria-modal="true" aria-label="设置" tabIndex={-1}>
+      {settingsPresence.mounted && (
+        <div
+          className={`settings-overlay ${settingsPresence.exiting ? 'closing' : ''}`}
+          onClick={closeSettings}
+        >
+          <div
+            className={`settings-panel themed-floating-panel theme-${uiThemeStyle} ${settingsPresence.exiting ? 'closing' : ''}`}
+            onClick={e => e.stopPropagation()}
+            role="dialog"
+            aria-modal="true"
+            aria-label="设置"
+            tabIndex={-1}
+          >
             {/* 左侧导航 */}
             <div className="settings-nav">
               <div className="settings-nav-header">

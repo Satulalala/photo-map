@@ -11,6 +11,7 @@ import {
 import MapIcon from './map/MapIcon.jsx';
 import LoginActionStack, { githubPath } from './LoginActionStack.jsx';
 import { useDialogFocus } from '../hooks/useDialogFocus.js';
+import { usePresenceTransition } from '../hooks/usePresenceTransition.js';
 
 export default function LoginButtons({
   onLogin,
@@ -37,6 +38,7 @@ export default function LoginButtons({
   const [success, setSuccess] = useState('');
   const [authProviders, setAuthProviders] = useState(null);
   const pending = useRef(false);
+  const modalPresence = usePresenceTransition(open, 180);
   const close = () => {
     if (pending.current) return;
     setOpen(false);
@@ -233,9 +235,9 @@ export default function LoginButtons({
           </div>
         )
       )}
-      {open && (
+      {modalPresence.mounted && (
         <div
-          className="email-form-overlay"
+          className={`email-form-overlay ${modalPresence.exiting ? 'closing' : ''}`}
           onClick={close}
           role="dialog"
           aria-modal="true"
@@ -251,7 +253,10 @@ export default function LoginButtons({
           aria-busy={loading}
           tabIndex={-1}
         >
-          <div className="email-form-modal" onClick={event => event.stopPropagation()}>
+          <div
+            className={`email-form-modal ${modalPresence.exiting ? 'closing' : ''}`}
+            onClick={event => event.stopPropagation()}
+          >
             <div className="email-form-tabs">
               {mode === 'login' || mode === 'register' ? (
                 <>

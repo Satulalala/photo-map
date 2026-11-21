@@ -32,12 +32,12 @@ test('login choices fit mobile, tablet, desktop, and short viewports', async ({ 
   const container = page.locator('.login-buttons-container');
   const email = page.getByRole('button', { name: '邮箱登录' });
   const guest = page.getByRole('button', { name: '暂不登录' });
-  const github = page.getByRole('button', { name: 'GitHub 登录，尚未接入' });
+  const github = page.getByRole('button', { name: /GitHub 登录/ });
 
   await expect(email).toBeVisible();
   await expect(guest).toBeVisible();
   await expect(github).toBeDisabled();
-  await expect(github).toContainText('未接入');
+  await expect(github).toContainText('未配置');
 
   await guest.hover();
   expect(await guest.evaluate(button => button.matches(':hover'))).toBe(true);
@@ -59,11 +59,12 @@ test('login choices fit mobile, tablet, desktop, and short viewports', async ({ 
     expect(group.x).toBeGreaterThanOrEqual(0);
     expect(group.x + group.width).toBeLessThanOrEqual(width);
     expect(group.y + group.height).toBeLessThanOrEqual(height);
-    expect(emailBox.height).toBeCloseTo(44, 1);
-    expect(guestBox.height).toBeCloseTo(44, 1);
-    expect(githubBox.height).toBeCloseTo(36, 1);
-    expect(Math.abs(emailBox.y - guestBox.y)).toBeLessThan(1);
-    expect(githubBox.y).toBeGreaterThanOrEqual(emailBox.y + emailBox.height);
+    for (const button of [emailBox, guestBox, githubBox]) {
+      expect(button.height).toBeGreaterThanOrEqual(36);
+      expect(button.x).toBeGreaterThanOrEqual(0);
+      expect(button.x + button.width).toBeLessThanOrEqual(width);
+    }
+    expect(guestBox.y).toBeGreaterThanOrEqual(Math.max(emailBox.y + emailBox.height, githubBox.y + githubBox.height));
     const globe = await page.locator('.globe-map-container').boundingBox();
     const content = await page.locator('.globe-content').boundingBox();
     expect(globe.width).toBeCloseTo(width, 0);
@@ -110,7 +111,7 @@ test('registration mode exposes confirmation and password visibility controls', 
   const dialog = page.locator('.email-form-overlay');
   await dialog.locator('.email-form-tabs').getByRole('button', { name: '注册' }).click();
 
-  const password = page.getByLabel('密码', { exact: true });
+  const password = page.getByLabel('新密码', { exact: true });
   const confirmation = page.getByLabel('确认密码');
   await expect(confirmation).toBeVisible();
   await password.fill('sample-pass-123');
@@ -129,8 +130,7 @@ test('registration mode exposes confirmation and password visibility controls', 
 
 test('guest choice enables map entry and the map opens the album', async ({ page }) => {
   const enterMap = page.getByRole('button', { name: '进入地图' });
-  await expect(enterMap).toBeDisabled();
-  await expect(enterMap).toHaveCSS('height', '44px');
+  await expect(enterMap).toHaveCount(0);
 
   await page.emulateMedia({ reducedMotion: 'reduce' });
   await page.getByRole('button', { name: '暂不登录' }).click();

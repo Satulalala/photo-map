@@ -3,6 +3,13 @@ import { fireEvent, render, screen } from '@testing-library/react';
 import { expect, it, vi } from 'vitest';
 import Toolbar from './Toolbar.jsx';
 import SearchBar from './SearchBar.jsx';
+import AlbumButton from './AlbumButton.jsx';
+
+vi.mock('../photos/LazyPhoto.jsx', () => ({
+  default: ({ photo, className, alt }) => (
+    <img src={photo?.data || ''} className={className} alt={alt} />
+  ),
+}));
 
 it('names map actions and exposes the heatmap toggle state', () => {
   const onZoomIn = vi.fn();
@@ -60,4 +67,40 @@ it('uses the shared SVG icon system for categorized search results', () => {
   );
 
   expect(container.querySelector('[data-icon="restaurant"]')).toBeTruthy();
+});
+
+it('renders cover stack in AlbumButton when photos exist and falls back to stacked album icon at zero photos', () => {
+  const { container, rerender } = render(
+    <AlbumButton
+      totalPhotos={4}
+      totalPlaces={2}
+      coverPhoto={{ id: 'c1', data: 'data:image/png;base64,AA==' }}
+      show={false}
+      reveal={false}
+      showLife={false}
+      onClick={vi.fn()}
+      onOpenLife={vi.fn()}
+    />
+  );
+
+  expect(screen.getByRole('button', { name: '打开我的相册，4 张照片，2 个地点' })).toBeVisible();
+  expect(container.querySelector('[data-icon="life"]')).toBeTruthy();
+  expect(container.querySelector('.album-cover-stack')).toBeTruthy();
+  expect(container.querySelector('[data-icon="album"]')).toBeNull();
+
+  rerender(
+    <AlbumButton
+      totalPhotos={0}
+      totalPlaces={0}
+      coverPhoto={null}
+      show={false}
+      reveal={false}
+      showLife={false}
+      onClick={vi.fn()}
+      onOpenLife={vi.fn()}
+    />
+  );
+
+  expect(container.querySelector('.album-cover-stack')).toBeNull();
+  expect(container.querySelector('[data-icon="album"]')).toBeTruthy();
 });

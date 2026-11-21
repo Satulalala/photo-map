@@ -2,12 +2,14 @@ import { useState } from 'react';
 import { createPortal } from 'react-dom';
 import MapIcon from './map/MapIcon.jsx';
 import { useDialogFocus } from '../hooks/useDialogFocus.js';
+import { usePresenceTransition } from '../hooks/usePresenceTransition.js';
 
 const DESKTOP_INSTALLER_URL =
   'https://video.satula.top/downloads/photomap/v1.3.0/PhotoMap-1.3.0-win-x64-setup.exe?release=1.3.0-r1';
 
 export default function WebDownloadButton({ label = '桌面版' }) {
   const [open, setOpen] = useState(false);
+  const presence = usePresenceTransition(open, 180);
   useDialogFocus(open, '.desktop-download-dialog', () => setOpen(false));
   return (
     <>
@@ -23,11 +25,14 @@ export default function WebDownloadButton({ label = '桌面版' }) {
         </span>
         <span className="web-dl-btn-label">{label}</span>
       </button>
-      {open &&
+      {presence.mounted &&
         createPortal(
-          <div className="desktop-download-overlay" onClick={() => setOpen(false)}>
+          <div
+            className={`desktop-download-overlay ${presence.exiting ? 'closing' : ''}`}
+            onClick={() => setOpen(false)}
+          >
             <div
-              className="desktop-download-dialog"
+              className={`desktop-download-dialog ${presence.exiting ? 'closing' : ''}`}
               role="dialog"
               aria-modal="true"
               aria-label="获取桌面版"

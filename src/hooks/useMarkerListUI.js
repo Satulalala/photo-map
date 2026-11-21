@@ -1,5 +1,6 @@
 import { useState, useCallback, useRef, useEffect } from 'react';
 import api, { webStorage } from '../api/index.js';
+import { flyToMarkerTarget } from '../utils/markerFocusTiming.js';
 
 export function useMarkerListUI({
   batchMode,
@@ -152,18 +153,13 @@ export function useMarkerListUI({
         setMarkerMenu(null);
         handleCloseMarkerList();
         if (map) {
-          map.stop();
-          // Register before flyTo: reduced motion can complete synchronously.
-          await new Promise(resolve => {
-            const finish = () => {
-              map.off('moveend', finish);
-              if (cancelMapWait.current === finish) cancelMapWait.current = null;
-              resolve();
-            };
-            cancelMapWait.current = finish;
-            map.once('moveend', finish);
-            map.flyTo({ center: [marker.lng, marker.lat], zoom: 15, duration: 1000 });
+          const flight = flyToMarkerTarget(map, [marker.lng, marker.lat], {
+            minZoom: 15,
+            preserveHigherZoom: true,
           });
+          cancelMapWait.current = flight.cancel;
+          await flight.promise;
+          if (cancelMapWait.current === flight.cancel) cancelMapWait.current = null;
         }
         if (request !== markerOpenRequest.current || map !== mapRef.current) return;
         const point = map?.project([marker.lng, marker.lat]);
@@ -185,7 +181,10 @@ export function useMarkerListUI({
   const handleMarkerListNoteClick = useCallback(async result => {
     handleCloseMarkerList();
     if (mapRef.current) {
-      mapRef.current.flyTo({ center: [result.lng, result.lat], zoom: 15, duration: 1000 });
+      flyToMarkerTarget(mapRef.current, [result.lng, result.lat], {
+        minZoom: 15,
+        preserveHigherZoom: true,
+      });
     }
     if (window.electronAPI?.getMarkerDetail) {
       const detail = await window.electronAPI.getMarkerDetail(result.markerId);
@@ -203,7 +202,10 @@ export function useMarkerListUI({
   const handleMarkerListSemanticClick = useCallback(async result => {
     handleCloseMarkerList();
     if (mapRef.current) {
-      mapRef.current.flyTo({ center: [result.lng, result.lat], zoom: 15, duration: 1000 });
+      flyToMarkerTarget(mapRef.current, [result.lng, result.lat], {
+        minZoom: 15,
+        preserveHigherZoom: true,
+      });
     }
     if (window.electronAPI?.getMarkerDetail) {
       const detail = await window.electronAPI.getMarkerDetail(result.markerId);

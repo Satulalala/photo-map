@@ -194,6 +194,8 @@ export default function PhotoViewer({
           <div className="photo-main-wrapper" onClick={event => event.stopPropagation()}>
             {currentPhotoUrl ? (
               <img
+                key={currentPhoto?.id || photoViewer.index}
+                className="pv-photo-img"
                 src={currentPhotoUrl}
                 alt={getPhotoNote(currentPhoto) || `照片 ${photoViewer.index + 1}`}
                 draggable={false}

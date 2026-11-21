@@ -36,6 +36,24 @@ body {
     color var(--transition-fast);
 }
 
+.map-icon-tone {
+  fill: currentColor;
+  fill-rule: evenodd;
+  stroke: none;
+  opacity: var(--icon-tone-opacity, 0.16);
+  transition: opacity var(--transition-fast);
+}
+
+.map-icon-stroke {
+  fill: none;
+  stroke: currentColor;
+}
+
+.map-icon-dot {
+  fill: currentColor;
+  stroke: none;
+}
+
 .app button:focus-visible,
 .app input:focus-visible,
 .app select:focus-visible,
@@ -95,12 +113,12 @@ body {
   border-radius: var(--control-radius);
   background: var(--surface-elevated);
   color: var(--text-primary);
-  box-shadow: var(--control-shadow);
-  backdrop-filter: blur(16px);
+  box-shadow: var(--control-shadow), inset 0 1px 0 var(--surface-glass-highlight);
+  backdrop-filter: blur(18px) saturate(150%);
   transition:
-    border-color var(--transition-fast),
-    box-shadow var(--transition-fast),
-    transform var(--transition-fast);
+    border-color 200ms var(--ease-spring-ui),
+    box-shadow 200ms var(--ease-spring-ui),
+    transform 200ms var(--ease-spring-ui);
 }
 
 .map-header .search-bar:hover {
@@ -171,12 +189,14 @@ body {
   border-radius: var(--control-radius);
   background: var(--surface-elevated);
   color: var(--text-primary);
-  box-shadow: var(--control-shadow);
+  box-shadow: var(--control-shadow), inset 0 1px 0 var(--surface-glass-highlight);
+  backdrop-filter: blur(18px) saturate(150%);
   transition:
-    background var(--transition-fast),
-    border-color var(--transition-fast),
-    box-shadow var(--transition-fast),
-    transform var(--transition-fast);
+    background 200ms var(--ease-spring-ui),
+    border-color 200ms var(--ease-spring-ui),
+    box-shadow 200ms var(--ease-spring-ui),
+    color 200ms var(--ease-spring-ui),
+    transform 200ms var(--ease-spring-ui);
 }
 
 .map-header .search-clear {
@@ -193,10 +213,10 @@ body {
 .map-header .search-clear:hover,
 .map-header .globe-village-btn:hover:not(:disabled),
 .map-header .web-dl-btn:hover {
-  border-color: var(--accent);
-  background: var(--accent-light);
-  color: var(--accent);
-  box-shadow: none;
+  border-color: var(--border);
+  background: var(--surface);
+  color: var(--text-primary);
+  box-shadow: var(--control-shadow-hover);
   transform: translateY(-1px);
 }
 
@@ -228,8 +248,8 @@ body {
 
 .map-header .web-dl-btn {
   min-width: auto;
-  padding: 0 12px 0 8px;
-  color: var(--text-secondary);
+  padding: 0 12px;
+  color: var(--text-primary);
   white-space: nowrap;
   line-height: 1;
 }
@@ -244,9 +264,10 @@ body {
   border: 1px solid var(--surface-elevated-border);
   border-radius: var(--control-radius);
   background: var(--surface-elevated);
-  box-shadow: var(--control-shadow-hover);
-  backdrop-filter: blur(16px);
-  animation: dropdown-in 180ms ease both;
+  box-shadow: var(--control-shadow-hover), inset 0 1px 0 var(--surface-glass-highlight);
+  backdrop-filter: blur(18px) saturate(150%);
+  transform-origin: top center;
+  animation: dropdown-in 220ms var(--ease-spring-ui) both;
 }
 
 @keyframes dropdown-in {
@@ -363,4 +384,11 @@ body {
 .map-header .search-empty,
 .map-header .search-tip {
   padding: 28px 18px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .map-icon,
+  .map-icon-tone {
+    transition: none !important;
+  }
 }

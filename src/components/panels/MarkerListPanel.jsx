@@ -130,7 +130,7 @@ export default function MarkerListPanel({
         <div className="marker-list-panel-inner">
           <div className="marker-list-header">
             <h3>
-              <MapIcon name="pin" />
+              <MapIcon name="album" />
               所有标记
             </h3>
             <div className="header-actions">
@@ -203,7 +203,7 @@ export default function MarkerListPanel({
               </div>
             ) : markerListLayout === 'grid' ? (
               // Grid layout
-              <div className="marker-grid-container">
+              <div key="grid" className="marker-grid-container layout-fade-in">
                 {filteredMarkers.map(m => (
                   <MarkerGridItem
                     key={m.id}
@@ -221,7 +221,7 @@ export default function MarkerListPanel({
               </div>
             ) : (
               // List layout
-              <div className="marker-list-scroll">
+              <div key="list" className="marker-list-scroll layout-fade-in">
                 {filteredMarkers.map(m => (
                   <MarkerListItem
                     key={m.id}

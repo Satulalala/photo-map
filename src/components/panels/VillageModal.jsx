@@ -4,6 +4,7 @@ import { useDialogFocus } from '../../hooks/useDialogFocus.js';
 
 function VillageModal({
   show,
+  focusOpen = show,
   villageReady,
   villageClosing,
   villageRect,
@@ -24,11 +25,11 @@ function VillageModal({
   onSetPinnedFriendIds,
   onSetHiddenFriendIds,
 }) {
-  useDialogFocus(show, '.village-modal-shell', onClose);
+  useDialogFocus(focusOpen, '.village-modal-shell', onClose);
   if (!show) return null;
 
   return (
-    <div className="village-modal-overlay" onClick={onClose}>
+    <div className={`village-modal-overlay ${villageClosing ? 'closing' : ''}`} onClick={onClose}>
       <div
         role="dialog"
         aria-modal="true"

@@ -1,6 +1,7 @@
 import { usePanelAction } from '../../hooks/usePanelAction.js';
 import MapIcon from '../map/MapIcon.jsx';
 import { useDialogFocus } from '../../hooks/useDialogFocus.js';
+import { usePresenceTransition } from '../../hooks/usePresenceTransition.js';
 import React from 'react';
 import LazyPhoto from '../photos/LazyPhoto.jsx';
 
@@ -19,21 +20,23 @@ export default function NotesPanel({
   const close = () => {
     if (canClose()) void run(onClose);
   };
+  const presence = usePresenceTransition(notesPanel, 180);
   useDialogFocus(Boolean(notesPanel), '.notes-panel', close);
-  if (!notesPanel) return null;
+  if (!presence.mounted) return null;
 
-  const marker = notesPanel.marker || markers.find(m => m.id === notesPanel.markerId);
+  const activePanel = presence.snapshot;
+  const marker = activePanel?.marker || markers.find(m => m.id === activePanel?.markerId);
   if (!marker) return null;
 
   return (
-    <div className="notes-panel-overlay" onClick={close}>
+    <div className={`notes-panel-overlay ${presence.exiting ? 'closing' : ''}`} onClick={close}>
       <div
         role="dialog"
         aria-modal="true"
         aria-busy={busy}
         aria-label="照片备注"
         tabIndex={-1}
-        className="notes-panel"
+        className={`notes-panel ${presence.exiting ? 'closing' : ''}`}
         onClick={e => e.stopPropagation()}
       >
         <div className="notes-panel-header">

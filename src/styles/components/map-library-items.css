@@ -1,7 +1,18 @@
+.app .marker-list-scroll {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.app .marker-list-item-wrapper,
+.app .marker-grid-item-wrapper {
+  margin: 0;
+}
+
 .app .marker-open {
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: 12px;
   flex: 1;
   min-width: 0;
   padding: 0;
@@ -15,122 +26,367 @@
 .app .marker-grid-info {
   display: flex;
   flex-direction: column;
-  gap: 6px;
+  gap: 5px;
+  min-width: 0;
 }
+
 .app .marker-meta,
 .app .marker-grid-meta {
   display: flex;
   align-items: center;
   gap: 5px;
   color: var(--text-secondary);
+  font-size: 12px;
 }
+
 .app .marker-meta .map-icon,
 .app .marker-grid-meta .map-icon {
   width: 14px;
   height: 14px;
 }
-.app .marker-thumb {
-  width: 48px;
-  height: 48px;
-  object-fit: cover;
+
+.app .marker-thumb,
+.app .marker-thumb-placeholder {
+  width: 56px;
+  height: 56px;
   flex-shrink: 0;
-  border-radius: 10px;
-}
-.app .marker-list-item {
-  border: 1px solid var(--border);
   border-radius: 12px;
+}
+
+.app .marker-thumb {
+  object-fit: cover;
+  transition: transform 220ms var(--motion-ease-out, cubic-bezier(0.22, 1, 0.36, 1));
+}
+
+.app .marker-thumb-placeholder {
+  display: grid;
+  place-items: center;
+  background: var(--surface-muted);
+  color: var(--text-muted);
+}
+
+.app .marker-list-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  border: 1px solid var(--border);
+  border-radius: 14px;
   background: var(--surface);
   box-shadow: none;
-  padding: 10px 12px;
+  padding: 11px 14px;
+  transition:
+    background var(--motion-dur-micro, 150ms) ease,
+    border-color var(--motion-dur-micro, 150ms) ease,
+    box-shadow 200ms var(--motion-ease-out, ease),
+    transform 200ms var(--motion-ease-out, ease);
 }
+
 .app .marker-list-item:hover {
   background: var(--surface-muted);
   border-color: var(--accent);
-  transform: none;
+  box-shadow: var(--shadow-sm);
+  transform: translateY(-1px);
 }
+
+.app .marker-list-item:hover .marker-thumb {
+  transform: scale(1.04);
+}
+
 .app .marker-list-item.selected {
   background: var(--accent-light);
   border-color: var(--accent);
+  box-shadow: 0 0 0 2px var(--darkroom-red-glow);
 }
+
 .app .marker-name,
 .app .marker-grid-name {
   color: var(--text-primary);
   font-size: 14px;
+  font-weight: var(--weight-semibold);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
-.app .marker-meta,
-.app .marker-grid-meta {
-  font-size: 12px;
+.app .marker-note-preview {
+  color: var(--text-muted);
+  font-style: normal;
+  max-width: 240px;
 }
+
+/* 画廊网格视图 */
+.app .marker-grid-container {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(216px, 1fr));
+  gap: 14px;
+  padding: 2px 0;
+}
+
 .app .marker-grid-item {
   position: relative;
   padding: 0;
   border: 1px solid var(--border);
+  border-radius: 14px;
   background: var(--surface);
+  overflow: hidden;
+  transition:
+    border-color var(--motion-dur-micro, 150ms) ease,
+    box-shadow 220ms var(--motion-ease-out, ease),
+    transform 220ms var(--motion-ease-out, ease);
 }
+
+.app .marker-grid-item:hover {
+  border-color: var(--accent);
+  box-shadow: var(--shadow-md);
+  transform: translateY(-2px);
+}
+
+.app .marker-grid-item.selected {
+  border-color: var(--accent);
+  background: var(--accent-light);
+  box-shadow: 0 0 0 2px var(--darkroom-red-glow);
+}
+
 .app .grid-open {
   width: 100%;
   flex-direction: column;
   gap: 0;
   align-items: stretch;
 }
-.app .marker-grid-info {
-  padding: 12px;
+
+.app .marker-grid-thumb-box {
+  display: block;
+  width: 100%;
+  aspect-ratio: 16 / 10;
+  overflow: hidden;
+  background: var(--surface-muted);
 }
+
+.app .marker-grid-thumb,
+.app .marker-grid-thumb-box .marker-thumb-placeholder {
+  width: 100%;
+  height: 100%;
+  border-radius: 0;
+  object-fit: cover;
+  transition: transform 260ms var(--motion-ease-out, cubic-bezier(0.22, 1, 0.36, 1));
+}
+
+.app .marker-grid-item:hover .marker-grid-thumb {
+  transform: scale(1.04);
+}
+
+.app .marker-grid-info {
+  padding: 12px 46px 12px 12px;
+}
+
 .app .grid-expand-btn {
   position: absolute;
   right: 8px;
   bottom: 8px;
 }
+
 .app .expand-btn,
 .app .grid-expand-btn {
   display: grid;
   place-items: center;
-  min-width: 40px;
-  min-height: 40px;
+  min-width: 36px;
+  min-height: 36px;
   padding: 0;
   color: var(--text-secondary);
   border: 1px solid var(--border);
   background: var(--surface-muted);
-  border-radius: 8px;
+  border-radius: 9px;
+  transition:
+    background var(--motion-dur-micro, 150ms) ease,
+    border-color var(--motion-dur-micro, 150ms) ease,
+    color var(--motion-dur-micro, 150ms) ease;
 }
+
+.app .expand-btn:hover,
+.app .grid-expand-btn:hover {
+  border-color: var(--accent);
+  background: var(--accent-light);
+  color: var(--accent);
+}
+
 .app .expand-btn .map-icon,
 .app .grid-expand-btn .map-icon {
-  transition: transform 150ms ease;
+  transition: transform 200ms var(--motion-ease-out, ease);
 }
+
 .app .expand-btn[aria-expanded="true"] .map-icon,
 .app .grid-expand-btn[aria-expanded="true"] .map-icon {
   transform: rotate(180deg);
 }
+
+/* 展开照片手风琴折展容器 */
+.app .marker-photos-accordion {
+  display: grid;
+  grid-template-rows: 0fr;
+  opacity: 0;
+  margin-top: 8px;
+  transition:
+    grid-template-rows 220ms var(--motion-ease-out, cubic-bezier(0.22, 1, 0.36, 1)),
+    opacity 180ms ease;
+}
+
+.app .marker-photos-accordion.open {
+  grid-template-rows: 1fr;
+  opacity: 1;
+}
+
+.app .marker-photos-accordion.closing {
+  grid-template-rows: 0fr;
+  opacity: 0;
+  pointer-events: none;
+  transition-duration: 200ms, 150ms;
+}
+
+.app .marker-photos-accordion-inner {
+  min-height: 0;
+  overflow: hidden;
+}
+
+.app .marker-photos-accordion.open .marker-photos-accordion-inner {
+  animation: accordion-overflow 1ms 230ms forwards;
+}
+
+@keyframes accordion-overflow {
+  to {
+    overflow: visible;
+  }
+}
+
+.app .photo-grid-expanded-inline {
+  position: static;
+  inset: auto;
+  z-index: auto;
+  margin-top: 0;
+  max-height: none;
+  overflow: visible;
+  box-shadow: none;
+  animation: none;
+  padding: 10px;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  background: var(--surface-muted);
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(76px, 1fr));
+  gap: 8px;
+}
+
 .app .photo-item-inner {
   display: block;
   width: 100%;
   height: 100%;
   padding: 0;
   border: 0;
+  border-radius: 8px;
+  overflow: hidden;
   background: var(--surface-muted);
 }
+
 .app .photo-item-expanded {
   position: relative;
-}
-.app .photo-item-menu {
+  aspect-ratio: 1;
+  border-radius: 10px;
+  border: 2px solid transparent;
   background: var(--surface);
-  border-color: var(--border);
+  animation: content-in 200ms var(--motion-ease-out, ease) calc(var(--stagger-index, 0) * 20ms) both;
 }
+
+.app .photo-item-expanded:hover {
+  border-color: var(--accent);
+  transform: translateY(-1px);
+}
+
+.app .photo-item-expanded.selected {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 2px var(--darkroom-red-glow);
+}
+
+.app .photo-item-menu {
+  position: absolute;
+  top: calc(100% + 6px);
+  left: 0;
+  min-width: 126px;
+  padding: 5px;
+  border: 1px solid var(--surface-elevated-border, var(--border));
+  border-radius: 10px;
+  background: var(--surface-elevated);
+  backdrop-filter: blur(14px);
+  box-shadow: var(--control-shadow-hover);
+  z-index: 30;
+  animation: popover-pop-in 160ms var(--motion-ease-out, ease) both;
+}
+
 .app .photo-item-menu button {
+  width: 100%;
   display: flex;
   align-items: center;
   gap: 6px;
+  padding: 0 10px;
+  border: 0;
+  border-radius: 7px;
+  background: transparent;
   color: var(--text-primary);
-  min-height: 40px;
+  min-height: 36px;
+  font-size: 12px;
+  font-weight: 500;
 }
+
+.app .photo-item-menu button:hover {
+  background: var(--accent-light);
+  color: var(--accent);
+}
+
 .app .photo-item-menu button.danger {
   color: var(--danger);
 }
+
+.app .photo-item-menu button.danger:hover {
+  background: var(--danger-light);
+}
+
 .app .photo-item-add {
   display: grid;
   place-items: center;
-  background: var(--surface-muted);
+  background: var(--surface);
   border: 1px dashed var(--border);
   color: var(--text-secondary);
+}
+
+.app .photo-item-add:hover {
+  border-color: var(--accent);
+  background: var(--accent-light);
+  color: var(--accent);
+}
+
+@media (max-width: 640px) {
+  .app .marker-grid-container {
+    grid-template-columns: repeat(auto-fill, minmax(156px, 1fr));
+    gap: 10px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .app .marker-thumb,
+  .app .marker-list-item,
+  .app .marker-grid-item,
+  .app .marker-grid-thumb,
+  .app .expand-btn .map-icon,
+  .app .grid-expand-btn .map-icon,
+  .app .marker-photos-accordion {
+    transition: none !important;
+  }
+
+  .app .marker-photos-accordion.open .marker-photos-accordion-inner {
+    animation: none !important;
+    overflow: visible;
+  }
+
+  .app .photo-item-expanded,
+  .app .photo-item-menu {
+    animation: none !important;
+  }
 }

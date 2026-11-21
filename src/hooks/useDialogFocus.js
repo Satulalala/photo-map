@@ -73,8 +73,15 @@ export function useDialogFocus(open, selector, onClose) {
     return () => {
       document.removeEventListener('keydown', handleKeyDown, true);
       dialogs.splice(dialogs.indexOf(dialog), 1);
-      if (previous?.isConnected && (!topDialog() || topDialog().contains(previous)))
-        previous.focus();
+      const restoreFocus = () => {
+        const next = topDialog();
+        if (previous?.isConnected && (!next || next.contains(previous))) previous.focus();
+      };
+      restoreFocus();
+      // React may put focus back in a dialog that stays mounted for its exit animation.
+      queueMicrotask(() => {
+        if (!dialogs.includes(dialog) && dialog.contains(document.activeElement)) restoreFocus();
+      });
     };
   }, [open, selector]);
 }

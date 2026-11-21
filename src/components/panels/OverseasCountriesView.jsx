@@ -7,7 +7,11 @@ import {
 } from './lifePanelData.js';
 import MapIcon from '../map/MapIcon.jsx';
 
-export default function OverseasCountriesView({ countryCounts, onBack }) {
+export default function OverseasCountriesView({
+  countryCounts,
+  onBack,
+  transitionClass = 'life-view life-view-enter',
+}) {
   const [query, setQuery] = useState('');
   const [filterMode, setFilterMode] = useState('all');
   const [sortMode, setSortMode] = useState('frequency');
@@ -39,7 +43,7 @@ export default function OverseasCountriesView({ countryCounts, onBack }) {
   };
 
   return (
-    <div className="life-view life-view-enter">
+    <div className={transitionClass}>
       <div className="life-panel-header">
         <button className="life-back-btn" onClick={onBack}>
           <MapIcon name="left" />

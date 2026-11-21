@@ -73,11 +73,15 @@
   --surface-subtle: var(--paper-tear);
   --surface-elevated: rgba(255, 255, 255, 0.94);
   --surface-elevated-border: rgba(226, 232, 240, 0.9);
+  --surface-glass-highlight: rgba(255, 255, 255, 0.72);
   --control-shadow: 0 8px 24px rgba(15, 23, 42, 0.12);
   --control-shadow-hover: 0 12px 30px rgba(15, 23, 42, 0.16);
   --focus-ring: 0 0 0 3px var(--darkroom-red-glow);
   --control-height: 44px;
   --control-radius: 12px;
+  --icon-tone-opacity: 0.14;
+  --ease-spring-ui: cubic-bezier(0.22, 1, 0.36, 1);
+  --ease-pop: cubic-bezier(0.34, 1.45, 0.64, 1);
 
   /* ---- 阴影（暖棕底）---- */
   --shadow-xs: 0 1px 2px rgba(15, 23, 42, 0.04);
@@ -137,7 +141,14 @@
   --weight-semibold: 600;
   --weight-bold: 700;
 
-  /* ---- 过渡 ---- */
+  /* ---- 过渡与动效令牌 ---- */
+  --motion-ease-out: cubic-bezier(0.22, 1, 0.36, 1);
+  --motion-ease-in: cubic-bezier(0.4, 0, 1, 1);
+  --motion-ease-spring: cubic-bezier(0.34, 1.38, 0.64, 1);
+  --motion-dur-micro: 150ms;
+  --motion-dur-popover: 200ms;
+  --motion-dur-panel: 280ms;
+  --motion-dur-subview: 220ms;
   --transition-fast: 150ms ease;
   --transition-base: 200ms ease;
   --transition-slow: 300ms cubic-bezier(0.4, 0, 0.2, 1);
@@ -195,12 +206,15 @@
   --overlay-light: rgba(0, 0, 0, 0.4);
   --surface-elevated: rgba(15, 23, 42, 0.94);
   --surface-elevated-border: rgba(71, 85, 105, 0.8);
+  --surface-glass-highlight: rgba(255, 255, 255, 0.08);
   --control-shadow: 0 8px 24px rgba(0, 0, 0, 0.34);
   --control-shadow-hover: 0 12px 30px rgba(0, 0, 0, 0.46);
+  --icon-tone-opacity: 0.2;
 }
 
 @media (prefers-color-scheme: dark) {
   :root:not([data-theme="light"]) {
+    --icon-tone-opacity: 0.2;
     --paper-white: #0f172a;
     --paper-card: #172033;
     --paper-border: #334155;
@@ -233,6 +247,7 @@
     --overlay-light: rgba(0, 0, 0, 0.4);
     --surface-elevated: rgba(15, 23, 42, 0.94);
     --surface-elevated-border: rgba(71, 85, 105, 0.8);
+    --surface-glass-highlight: rgba(255, 255, 255, 0.08);
     --control-shadow: 0 8px 24px rgba(0, 0, 0, 0.34);
     --control-shadow-hover: 0 12px 30px rgba(0, 0, 0, 0.46);
   }

@@ -1,6 +1,7 @@
 import { usePanelAction } from '../../hooks/usePanelAction.js';
 import MapIcon from '../map/MapIcon.jsx';
 import { useDialogFocus } from '../../hooks/useDialogFocus.js';
+import { usePresenceTransition } from '../../hooks/usePresenceTransition.js';
 import React from 'react';
 import LazyPhoto from '../photos/LazyPhoto.jsx';
 
@@ -19,18 +20,19 @@ export default function MergeDialog({
   const close = () => {
     if (canClose()) void run(onClose);
   };
+  const presence = usePresenceTransition(show, 180);
   useDialogFocus(show, '.merge-dialog', close);
-  if (!show) return null;
+  if (!presence.mounted) return null;
 
   return (
-    <div className="merge-dialog-overlay" onClick={close}>
+    <div className={`merge-dialog-overlay ${presence.exiting ? 'closing' : ''}`} onClick={close}>
       <div
         role="dialog"
         aria-modal="true"
         aria-busy={busy}
         aria-label="整合照片"
         tabIndex={-1}
-        className={`merge-dialog themed-floating-panel theme-${uiThemeStyle}`}
+        className={`merge-dialog themed-floating-panel theme-${uiThemeStyle} ${presence.exiting ? 'closing' : ''}`}
         onClick={e => e.stopPropagation()}
       >
         <div className="merge-dialog-header">

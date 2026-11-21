@@ -14,6 +14,16 @@
   animation: overlay-in 220ms ease both;
 }
 
+.app .settings-overlay.closing {
+  pointer-events: none;
+  animation: overlay-out 180ms var(--motion-ease-in, ease) both;
+}
+
+.app .settings-panel.closing {
+  pointer-events: none;
+  animation: panel-out 180ms var(--motion-ease-in, ease) both;
+}
+
 @keyframes overlay-in {
   from {
     opacity: 0;
@@ -39,13 +49,13 @@
   max-width: none;
   height: min(600px, calc(100dvh - 48px));
   display: flex;
-  animation: panel-in 260ms cubic-bezier(0.2, 0.8, 0.2, 1) both;
+  animation: panel-in 280ms var(--ease-spring-ui, cubic-bezier(0.22, 1, 0.36, 1)) both;
 }
 
 @keyframes panel-in {
   from {
     opacity: 0;
-    transform: translateY(12px) scale(0.98);
+    transform: translateY(14px) scale(0.975);
   }
   to {
     opacity: 1;
@@ -92,12 +102,14 @@
 }
 
 .app .settings-nav-items button {
+  position: relative;
   min-height: 44px;
+  height: 44px;
   display: flex;
   align-items: center;
   justify-content: flex-start;
   gap: 10px;
-  padding: 0 12px;
+  padding: 0 12px 0 14px;
   border: 1px solid transparent;
   border-radius: 10px;
   background: transparent;
@@ -112,6 +124,22 @@
     transform var(--transition-fast);
 }
 
+.app .settings-nav-items button::before {
+  content: "";
+  position: absolute;
+  left: 5px;
+  top: 50%;
+  width: 3px;
+  height: 18px;
+  border-radius: 9999px;
+  background: var(--accent);
+  transform: translateY(-50%) scaleY(0);
+  opacity: 0;
+  transition:
+    transform 180ms var(--motion-ease-out, ease),
+    opacity 150ms ease;
+}
+
 .app .settings-nav-items button:hover {
   background: var(--surface-subtle);
   color: var(--text-primary);
@@ -123,6 +151,11 @@
   background: var(--surface);
   color: var(--accent);
   box-shadow: var(--shadow-sm);
+}
+
+.app .settings-nav-items button.active::before {
+  transform: translateY(-50%) scaleY(1);
+  opacity: 1;
 }
 
 .app .settings-nav-items button.active .map-icon {
@@ -219,7 +252,7 @@
   width: 20px;
   height: 20px;
   margin-right: 8px;
-  color: var(--accent);
+  color: var(--text-secondary);
   vertical-align: -3px;
 }
 
@@ -236,14 +269,53 @@
 
 .app .setting-group {
   margin-bottom: 12px;
-  padding: 14px;
+  padding: 16px;
   border: 1px solid var(--border);
-  border-radius: 10px;
+  border-radius: 14px;
   background: var(--surface-muted);
   box-shadow: none;
   transition:
     border-color var(--transition-fast),
     box-shadow var(--transition-fast);
+}
+
+.app .setting-text-input {
+  width: 280px;
+  max-width: 46%;
+  min-width: 180px;
+  height: 36px;
+  padding: 0 11px;
+  border: 1px solid var(--border);
+  border-radius: 9px;
+  background: var(--surface);
+  color: var(--text-primary);
+  font-size: 13px;
+  transition:
+    border-color 160ms ease,
+    box-shadow 160ms ease;
+}
+
+.app .setting-text-input:focus {
+  border-color: var(--accent);
+  box-shadow: var(--focus-ring);
+}
+
+.app .setting-value-text {
+  color: var(--text-secondary);
+  font-size: 13px;
+  font-variant-numeric: tabular-nums;
+}
+
+.app .badge-guest {
+  background: var(--surface-subtle);
+  color: var(--text-secondary);
+  border: 1px solid var(--border);
+}
+
+.app .settings-page .stat-value,
+.app .settings-page .storage-value,
+.app .settings-page .range-value {
+  font-variant-numeric: tabular-nums;
 }
 
 .app .setting-group:hover {
@@ -318,7 +390,7 @@
 .app .action-btn > .map-icon {
   display: inline-grid;
   place-items: center;
-  color: var(--accent);
+  color: var(--text-secondary);
 }
 
 .app .stat-icon .map-icon,
