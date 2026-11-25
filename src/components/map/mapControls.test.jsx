@@ -1,9 +1,15 @@
 import { createRef } from 'react';
-import { fireEvent, render, screen } from '@testing-library/react';
-import { expect, it, vi } from 'vitest';
+import { act, fireEvent, render, screen } from '@testing-library/react';
+import { afterEach, expect, it, vi } from 'vitest';
 import Toolbar from './Toolbar.jsx';
 import SearchBar from './SearchBar.jsx';
 import AlbumButton from './AlbumButton.jsx';
+import Toast from '../Toast.jsx';
+
+afterEach(() => {
+  vi.useRealTimers();
+  vi.unstubAllGlobals();
+});
 
 vi.mock('../photos/LazyPhoto.jsx', () => ({
   default: ({ photo, className, alt }) => (
@@ -103,4 +109,42 @@ it('renders cover stack in AlbumButton when photos exist and falls back to stack
 
   expect(container.querySelector('.album-cover-stack')).toBeNull();
   expect(container.querySelector('[data-icon="album"]')).toBeTruthy();
+});
+
+it('shows matching footprint count badge in SearchBar and exit animation on Toast', () => {
+  vi.useFakeTimers();
+  vi.stubGlobal('matchMedia', () => ({
+    matches: false,
+    addEventListener: vi.fn(),
+    removeEventListener: vi.fn(),
+  }));
+
+  render(
+    <SearchBar
+      searchQuery="西湖"
+      searchResults={[{ name: '杭州西湖', address: '浙江杭州', distance: '1.2km' }]}
+      searchHistory={[]}
+      markers={[{ id: 'm1', name: '杭州西湖', lat: 30.25, lng: 120.15, photoCount: 3 }]}
+      showSearchResults
+      selectedResultIndex={0}
+      isSearching={false}
+      searchInputRef={createRef()}
+      onInputChange={vi.fn()}
+      onFocus={vi.fn()}
+      onKeyDown={vi.fn()}
+      onClear={vi.fn()}
+      onSelectResult={vi.fn()}
+      onSelectedResultIndexChange={vi.fn()}
+    />
+  );
+  expect(screen.getByText('已有 3 张')).toBeVisible();
+
+  const { rerender } = render(<Toast toast={{ id: 1, type: 'success', message: '已保存' }} />);
+  expect(screen.getByRole('status')).toHaveTextContent('已保存');
+  rerender(<Toast toast={null} />);
+  expect(screen.getByRole('status')).toHaveClass('closing');
+  act(() => {
+    vi.advanceTimersByTime(180);
+  });
+  expect(screen.queryByRole('status')).toBeNull();
 });

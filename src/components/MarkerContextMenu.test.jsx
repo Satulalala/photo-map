@@ -148,3 +148,30 @@ it('keeps .closing state during exit transition before unmounting', () => {
   });
   expect(screen.queryByRole('dialog', { name: '地点详情' })).toBeNull();
 });
+
+it('hides duplicate coordinate text when marker title is already coordinates and shows note preview', () => {
+  const coordMenu = {
+    x: 240,
+    y: 180,
+    marker: {
+      id: 'marker-coord',
+      name: '31.8478°, 117.2200°',
+      lat: 31.8478,
+      lng: 117.22,
+      photos: [{ id: 'p1', data: 'data:image/png;base64,AA==', note: '西岸栈道落日' }],
+    },
+  };
+  const { rerender } = render(<MarkerContextMenu {...createProps({ markerMenu: coordMenu })} />);
+
+  expect(document.querySelector('.marker-detail-card .coords')).toBeNull();
+  expect(screen.getByText('西岸栈道落日')).toBeVisible();
+
+  const namedMenu = {
+    ...coordMenu,
+    marker: { ...coordMenu.marker, name: '天鹅湖' },
+  };
+  rerender(<MarkerContextMenu {...createProps({ markerMenu: namedMenu })} />);
+  expect(document.querySelector('.marker-detail-card .coords')).toHaveTextContent(
+    '31.848°, 117.220° · 有备注'
+  );
+});

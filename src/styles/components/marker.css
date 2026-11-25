@@ -1,12 +1,16 @@
 /* ========== 标记图钉 ========== */
 .marker-pin {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
   cursor: pointer;
-  filter: drop-shadow(0 2px 4px rgba(0,0,0,0.15));
-  transition: filter 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  filter: drop-shadow(0 2px 5px rgba(15, 23, 42, 0.16));
+  transition: filter 200ms cubic-bezier(0.22, 1, 0.36, 1);
 }
 
-.marker-pin:hover {
-  filter: drop-shadow(0 4px 8px rgba(0,0,0,0.2));
+.marker-pin:hover,
+.marker-pin.is-selected {
+  filter: drop-shadow(0 6px 14px rgba(15, 23, 42, 0.24));
 }
 
 .marker-visual {
@@ -14,6 +18,11 @@
   flex-direction: column;
   align-items: center;
   transform-origin: bottom center;
+  transition: transform 220ms var(--ease-pop, cubic-bezier(0.34, 1.45, 0.64, 1));
+}
+
+.marker-pin.is-selected .marker-visual {
+  transform: translateY(-3px);
 }
 
 .marker-visual-new {
@@ -26,19 +35,41 @@
 }
 
 .marker-pin svg path {
-  stroke: white;
-  stroke-width: 1.5px;
+  fill: var(--text-primary, #0f172a);
+  stroke: var(--surface, #ffffff);
+  stroke-width: 1.6px;
   stroke-linejoin: round;
+  transition: transform 200ms var(--ease-pop, cubic-bezier(0.34, 1.45, 0.64, 1));
+}
+
+.marker-pin svg circle {
+  fill: var(--surface, #ffffff);
+}
+
+.marker-pin.is-selected .marker-teardrop {
+  transform: scale(1.1);
 }
 
 @media (prefers-reduced-motion: reduce) {
   .marker-visual-new { animation: none; }
+  .marker-visual,
+  .marker-photo-preview,
+  .marker-photo-preview img,
+  .marker-stack-card,
+  .marker-teardrop {
+    transition: none;
+  }
 }
 
 /* 确保 Mapbox 标记容器可见 */
 .mapboxgl-marker,
 .maplibregl-marker {
   z-index: 1 !important;
+}
+
+.mapboxgl-marker.is-selected,
+.maplibregl-marker.is-selected {
+  z-index: 4 !important;
 }
 
 /* 确保标记容器不被裁剪 */
@@ -51,33 +82,71 @@
   overflow: visible !important;
 }
 
-.marker-photo-preview {
+.marker-photo-stack {
   position: relative;
-  width: 64px;
-  height: 64px;
-  border: 3px solid white;
-  background: var(--bg-tertiary);
   margin-bottom: 4px;
-  border-radius: var(--radius-md);
-  overflow: hidden;
-  box-shadow: var(--shadow-md);
-  transition:
-    border-color 220ms var(--ease-spring-ui, ease),
-    box-shadow 220ms var(--ease-spring-ui, ease),
-    transform 240ms var(--ease-pop, cubic-bezier(0.34, 1.45, 0.64, 1));
 }
 
-.marker-pin:hover .marker-photo-preview {
-  border-color: var(--accent);
-  box-shadow: 0 0 0 3px var(--darkroom-red-glow), var(--shadow-lg);
-  transform: translateY(-3px) scale(1.06);
+.marker-stack-card {
+  position: absolute;
+  inset: 0;
+  border-radius: 10px;
+  border: 2px solid #ffffff;
+  background: var(--surface-subtle, #f1f5f9);
+  box-shadow: 0 3px 10px rgba(15, 23, 42, 0.16);
+  pointer-events: none;
+  transition: transform 240ms var(--ease-spring-ui, cubic-bezier(0.22, 1, 0.36, 1));
+}
+
+.marker-stack-card.back-1 {
+  transform: rotate(-7deg) translate(-4px, -1px);
+}
+
+.marker-stack-card.back-2 {
+  transform: rotate(6deg) translate(4px, 1px);
+}
+
+.marker-pin:hover .marker-stack-card.back-1,
+.marker-pin.is-selected .marker-stack-card.back-1 {
+  transform: rotate(-9deg) translate(-5px, -2px);
+}
+
+.marker-pin:hover .marker-stack-card.back-2,
+.marker-pin.is-selected .marker-stack-card.back-2 {
+  transform: rotate(8deg) translate(5px, 1px);
+}
+
+.marker-photo-preview {
+  position: relative;
+  z-index: 1;
+  width: 58px;
+  height: 58px;
+  border: 2.5px solid #ffffff;
+  background: var(--surface-subtle, #e2e8f0);
+  border-radius: 11px;
+  overflow: hidden;
+  box-shadow: 0 4px 14px rgba(15, 23, 42, 0.22);
+  transition:
+    border-color 200ms var(--ease-spring-ui, ease),
+    box-shadow 200ms var(--ease-spring-ui, ease),
+    transform 220ms var(--ease-pop, cubic-bezier(0.34, 1.45, 0.64, 1));
+}
+
+.marker-pin:hover .marker-photo-preview,
+.marker-pin.is-selected .marker-photo-preview {
+  border-color: var(--text-primary, #0f172a);
+  box-shadow: 0 0 0 3px rgba(15, 23, 42, 0.14), 0 10px 24px rgba(15, 23, 42, 0.26);
+  transform: translateY(-2px) scale(1.04);
 }
 
 .marker-photo-preview img {
+  display: block;
   width: 100%;
   height: 100%;
   object-fit: cover;
-  transition: transform 240ms var(--ease-spring-ui, ease);
+  transition:
+    opacity 0.2s ease,
+    transform 240ms var(--ease-spring-ui, ease);
 }
 
 .marker-pin:hover .marker-photo-preview img {
@@ -86,15 +155,18 @@
 
 .photo-badge {
   position: absolute;
-  top: -5px;
-  right: -5px;
-  background: var(--accent);
-  color: white;
-  border: 1.5px solid white;
+  top: -6px;
+  right: -6px;
+  z-index: 2;
+  background: var(--text-primary, #0f172a);
+  color: var(--surface, #ffffff);
+  border: 2px solid var(--surface, #ffffff);
   font-size: 11px;
-  padding: 2px 7px;
-  border-radius: 12px;
+  line-height: 1;
+  padding: 3px 7px;
+  border-radius: 9999px;
   font-weight: 600;
+  font-variant-numeric: tabular-nums;
   box-shadow: var(--shadow-sm);
 }
 

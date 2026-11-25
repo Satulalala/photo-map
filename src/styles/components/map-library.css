@@ -1,11 +1,15 @@
 .app .marker-list-panel {
-  width: min(960px, calc(100vw - 48px));
-  height: min(720px, calc(100dvh - 48px));
+  width: min(920px, calc(100vw - 48px));
+  height: auto;
+  min-height: min(340px, calc(100dvh - 48px));
+  max-height: min(720px, calc(100dvh - 48px));
   animation: panel-in var(--motion-dur-panel, 280ms) var(--motion-ease-out, cubic-bezier(0.22, 1, 0.36, 1)) both;
 }
 
 .app .marker-list-panel-inner {
-  height: 100%;
+  flex: 1 1 auto;
+  min-height: 0;
+  max-height: inherit;
   display: flex;
   flex-direction: column;
   background: var(--surface);
@@ -16,7 +20,7 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 16px;
+  gap: 12px;
   padding: 12px 18px;
   border-bottom: 1px solid var(--border);
   background: var(--surface);
@@ -25,11 +29,20 @@
 .app .marker-list-header h3 {
   display: inline-flex;
   align-items: center;
-  gap: 8px;
+  gap: 6px;
+  min-width: 0;
   margin: 0;
   color: var(--text-primary);
   font-size: 15px;
   font-weight: var(--weight-semibold);
+  white-space: nowrap;
+}
+
+.app .marker-header-count {
+  font-size: 12px;
+  font-weight: var(--weight-normal);
+  color: var(--text-muted);
+  white-space: nowrap;
 }
 
 .app .marker-list-toolbar {
@@ -59,8 +72,8 @@
 }
 
 .app .marker-list-toolbar .marker-search:focus {
-  border-color: var(--accent);
-  box-shadow: var(--focus-ring);
+  border-color: var(--text-primary);
+  box-shadow: 0 0 0 2px rgba(15, 23, 42, 0.08);
 }
 
 .app .marker-list-toolbar .toolbar-actions {
@@ -68,6 +81,41 @@
   align-items: center;
   gap: 8px;
   flex: 0 0 auto;
+}
+
+.app .layout-seg-group {
+  display: inline-flex;
+  padding: 3px;
+  border: 1px solid var(--border);
+  border-radius: 9px;
+  background: var(--surface-subtle);
+}
+
+.app .layout-seg-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  height: 30px;
+  padding: 0 10px;
+  border: 0;
+  border-radius: 7px;
+  background: transparent;
+  color: var(--text-muted);
+  font-size: 12.5px;
+  font-weight: 500;
+  transition: background 140ms ease, color 140ms ease, box-shadow 140ms ease;
+}
+
+.app .layout-seg-btn .map-icon {
+  width: 14px;
+  height: 14px;
+}
+
+.app .layout-seg-btn[aria-pressed="true"] {
+  background: var(--surface);
+  color: var(--text-primary);
+  font-weight: 600;
+  box-shadow: var(--shadow-xs);
 }
 
 .app .marker-list-toolbar .dropdown-wrapper {
@@ -94,6 +142,8 @@
   align-items: center;
   gap: 6px;
   padding: 0 12px;
+  flex-shrink: 0;
+  white-space: nowrap;
 }
 
 .app .batch-toggle-btn .map-icon {
@@ -104,9 +154,9 @@
 .app .marker-list-toolbar .toolbar-btn:hover,
 .app .batch-toggle-btn:hover,
 .app .panel-close:hover {
-  border-color: var(--accent);
-  background: var(--accent-light);
-  color: var(--accent);
+  border-color: var(--text-muted);
+  background: var(--surface-subtle);
+  color: var(--text-primary);
   transform: translateY(-1px);
 }
 
@@ -115,7 +165,9 @@
   align-items: center;
   justify-content: center;
   gap: 6px;
-  padding: 0 10px;
+  padding: 0 11px;
+  flex-shrink: 0;
+  white-space: nowrap;
 }
 
 .app .marker-list-toolbar .toolbar-btn .map-icon,
@@ -125,13 +177,14 @@
 }
 
 .app .menu-check {
-  color: var(--accent);
+  color: var(--text-primary);
   vertical-align: -3px;
   margin-right: 5px;
 }
 
 .app .panel-close {
   width: 38px;
+  flex-shrink: 0;
   padding: 0;
   font-size: 0;
 }
@@ -219,8 +272,9 @@
 
 .app .dropdown-item:hover,
 .app .dropdown-item.active {
-  background: var(--accent-light);
-  color: var(--accent);
+  background: var(--surface-subtle);
+  color: var(--text-primary);
+  font-weight: var(--weight-semibold);
 }
 
 .app .result-group-title {
@@ -273,11 +327,17 @@
     padding: 12px;
   }
 
-  .app .settings-panel,
-  .app .marker-list-panel {
+  .app .settings-panel {
     width: 100%;
     height: calc(100dvh - 24px);
     max-height: none;
+  }
+
+  .app .marker-list-panel {
+    width: 100%;
+    min-height: min(340px, calc(100dvh - 24px));
+    height: auto;
+    max-height: calc(100dvh - 24px);
   }
 
   .app .settings-panel {
@@ -325,15 +385,27 @@
     padding: 10px 14px;
   }
 
+  .app .marker-list-header {
+    padding: 10px 14px;
+    gap: 8px;
+  }
+
+  .app .batch-toggle-btn {
+    padding: 0 10px;
+    font-size: 12.5px;
+  }
+
   .app .marker-list-toolbar {
     align-items: stretch;
     flex-direction: column;
+    padding: 10px 14px;
   }
 
   .app .marker-list-toolbar .toolbar-actions {
     width: 100%;
     display: flex;
-    overflow-x: auto;
+    flex-wrap: wrap;
+    overflow: visible;
   }
 
   .app .marker-list-toolbar .toolbar-btn {
@@ -352,5 +424,13 @@
   .app .dropdown-menu,
   .app .batch-actions-bar {
     animation: none !important;
+  }
+
+  .app .layout-seg-btn,
+  .app .marker-list-toolbar .marker-search,
+  .app .marker-list-toolbar .toolbar-btn,
+  .app .batch-toggle-btn,
+  .app .panel-close {
+    transition: none !important;
   }
 }

@@ -98,9 +98,95 @@
 .app .note-item:hover .note-thumb {
   transform: none;
 }
+.app .note-thumb-btn {
+  display: block;
+  flex-shrink: 0;
+  padding: 0;
+  border: 0;
+  border-radius: 10px;
+  background: transparent;
+  overflow: hidden;
+  cursor: zoom-in;
+}
 .app .note-thumb {
   width: 80px;
   height: 80px;
+  border-radius: 10px;
+  object-fit: cover;
+  transition: transform 200ms var(--motion-ease-out, ease);
+}
+.app .note-thumb-btn:hover .note-thumb {
+  transform: scale(1.05);
+}
+.app .note-zoom-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 2200;
+  padding: 20px;
+  display: grid;
+  place-items: center;
+  background: rgba(12, 13, 16, 0.84);
+  backdrop-filter: blur(12px);
+  animation: overlay-in 180ms ease both;
+}
+.app .note-zoom-overlay.closing {
+  pointer-events: none;
+  animation: overlay-out 180ms var(--motion-ease-in, ease) both;
+}
+.app .note-zoom-dialog {
+  width: min(640px, 92vw);
+  max-height: calc(100dvh - 40px);
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 12px;
+  border-radius: 16px;
+  background: #17181b;
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  box-shadow: 0 24px 64px rgba(0, 0, 0, 0.6);
+  color: #f4f4f5;
+  animation: panel-in 200ms var(--motion-ease-out, cubic-bezier(0.22, 1, 0.36, 1)) both;
+}
+.app .note-zoom-dialog.closing {
+  pointer-events: none;
+  animation: panel-out 180ms var(--motion-ease-in, ease) both;
+}
+.app .note-zoom-photo {
+  width: 100%;
+  height: min(460px, 66dvh);
+  border-radius: 10px;
+  background: #0f1012;
+}
+.app .note-zoom-photo img {
+  object-fit: contain !important;
+}
+.app .note-zoom-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 0 4px 2px;
+}
+.app .note-zoom-caption {
+  min-width: 0;
+  font-size: 13px;
+  line-height: 1.5;
+  color: #d4d4d8;
+  overflow-wrap: anywhere;
+}
+.app .note-zoom-close {
+  flex-shrink: 0;
+  min-height: 34px;
+  padding: 0 14px;
+  border: 0;
+  border-radius: 9px;
+  background: #f4f4f5;
+  color: #111214;
+  font-size: 12.5px;
+  font-weight: 600;
+}
+.app .note-zoom-close:hover {
+  background: #ffffff;
 }
 .app .note-content {
   gap: 8px;

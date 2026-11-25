@@ -2,6 +2,14 @@ import MapIcon from '../map/MapIcon.jsx';
 function MenuCheck({ active }) {
   return active ? <MapIcon name="check" className="menu-check" /> : null;
 }
+const TIME_LABELS = {
+  all: '全部时间',
+  week: '最近一周',
+  month: '最近一月',
+  year: '最近一年',
+  custom: '自定义时间',
+};
+
 export default function MarkerLibraryToolbar({
   markerListSearch,
   onSearch,
@@ -13,7 +21,6 @@ export default function MarkerLibraryToolbar({
   onTimeFilterMenuToggle,
   markerListSort,
   onSort,
-  showLayoutMenu,
   markerListLayout,
   onLayout,
   showTimeFilterMenu,
@@ -46,6 +53,8 @@ export default function MarkerLibraryToolbar({
       <div className="toolbar-actions">
         <div className="dropdown-wrapper">
           <button
+            type="button"
+            aria-label="排序方式"
             className={`toolbar-btn ${showSortMenu ? 'active' : ''}`}
             onClick={e => {
               e.stopPropagation();
@@ -54,7 +63,7 @@ export default function MarkerLibraryToolbar({
               onTimeFilterMenuToggle(false);
             }}
           >
-            <span>排序方式</span>
+            <span>{markerListSort === 'time' ? '按时间' : '按地名'}</span>
             <MapIcon name="chevron" />
           </button>
           {showSortMenu && (
@@ -86,46 +95,8 @@ export default function MarkerLibraryToolbar({
         </div>
         <div className="dropdown-wrapper">
           <button
-            className={`toolbar-btn ${showLayoutMenu ? 'active' : ''}`}
-            onClick={e => {
-              e.stopPropagation();
-              onLayoutMenuToggle(!showLayoutMenu);
-              onSortMenuToggle(false);
-              onTimeFilterMenuToggle(false);
-            }}
-          >
-            <span>布局方式</span>
-            <MapIcon name="chevron" />
-          </button>
-          {showLayoutMenu && (
-            <div className="dropdown-menu" onClick={e => e.stopPropagation()}>
-              <button
-                type="button"
-                className={`dropdown-item ${markerListLayout === 'list' ? 'active' : ''}`}
-                onClick={() => {
-                  onLayout('list');
-                  onLayoutMenuToggle(false);
-                }}
-              >
-                <MenuCheck active={markerListLayout === 'list'} />
-                列表布局
-              </button>
-              <button
-                type="button"
-                className={`dropdown-item ${markerListLayout === 'grid' ? 'active' : ''}`}
-                onClick={() => {
-                  onLayout('grid');
-                  onLayoutMenuToggle(false);
-                }}
-              >
-                <MenuCheck active={markerListLayout === 'grid'} />
-                网格布局
-              </button>
-            </div>
-          )}
-        </div>
-        <div className="dropdown-wrapper">
-          <button
+            type="button"
+            aria-label="时间范围"
             className={`toolbar-btn ${showTimeFilterMenu ? 'active' : ''}`}
             onClick={e => {
               e.stopPropagation();
@@ -134,7 +105,7 @@ export default function MarkerLibraryToolbar({
               onLayoutMenuToggle(false);
             }}
           >
-            <span>时间范围</span>
+            <span>{TIME_LABELS[markerListTimeFilter] || '全部时间'}</span>
             <MapIcon name="chevron" />
           </button>
           {showTimeFilterMenu && (
@@ -223,6 +194,38 @@ export default function MarkerLibraryToolbar({
               )}
             </div>
           )}
+        </div>
+        <div className="layout-seg-group" role="group" aria-label="布局方式">
+          <button
+            type="button"
+            className="layout-seg-btn"
+            aria-label="画廊布局"
+            aria-pressed={markerListLayout === 'grid'}
+            onClick={() => {
+              onLayout('grid');
+              onSortMenuToggle(false);
+              onLayoutMenuToggle(false);
+              onTimeFilterMenuToggle(false);
+            }}
+          >
+            <MapIcon name="grid" />
+            <span>画廊</span>
+          </button>
+          <button
+            type="button"
+            className="layout-seg-btn"
+            aria-label="列表布局"
+            aria-pressed={markerListLayout === 'list'}
+            onClick={() => {
+              onLayout('list');
+              onSortMenuToggle(false);
+              onLayoutMenuToggle(false);
+              onTimeFilterMenuToggle(false);
+            }}
+          >
+            <MapIcon name="list" />
+            <span>列表</span>
+          </button>
         </div>
       </div>
     </div>

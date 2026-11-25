@@ -160,10 +160,21 @@
   color: var(--text-muted);
 }
 
+.app .marker-detail-card .meta-note-preview {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 12px;
+  color: var(--text-secondary);
+}
+
 .app .marker-detail-card .photo-count {
   display: inline-flex;
   align-items: center;
   gap: 4px;
+  flex-shrink: 0;
+  margin-left: auto;
   padding: 2px 8px;
   border-radius: 9999px;
   background: var(--surface-subtle);

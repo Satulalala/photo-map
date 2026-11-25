@@ -131,7 +131,10 @@ export default function MarkerListPanel({
           <div className="marker-list-header">
             <h3>
               <MapIcon name="album" />
-              所有标记
+              <span>所有标记</span>
+              {!markersLoading && (
+                <span className="marker-header-count">· {filteredMarkers.length} 处足迹</span>
+              )}
             </h3>
             <div className="header-actions">
               <button className="batch-toggle-btn" onClick={onBatchToggle} aria-pressed={batchMode}>
@@ -203,7 +206,10 @@ export default function MarkerListPanel({
               </div>
             ) : markerListLayout === 'grid' ? (
               // Grid layout
-              <div key="grid" className="marker-grid-container layout-fade-in">
+              <div
+                key="grid"
+                className={`marker-grid-container layout-fade-in ${filteredMarkers.length === 1 ? 'single-item' : ''}`}
+              >
                 {filteredMarkers.map(m => (
                   <MarkerGridItem
                     key={m.id}

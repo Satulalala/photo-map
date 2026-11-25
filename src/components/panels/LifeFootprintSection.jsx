@@ -56,7 +56,7 @@ function getPhotoCandidates(markers) {
       const key = getPhotoKey(photo);
       if (!key || seen.has(key)) continue;
       seen.add(key);
-      candidates.push({ key, photo, placeName: getPlaceName(marker) });
+      candidates.push({ key, photo, placeName: getPlaceName(marker), marker });
       if (candidates.length === 12) return candidates;
     }
   }
@@ -118,7 +118,7 @@ function usePhotoPreviews(markers) {
   return resolution;
 }
 
-export default function LifeFootprintSection({ markers }) {
+export default function LifeFootprintSection({ markers, onSelectMarker, onPreviewPhoto }) {
   const recentMarker = useMemo(() => {
     return (
       markers
@@ -128,7 +128,7 @@ export default function LifeFootprintSection({ markers }) {
   }, [markers]);
   const photoResolution = usePhotoPreviews(markers);
   const resolvedPhotos = photoResolution.entries;
-  const previews = resolvedPhotos.filter(photo => photo.url).slice(0, 3);
+  const availablePhotos = resolvedPhotos.filter(photo => photo.url);
   const timestamp = getCreatedAt(recentMarker);
   const dateLabel = timestamp
     ? new Date(timestamp).toLocaleDateString('zh-CN', { month: 'short', day: 'numeric' })
@@ -141,7 +141,58 @@ export default function LifeFootprintSection({ markers }) {
     resolvedPhotos.find(photo => photo.key === recentPhotoKey)?.url ||
     '';
   const recentHasPhoto = hasStoredPhotos(recentMarker);
+  const recentPhotoCount = recentMarker?.photoCount ?? recentMarker?.photos?.length ?? (recentPhotoObject ? 1 : 0);
+  const recentNote =
+    recentMarker?.photos?.find(p => typeof p === 'object' && p?.note?.trim())?.note?.trim() ||
+    recentMarker?.note?.trim() ||
+    '';
   const hasStoredPhoto = markers.some(hasStoredPhotos);
+  const stripPreviews = recentPhoto
+    ? availablePhotos.filter(item => item.key !== recentPhotoKey).slice(0, 3)
+    : availablePhotos.slice(0, 3);
+  const showStripSection =
+    stripPreviews.length > 0 || (!recentPhoto && (hasStoredPhoto || markers.length === 0));
+  const stripColsClass = stripPreviews.length <= 2 ? 'cols-2' : 'cols-3';
+
+  const recentContent = recentPhoto ? (
+    <>
+      <div className="life-recent-hero-cover">
+        <img className="life-recent-photo" src={recentPhoto} alt={`${placeName}的地点照片`} />
+        <span className="life-recent-hero-tag">
+          {dateLabel}
+          {recentPhotoCount > 0 ? ` · ${recentPhotoCount} 张` : ''}
+        </span>
+      </div>
+      <div className="life-recent-hero-foot">
+        <div className="life-recent-copy">
+          <strong>{placeName}</strong>
+          <time dateTime={new Date(timestamp).toISOString()}>
+            {recentNote || `地点创建于 ${dateLabel}`}
+          </time>
+        </div>
+        {onSelectMarker && <span className="life-recent-cta">地图定位 →</span>}
+      </div>
+    </>
+  ) : (
+    <>
+      <div className="life-recent-copy">
+        <strong>{placeName}</strong>
+        <time dateTime={new Date(timestamp).toISOString()}>
+          {onSelectMarker ? `地点创建于 ${dateLabel} · 点击定位` : `地点创建于 ${dateLabel}`}
+        </time>
+      </div>
+      <div className="life-recent-photo-empty" role="img" aria-label="地点照片状态">
+        <MapIcon name="photo" />
+        <span>
+          {recentHasPhoto
+            ? photoResolution.ready
+              ? '照片暂不可预览'
+              : '正在读取封面'
+            : '暂无照片'}
+        </span>
+      </div>
+    </>
+  );
 
   return (
     <>
@@ -149,30 +200,23 @@ export default function LifeFootprintSection({ markers }) {
         <div className="life-recent-heading">
           <h3 id="life-recent-title">
             <MapIcon name="pin" />
-            最近地点
+            最近足迹
           </h3>
         </div>
         {recentMarker ? (
-          <article className="life-recent-card">
-            <div className="life-recent-copy">
-              <strong>{placeName}</strong>
-              <time dateTime={new Date(timestamp).toISOString()}>{`地点创建于 ${dateLabel}`}</time>
-            </div>
-            {recentPhoto ? (
-              <img className="life-recent-photo" src={recentPhoto} alt={`${placeName}的地点照片`} />
-            ) : (
-              <div className="life-recent-photo-empty" role="img" aria-label="地点照片状态">
-                <MapIcon name="photo" />
-                <span>
-                  {recentHasPhoto
-                    ? photoResolution.ready
-                      ? '照片暂不可预览'
-                      : '正在读取封面'
-                    : '暂无照片'}
-                </span>
-              </div>
-            )}
-          </article>
+          onSelectMarker ? (
+            <button
+              type="button"
+              className={`life-recent-card is-interactive ${recentPhoto ? 'is-hero' : ''}`}
+              onClick={() => onSelectMarker(recentMarker)}
+            >
+              {recentContent}
+            </button>
+          ) : (
+            <article className={`life-recent-card ${recentPhoto ? 'is-hero' : ''}`}>
+              {recentContent}
+            </article>
+          )
         ) : (
           <div className="life-recent-empty" role="status">
             <MapIcon name="map" />
@@ -188,29 +232,45 @@ export default function LifeFootprintSection({ markers }) {
         )}
       </section>
 
-      <section className="life-photo-strip" aria-labelledby="life-photo-strip-title">
-        <h3 id="life-photo-strip-title">照片片段</h3>
-        {previews.length ? (
-          <div className="life-photo-strip-list">
-            {previews.map(({ key, url, placeName: photoPlace }) => (
-              <figure key={key} className="life-photo-strip-item">
-                <img src={url} alt={`${photoPlace}的地点照片`} loading="lazy" decoding="async" />
-                <figcaption title={photoPlace}>{photoPlace}</figcaption>
-              </figure>
-            ))}
-          </div>
-        ) : (
-          <p className="life-photo-strip-empty">
-            {hasStoredPhoto
-              ? photoResolution.ready
-                ? '已有照片暂不可预览，请检查照片文件是否可访问。'
-                : '正在读取地点照片…'
-              : markers.length
-                ? '为地点添加照片后，会在这里显示封面。'
-                : '添加地点和照片后，这里会留下你的照片片段。'}
-          </p>
-        )}
-      </section>
+      {showStripSection && (
+        <section className="life-photo-strip" aria-labelledby="life-photo-strip-title">
+          <h3 id="life-photo-strip-title">{recentPhoto ? '更多片段' : '照片片段'}</h3>
+          {stripPreviews.length ? (
+            <div className={`life-photo-strip-list ${stripColsClass}`}>
+              {stripPreviews.map(({ key, url, placeName: photoPlace, photo, marker }) =>
+                onPreviewPhoto && marker ? (
+                  <button
+                    type="button"
+                    key={key}
+                    className="life-photo-strip-item is-interactive"
+                    onClick={() => onPreviewPhoto(marker, photo)}
+                  >
+                    <img src={url} alt={`${photoPlace}的地点照片`} loading="lazy" decoding="async" />
+                    <span className="life-strip-caption" title={photoPlace}>
+                      {photoPlace}
+                    </span>
+                  </button>
+                ) : (
+                  <figure key={key} className="life-photo-strip-item">
+                    <img src={url} alt={`${photoPlace}的地点照片`} loading="lazy" decoding="async" />
+                    <figcaption title={photoPlace}>{photoPlace}</figcaption>
+                  </figure>
+                )
+              )}
+            </div>
+          ) : (
+            <p className="life-photo-strip-empty">
+              {hasStoredPhoto
+                ? photoResolution.ready
+                  ? '已有照片暂不可预览，请检查照片文件是否可访问。'
+                  : '正在读取地点照片…'
+                : markers.length
+                  ? '为地点添加照片后，会在这里显示封面。'
+                  : '添加地点和照片后，这里会留下你的照片片段。'}
+            </p>
+          )}
+        </section>
+      )}
     </>
   );
 }

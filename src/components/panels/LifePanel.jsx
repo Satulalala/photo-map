@@ -44,7 +44,14 @@ function viewClass(direction) {
   return 'life-view life-view-enter';
 }
 
-export default function LifePanel({ open = true, markers, totalPhotos, onClose }) {
+export default function LifePanel({
+  open = true,
+  markers,
+  totalPhotos,
+  onClose,
+  onSelectMarker,
+  onPreviewPhoto,
+}) {
   useDialogFocus(open, '.life-panel', onClose);
   const [view, setView] = useState('global');
   const [direction, setDirection] = useState('enter');
@@ -151,6 +158,25 @@ export default function LifePanel({ open = true, markers, totalPhotos, onClose }
         </button>
       </div>
       <div className="life-panel-content">
+        <div className="life-metrics-strip" aria-label="足迹统计">
+          <div className="life-metric-cell">
+            <strong>{stats.totalMarkers}</strong>
+            <span>标记地点</span>
+          </div>
+          <div className="life-metric-cell">
+            <strong>{stats.totalPhotos}</strong>
+            <span>照片存档</span>
+          </div>
+          <div className="life-metric-cell">
+            <strong>{stats.visitedCount}</strong>
+            <span>国内省份</span>
+          </div>
+          <div className="life-metric-cell">
+            <strong>{stats.visitedCountryCount}</strong>
+            <span>海外地区</span>
+          </div>
+        </div>
+
         <div className="life-global-cards">
           <button type="button" className="life-globe-card" onClick={() => goView('china')}>
             <div className="lgc-icon" aria-hidden="true">
@@ -159,8 +185,15 @@ export default function LifePanel({ open = true, markers, totalPhotos, onClose }
             <div className="lgc-info">
               <strong>中国</strong>
               <span>
-                {stats.visitedCount} 个省份 · {stats.domesticMarkerCount} 个标记
+                {stats.visitedCount} 省 · {stats.homelandCoverage}%
               </span>
+              <div className="lgc-progress" aria-hidden="true">
+                <i
+                  style={{
+                    width: `${stats.visitedCount ? Math.max(8, Number(stats.homelandCoverage)) : 0}%`,
+                  }}
+                />
+              </div>
             </div>
             <MapIcon name="right" className="lgc-arrow" />
           </button>
@@ -170,50 +203,24 @@ export default function LifePanel({ open = true, markers, totalPhotos, onClose }
             </div>
             <div className="lgc-info">
               <strong>海外</strong>
-              <span>{stats.visitedCountryCount} 个国家/地区已到访</span>
+              <span>{stats.visitedCountryCount} 个国家/地区</span>
+              <div className="lgc-progress" aria-hidden="true">
+                <i
+                  style={{
+                    width: `${stats.visitedCountryCount ? Math.max(8, Math.min(100, stats.visitedCountryCount * 5)) : 0}%`,
+                  }}
+                />
+              </div>
             </div>
             <MapIcon name="right" className="lgc-arrow" />
           </button>
         </div>
 
-        <LifeFootprintSection markers={markers} />
-
-        <div className="social-section">
-          <h3>
-            <MapIcon name="map" />
-            足迹概览
-          </h3>
-          <div className="social-overview-cards">
-            <div className="soc-card">
-              <div className="soc-card-icon">
-                <MapIcon name="pin" />
-              </div>
-              <div className="soc-card-value">{stats.totalMarkers}</div>
-              <div className="soc-card-label">标记点</div>
-            </div>
-            <div className="soc-card">
-              <div className="soc-card-icon">
-                <MapIcon name="photo" />
-              </div>
-              <div className="soc-card-value">{stats.totalPhotos}</div>
-              <div className="soc-card-label">照片</div>
-            </div>
-            <div className="soc-card">
-              <div className="soc-card-icon">
-                <MapIcon name="map" />
-              </div>
-              <div className="soc-card-value">{stats.visitedCount}</div>
-              <div className="soc-card-label">到访省份</div>
-            </div>
-            <div className="soc-card">
-              <div className="soc-card-icon">
-                <MapIcon name="globe" />
-              </div>
-              <div className="soc-card-value">{stats.visitedCountryCount}</div>
-              <div className="soc-card-label">到访国家/地区</div>
-            </div>
-          </div>
-        </div>
+        <LifeFootprintSection
+          markers={markers}
+          onSelectMarker={onSelectMarker}
+          onPreviewPhoto={onPreviewPhoto}
+        />
       </div>
     </div>
   );

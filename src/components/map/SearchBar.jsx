@@ -21,6 +21,34 @@ function getResultIcon(result) {
   return 'pin';
 }
 
+function findMatchedMarker(item, markers) {
+  if (!markers?.length || !item) return null;
+  const itemName = (item.name || '').trim().toLowerCase();
+  return (
+    markers.find(marker => {
+      const markerName = (marker.name || '').trim().toLowerCase();
+      if (
+        itemName.length >= 2 &&
+        markerName &&
+        (markerName === itemName ||
+          markerName.includes(itemName) ||
+          itemName.includes(markerName))
+      ) {
+        return true;
+      }
+      if (
+        Number.isFinite(item.lat) &&
+        Number.isFinite(item.lng) &&
+        Number.isFinite(marker.lat) &&
+        Number.isFinite(marker.lng)
+      ) {
+        return Math.abs(marker.lat - item.lat) < 0.0025 && Math.abs(marker.lng - item.lng) < 0.0025;
+      }
+      return false;
+    }) || null
+  );
+}
+
 export default function SearchBar({
   searchQuery,
   searchResults,
@@ -29,6 +57,7 @@ export default function SearchBar({
   isSearching,
   searchHistory,
   searchInputRef,
+  markers = [],
   onInputChange,
   onFocus,
   onKeyDown,
@@ -94,28 +123,41 @@ export default function SearchBar({
             </div>
           ) : searchQuery && searchResults.length > 0 ? (
             <div id={`${id}-results`} role="listbox" aria-label="搜索结果">
-              {searchResults.map((result, i) => (
-                <div
-                  id={`${id}-option-${i}`}
-                  role="option"
-                  tabIndex={-1}
-                  aria-selected={selectedResultIndex === i}
-                  onMouseDown={event => event.preventDefault()}
-                  key={i}
-                  className={`search-result-item ${selectedResultIndex === i ? 'selected' : ''}`}
-                  onClick={() => onSelectResult(result)}
-                  onMouseEnter={() => onSelectedResultIndexChange(i)}
-                >
-                  <span className="result-icon" aria-hidden="true">
-                    <MapIcon name={getResultIcon(result)} />
-                  </span>
-                  <div className="result-info">
-                    <div className="result-name">{result.name}</div>
-                    <div className="result-address">{result.address}</div>
+              {searchResults.map((result, i) => {
+                const matched = findMatchedMarker(result, markers);
+                const photoCount = matched
+                  ? matched.photoCount ?? matched.photos?.length ?? 0
+                  : null;
+                return (
+                  <div
+                    id={`${id}-option-${i}`}
+                    role="option"
+                    tabIndex={-1}
+                    aria-selected={selectedResultIndex === i}
+                    onMouseDown={event => event.preventDefault()}
+                    key={i}
+                    className={`search-result-item ${selectedResultIndex === i ? 'selected' : ''}`}
+                    onClick={() => onSelectResult(result)}
+                    onMouseEnter={() => onSelectedResultIndexChange(i)}
+                  >
+                    <span className="result-icon" aria-hidden="true">
+                      <MapIcon name={getResultIcon(result)} />
+                    </span>
+                    <div className="result-info">
+                      <div className="result-name">{result.name}</div>
+                      <div className="result-address">{result.address}</div>
+                    </div>
+                    <div className="result-meta">
+                      {matched && (
+                        <span className="result-footprint-badge">
+                          {photoCount > 0 ? `已有 ${photoCount} 张` : '已有标记'}
+                        </span>
+                      )}
+                      {result.distance && <span className="result-distance">{result.distance}</span>}
+                    </div>
                   </div>
-                  <span className="result-distance">{result.distance}</span>
-                </div>
-              ))}
+                );
+              })}
             </div>
           ) : searchQuery ? (
             <div className="search-empty" id={`${id}-results`} role="status">
@@ -133,27 +175,40 @@ export default function SearchBar({
                 </button>
               </div>
               <div id={`${id}-results`} role="listbox" aria-label="搜索历史">
-                {searchHistory.map((item, i) => (
-                  <div
-                    id={`${id}-option-${i}`}
-                    role="option"
-                    tabIndex={-1}
-                    aria-selected={selectedResultIndex === i}
-                    onMouseDown={event => event.preventDefault()}
-                    key={i}
-                    className={`search-result-item history-item ${selectedResultIndex === i ? 'selected' : ''}`}
-                    onClick={() => onSelectResult(item)}
-                    onMouseEnter={() => onSelectedResultIndexChange(i)}
-                  >
-                    <span className="result-icon" aria-hidden="true">
-                      <MapIcon name="history" />
-                    </span>
-                    <div className="result-info">
-                      <div className="result-name">{item.name}</div>
-                      <div className="result-address">{item.address}</div>
+                {searchHistory.map((item, i) => {
+                  const matched = findMatchedMarker(item, markers);
+                  const photoCount = matched
+                    ? matched.photoCount ?? matched.photos?.length ?? 0
+                    : null;
+                  return (
+                    <div
+                      id={`${id}-option-${i}`}
+                      role="option"
+                      tabIndex={-1}
+                      aria-selected={selectedResultIndex === i}
+                      onMouseDown={event => event.preventDefault()}
+                      key={i}
+                      className={`search-result-item history-item ${selectedResultIndex === i ? 'selected' : ''}`}
+                      onClick={() => onSelectResult(item)}
+                      onMouseEnter={() => onSelectedResultIndexChange(i)}
+                    >
+                      <span className="result-icon" aria-hidden="true">
+                        <MapIcon name="history" />
+                      </span>
+                      <div className="result-info">
+                        <div className="result-name">{item.name}</div>
+                        <div className="result-address">{item.address}</div>
+                      </div>
+                      {matched && (
+                        <div className="result-meta">
+                          <span className="result-footprint-badge">
+                            {photoCount > 0 ? `已有 ${photoCount} 张` : '已有标记'}
+                          </span>
+                        </div>
+                      )}
                     </div>
-                  </div>
-                ))}
+                  );
+                })}
               </div>
             </>
           ) : (

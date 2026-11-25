@@ -14,6 +14,13 @@ const MarkerGridItem = memo(function MarkerGridItem(props) {
     firstPhoto &&
     selectedPhotos.some(item => item.markerId === marker.id && item.photoId === firstPhoto.id);
   const name = marker.name || `${marker.lat.toFixed(3)}°, ${marker.lng.toFixed(3)}°`;
+  const note = marker.photos?.find(photo => typeof photo === 'object' && photo?.note?.trim())?.note?.trim()
+    || firstPhoto?.note?.trim()
+    || marker.note?.trim()
+    || '';
+  const openAction = () =>
+    batchMode && firstPhoto ? onPhotoSelect(marker.id, firstPhoto.id, 0) : onClick();
+
   return (
     <div className="marker-grid-item-wrapper">
       <div className={`marker-grid-item ${batchMode && selected ? 'selected' : ''}`}>
@@ -22,9 +29,7 @@ const MarkerGridItem = memo(function MarkerGridItem(props) {
           className="marker-open grid-open"
           aria-label={`${batchMode ? '选择' : '打开'} ${name}`}
           aria-pressed={batchMode ? Boolean(selected) : undefined}
-          onClick={() =>
-            batchMode && firstPhoto ? onPhotoSelect(marker.id, firstPhoto.id, 0) : onClick()
-          }
+          onClick={openAction}
         >
           <span className="marker-grid-thumb-box">
             {firstPhoto ? (
@@ -34,27 +39,38 @@ const MarkerGridItem = memo(function MarkerGridItem(props) {
                 <MapIcon name="pin" />
               </span>
             )}
+            {count > 0 && <span className="gallery-count-tag">{count} 张</span>}
           </span>
           <span className="marker-grid-info">
             <span className="marker-grid-name">{name}</span>
-            <span className="marker-grid-meta">
-              <MapIcon name="photo" />
-              {count} 张
-            </span>
+            <span className="marker-grid-meta">{note || `${count} 张照片`}</span>
           </span>
           {batchMode && selected && <MapIcon name="check" />}
         </button>
-        {count > 0 && (
+        <div className="marker-grid-foot">
           <button
             type="button"
-            className="grid-expand-btn"
-            aria-expanded={expanded}
-            aria-label={`${expanded ? '收起' : '展开'} ${name} 的照片`}
-            onClick={() => setExpanded(value => !value)}
+            className="gallery-foot-btn"
+            aria-label={`${batchMode ? (selected ? '取消选择' : '选择') : '定位地图'} ${name}`}
+            onClick={openAction}
           >
-            <MapIcon name="chevron" />
+            {batchMode ? (selected ? '已选' : '选择') : '定位地图'}
           </button>
-        )}
+          {count > 0 ? (
+            <button
+              type="button"
+              className="grid-expand-btn"
+              aria-expanded={expanded}
+              aria-label={`${expanded ? '收起' : '展开'} ${name} 的照片`}
+              onClick={() => setExpanded(value => !value)}
+            >
+              <span>{expanded ? '收起' : `查看 ${count} 张`}</span>
+              <MapIcon name="chevron" />
+            </button>
+          ) : (
+            <span className="gallery-foot-empty">0 张</span>
+          )}
+        </div>
       </div>
       {photosPresence.mounted && (
         <div

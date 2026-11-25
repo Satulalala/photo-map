@@ -26,7 +26,7 @@ export function useMarkerListUI({
 
   // --- Marker list UI state ---
   const [markerListSort, setMarkerListSort] = useState('time');
-  const [markerListLayout, setMarkerListLayout] = useState('list');
+  const [markerListLayout, setMarkerListLayout] = useState('grid');
   const [showSortMenu, setShowSortMenu] = useState(false);
   const [showLayoutMenu, setShowLayoutMenu] = useState(false);
   const [markerListSearch, setMarkerListSearch] = useState('');

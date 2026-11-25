@@ -6,15 +6,30 @@ import LazyPhoto from './photos/LazyPhoto.jsx';
 import { useDialogFocus } from '../hooks/useDialogFocus.js';
 import { usePresenceTransition } from '../hooks/usePresenceTransition.js';
 
-function getPopoverPlacement(x, y, width, height) {
+function getPopoverPlacement(x, y, width, height, anchorGap = 0) {
   if (typeof window === 'undefined') {
     return { left: x, top: y, origin: 'tl' };
   }
-  const left = Math.max(12, Math.min(x, window.innerWidth - width - 12));
-  const top = Math.max(12, Math.min(y, window.innerHeight - height - 12));
-  const horizontal = x > window.innerWidth - width - 24 ? 'r' : 'l';
-  const vertical = y > window.innerHeight - height - 24 ? 'b' : 't';
+  const flipX = x + anchorGap + width > window.innerWidth - 12;
+  const flipY = y > window.innerHeight - height - 24;
+  const rawLeft = anchorGap ? (flipX ? x - width - anchorGap : x + anchorGap) : x;
+  const rawTop = anchorGap && flipY ? y - height - anchorGap : y;
+  const left = Math.max(12, Math.min(rawLeft, window.innerWidth - width - 12));
+  const top = Math.max(12, Math.min(rawTop, window.innerHeight - height - 12));
+  const horizontal = flipX ? 'r' : 'l';
+  const vertical = flipY ? 'b' : 't';
   return { left, top, origin: `${vertical}${horizontal}` };
+}
+
+function isCoordLabel(text) {
+  return /^\s*-?\d+\.\d+°\s*,\s*-?\d+\.\d+°\s*$/.test(text || '');
+}
+
+function getMarkerNotePreview(marker, photos) {
+  const fromPhotos = (photos || [])
+    .map(p => (typeof p === 'object' ? p?.note?.trim() : ''))
+    .find(Boolean);
+  return fromPhotos || marker?.note?.trim() || '';
 }
 
 function MarkerCollage({ photos, placeTitle, onOpenPhoto }) {
@@ -92,7 +107,7 @@ export default function MarkerContextMenu({
   const activeContext = contextPresence.snapshot;
   const activeMarkerMenu = markerPresence.snapshot;
   const contextPlacement = activeContext
-    ? getPopoverPlacement(activeContext.x, activeContext.y, 284, 216)
+    ? getPopoverPlacement(activeContext.x, activeContext.y, 284, 216, 14)
     : null;
   const markerPhotos = activeMarkerMenu?.marker?.photos || [];
   const hasPhotos = markerPhotos.length > 0;
@@ -102,6 +117,10 @@ export default function MarkerContextMenu({
   const markerTitle = activeMarkerMenu
     ? activeMarkerMenu.marker.name ||
       `${activeMarkerMenu.marker.lat.toFixed(3)}°, ${activeMarkerMenu.marker.lng.toFixed(3)}°`
+    : '';
+  const hideDuplicateCoords = isCoordLabel(markerTitle);
+  const notePreview = activeMarkerMenu
+    ? getMarkerNotePreview(activeMarkerMenu.marker, markerPhotos)
     : '';
 
   const openViewerAt = index => {
@@ -331,10 +350,19 @@ export default function MarkerContextMenu({
               <span>{markerTitle}</span>
             </div>
             <div className="meta-row">
-              <span className="coords">
-                {activeMarkerMenu.marker.lat.toFixed(3)}°,{' '}
-                {activeMarkerMenu.marker.lng.toFixed(3)}°
-              </span>
+              {hideDuplicateCoords ? (
+                notePreview ? (
+                  <span className="meta-note-preview" title={notePreview}>
+                    {notePreview}
+                  </span>
+                ) : null
+              ) : (
+                <span className="coords">
+                  {activeMarkerMenu.marker.lat.toFixed(3)}°,{' '}
+                  {activeMarkerMenu.marker.lng.toFixed(3)}°
+                  {notePreview ? ' · 有备注' : ''}
+                </span>
+              )}
               <span className="photo-count">
                 <MapIcon name="photo" /> {markerPhotos.length} 张
               </span>

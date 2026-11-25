@@ -142,10 +142,14 @@ function App() {
     catch { return false; }
   });
 
+  const toastTimerRef = useRef(null);
   const showToast = useCallback((type, message, duration = 2500) => {
-    setToast({ type, message });
-    setTimeout(() => setToast(null), duration);
+    clearTimeout(toastTimerRef.current);
+    setToast({ id: Date.now(), type, message });
+    toastTimerRef.current = setTimeout(() => setToast(null), duration);
   }, []);
+
+  useEffect(() => () => clearTimeout(toastTimerRef.current), []);
 
   const {
     showMarkerList, markerListReady, markerListClosing, markerListRect,
@@ -339,6 +343,48 @@ function App() {
     setShowSettings(false);
     handleLogout();
   }, [handleLogout, setShowSettings]);
+
+  const handleLifeSelectMarker = useCallback(
+    marker => {
+      if (!marker) return;
+      setShowLife(false);
+      void handleMarkerListMarkerClick(marker);
+    },
+    [handleMarkerListMarkerClick]
+  );
+
+  const handleLifePreviewPhoto = useCallback(
+    async (marker, targetPhoto) => {
+      if (!marker) return;
+      setShowLife(false);
+      try {
+        let photos = Array.isArray(marker.photos) && marker.photos.length ? marker.photos : [];
+        if (window.electronAPI?.getMarkerDetail) {
+          const detail = await window.electronAPI.getMarkerDetail(marker.id);
+          if (detail?.photos?.length) photos = detail.photos;
+        } else if (!photos.length) {
+          const fetched = await api.photos.getByMarkerId(marker.id);
+          photos = [...fetched].sort((a, b) => (a.order ?? 9999) - (b.order ?? 9999));
+        }
+        if (!photos.length && targetPhoto) photos = [targetPhoto];
+        if (!photos.length) return;
+        const targetIndex = targetPhoto?.id
+          ? Math.max(
+              0,
+              photos.findIndex(item => item.id === targetPhoto.id)
+            )
+          : 0;
+        setPhotoViewer({
+          photos,
+          index: targetIndex,
+          markerId: marker.id,
+        });
+      } catch {
+        showToast('error', '照片加载失败，请重试');
+      }
+    },
+    [setPhotoViewer, showToast]
+  );
 
   // 包装 deleteMarkerById 添加 toast 提示
   const deleteMarkerById = useCallback(async id => {
@@ -692,7 +738,7 @@ function App() {
           isWeb={isWebVersion}
           searchProps={{
             searchQuery, searchResults, showSearchResults, selectedResultIndex,
-            isSearching, searchHistory, searchInputRef,
+            isSearching, searchHistory, searchInputRef, markers,
             onInputChange: handleSearchInput, onFocus: handleSearchFocus,
             onKeyDown: handleSearchKeyDown, onSelectResult: selectSearchResult,
             onClear: handleClearSearch, onClearHistory: clearSearchHistory,
@@ -874,6 +920,8 @@ function App() {
                 totalPhotos={totalPhotos}
                 user={user}
                 onClose={() => setShowLife(false)}
+                onSelectMarker={handleLifeSelectMarker}
+                onPreviewPhoto={handleLifePreviewPhoto}
               />
             </div>
           </div>
@@ -973,23 +1021,21 @@ function App() {
       />
 
       {/* 照片查看器 */}
-      {photoViewer && (
-        <PhotoViewer
-          photoViewer={photoViewer}
-          setPhotoViewer={setPhotoViewer}
-          currentPhotoUrl={currentPhotoUrl}
-          photoLoadError={photoLoadError}
-          getPhotoNote={getPhotoNote}
-          markers={markers}
-          setMarkerMenu={setMarkerMenu}
-          refreshMarkers={refreshMarkers}
-          setPhotoEditor={setPhotoEditor}
-          batchMode={batchMode}
-          selectedPhotos={selectedPhotos}
-          onPhotoSelect={handlePhotoSelect}
-          onSetCover={handleSetCover}
-        />
-      )}
+      <PhotoViewer
+        photoViewer={photoViewer}
+        setPhotoViewer={setPhotoViewer}
+        currentPhotoUrl={currentPhotoUrl}
+        photoLoadError={photoLoadError}
+        getPhotoNote={getPhotoNote}
+        markers={markers}
+        setMarkerMenu={setMarkerMenu}
+        refreshMarkers={refreshMarkers}
+        setPhotoEditor={setPhotoEditor}
+        batchMode={batchMode}
+        selectedPhotos={selectedPhotos}
+        onPhotoSelect={handlePhotoSelect}
+        onSetCover={handleSetCover}
+      />
 
 
 

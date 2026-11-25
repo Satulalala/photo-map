@@ -93,6 +93,7 @@ const MarkerListItem = memo(function MarkerListItem(props) {
             title={expanded ? '收起照片' : '展开照片'}
             onClick={() => setExpanded(value => !value)}
           >
+            <span>{expanded ? '收起' : `管理 ${count} 张`}</span>
             <MapIcon name="chevron" />
           </button>
         )}

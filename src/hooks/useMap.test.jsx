@@ -155,13 +155,33 @@ it('adopts a loaded map, enables controls and refreshes a marker preview after a
   await waitFor(() => expect(args.getPhotoUrl).toHaveBeenCalledWith({ id: 'other.jpg' }));
   await waitFor(() => expect(markerElement.querySelector('img')).toHaveAttribute('src', thumbnail));
 
-  // The map listener reads the current detail state, not its initial closure.
+  // The map listener reads the current detail state, not its initial closure, and marks pin selected.
   args.markerMenu = { marker: args.markers[0] };
   rerender();
+  expect(markerElement.classList.contains('is-selected')).toBe(true);
   const mapClick = map.on.mock.calls.find(([event]) => event === 'click')[1];
   act(() => mapClick({}));
   expect(args.setMarkerMenu).toHaveBeenCalledWith(null);
   expect(args.setContextMenu).toHaveBeenCalledWith(null);
   expect(args.setPreviewPin).toHaveBeenCalledWith(null);
   expect(args.setPlaceName).not.toHaveBeenCalled();
+
+  // Multi-photo markers render stacked card layers and previewPin renders a temp anchor.
+  args.markerMenu = null;
+  args.markers = [
+    {
+      ...args.markers[0],
+      photoCount: 3,
+      firstPhoto: { id: 'other.jpg' },
+    },
+  ];
+  rerender();
+  expect(markerElement.classList.contains('is-selected')).toBe(false);
+  expect(markerElement.querySelector('.marker-photo-stack')).not.toBeNull();
+  expect(markerElement.querySelectorAll('.marker-stack-card').length).toBe(2);
+
+  args.previewPin = { lat: 31.85, lng: 117.25 };
+  rerender();
+  expect(markerElement.classList.contains('temp-anchor-pin')).toBe(true);
+  expect(markerElement.querySelector('.temp-anchor-core')).not.toBeNull();
 });

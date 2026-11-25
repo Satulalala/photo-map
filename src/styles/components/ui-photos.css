@@ -1,10 +1,14 @@
-/* Photo tools remain dark so the photograph is the focus. */
+/* Photo tools remain darkroom-neutral charcoal so the photograph is the focus. */
 .app .photo-viewer,
 .app .photo-editor-overlay {
-  background: rgba(9, 14, 24, 0.96);
-  color: #f8fafc;
+  background: rgba(15, 16, 18, 0.96);
+  color: #f4f4f5;
   backdrop-filter: blur(16px);
   animation: overlay-in 200ms ease both;
+}
+.app .photo-viewer.closing {
+  pointer-events: none;
+  animation: overlay-out 180ms var(--motion-ease-in, ease) both;
 }
 .app .pv-toolbar {
   left: auto;
@@ -14,11 +18,12 @@
   top: max(16px, env(safe-area-inset-top));
   right: 16px;
   padding: 6px;
-  border: 1px solid rgba(71, 85, 105, 0.65);
+  border: 1px solid rgba(255, 255, 255, 0.12);
   border-radius: 14px;
-  background: rgba(23, 32, 51, 0.84);
+  background: rgba(24, 25, 28, 0.82);
   backdrop-filter: blur(16px);
-  box-shadow: 0 10px 34px rgba(0, 0, 0, 0.38), inset 0 1px 0 rgba(255, 255, 255, 0.08);
+  box-shadow: 0 10px 34px rgba(0, 0, 0, 0.42), inset 0 1px 0 rgba(255, 255, 255, 0.08);
+  transition: opacity 280ms ease;
 }
 .app .pv-btn,
 .app .photo-nav,
@@ -28,18 +33,19 @@
   padding: 0;
   display: inline-grid;
   place-items: center;
-  color: #e2e8f0;
+  color: #e4e4e7;
   border: 1px solid transparent;
   background: transparent;
   border-radius: 10px;
   transition:
     background 150ms ease,
+    opacity 280ms ease,
     transform 150ms ease;
 }
 .app .pv-btn:hover,
 .app .photo-nav:hover,
 .app .pe-tool:hover {
-  background: #334155;
+  background: rgba(255, 255, 255, 0.12);
   transform: none;
 }
 .app .pv-btn:active,
@@ -61,13 +67,21 @@
   height: 20px;
 }
 .app .photo-nav {
-  background: rgba(23, 32, 51, 0.78);
-  border-color: rgba(71, 85, 105, 0.65);
+  background: rgba(24, 25, 28, 0.78);
+  border-color: rgba(255, 255, 255, 0.12);
   backdrop-filter: blur(12px);
 }
 .app .photo-nav:hover {
   transform: translateY(-50%) scale(1.06);
-  background: rgba(51, 65, 85, 0.9);
+  background: rgba(255, 255, 255, 0.16);
+}
+.app .photo-viewer.is-idle .pv-toolbar,
+.app .photo-viewer.is-idle .photo-nav {
+  opacity: 0.2;
+}
+.app .photo-viewer .pv-toolbar:hover,
+.app .photo-viewer .photo-nav:hover {
+  opacity: 1;
 }
 .app .photo-nav.prev {
   left: 16px;
@@ -77,7 +91,7 @@
 }
 .app .photo-main-wrapper {
   width: calc(100% - 144px);
-  height: calc(100% - 180px);
+  height: calc(100% - 196px);
 }
 .app .photo-main-wrapper img {
   max-width: 100%;
@@ -85,22 +99,96 @@
   object-fit: contain;
   border-radius: 6px;
   box-shadow: 0 20px 56px rgba(0, 0, 0, 0.55);
+}
+.app .photo-main-wrapper img.anim-fade {
   animation: photo-fade-in 160ms ease both;
+}
+.app .photo-main-wrapper img.anim-next {
+  animation: pv-slide-next 220ms var(--motion-ease-out, cubic-bezier(0.22, 1, 0.36, 1)) both;
+}
+.app .photo-main-wrapper img.anim-prev {
+  animation: pv-slide-prev 220ms var(--motion-ease-out, cubic-bezier(0.22, 1, 0.36, 1)) both;
+}
+@keyframes pv-slide-next {
+  from { opacity: 0; transform: translateX(20px) scale(0.99); }
+  to { opacity: 1; transform: translateX(0) scale(1); }
+}
+@keyframes pv-slide-prev {
+  from { opacity: 0; transform: translateX(-20px) scale(0.99); }
+  to { opacity: 1; transform: translateX(0) scale(1); }
+}
+.app .pv-meta-row {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  align-items: center;
+  gap: 8px;
+}
+.app .photo-counter,
+.app .photo-note-bar,
+.app .pv-filmstrip {
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 12px;
+  background: rgba(24, 25, 28, 0.82);
+  color: #e4e4e7;
+  backdrop-filter: blur(14px);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.36);
+}
+.app .pv-filmstrip {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  max-width: min(560px, calc(100vw - 32px));
+  overflow-x: auto;
+  padding: 5px;
+}
+.app .pv-film-thumb {
+  width: 44px;
+  height: 32px;
+  flex: 0 0 44px;
+  padding: 0;
+  border-radius: 7px;
+  overflow: hidden;
+  border: 1.5px solid transparent;
+  background: #0a0a0c;
+  opacity: 0.56;
+  transition: opacity 150ms ease, border-color 150ms ease, transform 150ms ease;
+}
+.app .pv-film-thumb:hover {
+  opacity: 0.88;
+}
+.app .pv-film-thumb.active {
+  opacity: 1;
+  border-color: #ffffff;
+  transform: translateY(-1px);
+}
+.app .pv-film-thumb img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+.app .pv-film-placeholder {
+  width: 100%;
+  height: 100%;
+  display: grid;
+  place-items: center;
+  color: #71717a;
+}
+.app .pv-film-placeholder .map-icon {
+  width: 14px;
+  height: 14px;
 }
 .app .photo-counter,
 .app .photo-note-bar {
-  border: 1px solid rgba(71, 85, 105, 0.65);
-  border-radius: 12px;
-  background: rgba(23, 32, 51, 0.84);
-  color: #e2e8f0;
-  backdrop-filter: blur(14px);
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.32);
+  padding: 7px 14px;
+  font-size: 13px;
+  line-height: 1.45;
 }
 .app .photo-note-bar {
   max-width: min(680px, calc(100vw - 32px));
   white-space: normal;
   overflow-wrap: anywhere;
-  line-height: 1.6;
 }
 .app .batch-select-container {
   background: var(--surface);
@@ -139,8 +227,8 @@
 .app .pe-header,
 .app .pe-toolbar {
   position: relative;
-  border-color: #334155;
-  background: #172033;
+  border-color: rgba(255, 255, 255, 0.12);
+  background: #18191c;
   padding: 12px 16px;
   min-height: 68px;
   gap: 12px;
@@ -157,21 +245,21 @@
   border: 1px solid transparent;
   border-radius: 10px;
   padding: 0 14px;
-  color: #cbd5e1;
+  color: #d4d4d8;
 }
 .app .pe-done.active {
-  background: #2563eb;
-  color: white;
+  background: #ffffff;
+  color: #111214;
 }
 .app .pe-done.active:hover {
-  background: #1d4ed8;
+  background: #e4e4e7;
 }
 .app .pe-title {
-  color: #f8fafc;
+  color: #f4f4f5;
   font-size: 16px;
 }
 .app .photo-editor-modern {
-  background: #090e18;
+  background: #0f1012;
 }
 .app .pe-canvas-area {
   padding: 0;
@@ -223,20 +311,25 @@
   }
   .app .photo-main-wrapper {
     width: calc(100% - 32px);
-    height: calc(100% - 210px);
+    height: calc(100% - 230px);
   }
   .app .photo-nav {
     top: auto;
-    bottom: 90px;
+    bottom: 124px;
     transform: none;
   }
   .app .photo-nav:hover {
     transform: none;
   }
   .app .photo-bottom-bar {
-    bottom: 16px;
-    max-height: 64px;
+    bottom: 12px;
+    max-height: 112px;
     overflow: auto;
+  }
+  .app .pv-film-thumb {
+    width: 38px;
+    height: 28px;
+    flex-basis: 38px;
   }
   .app .pe-header {
     padding: 8px;
@@ -249,12 +342,18 @@
 
 @media (prefers-reduced-motion: reduce) {
   .app .photo-viewer,
+  .app .photo-viewer.closing,
   .app .photo-editor-overlay,
   .app .photo-main-wrapper img,
+  .app .photo-main-wrapper img.anim-next,
+  .app .photo-main-wrapper img.anim-prev,
   .app .batch-select-check {
     animation: none;
   }
 
+  .app .pv-toolbar,
+  .app .photo-nav,
+  .app .pv-film-thumb,
   .app .batch-select-item {
     transition: none;
   }

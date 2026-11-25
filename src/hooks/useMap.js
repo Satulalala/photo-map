@@ -49,6 +49,12 @@ function getSourceTileKey(event) {
   return `${event.sourceId || ''}:${tile.wrap || 0}:${tile.overscaledZ ?? canonical.z}/${canonical.x}/${canonical.y}`;
 }
 
+function createTeardropSvg(hasPhoto) {
+  const w = hasPhoto ? 22 : 24;
+  const h = hasPhoto ? 29 : 32;
+  return `<svg class="marker-teardrop${hasPhoto ? ' has-photo' : ''}" xmlns="http://www.w3.org/2000/svg" width="${w}" height="${h}" viewBox="0 0 24 32" aria-hidden="true"><path d="M12 0C5.4 0 0 5.4 0 12c0 9 12 20 12 20s12-11 12-20C24 5.4 18.6 0 12 0z"/><circle cx="12" cy="11.5" r="4.4"/></svg>`;
+}
+
 /**
  * 地图管理 Hook
  * 从 App.jsx 提取的地图初始化、事件处理、标记渲染等逻辑
@@ -404,13 +410,13 @@ export function useMap({
           setPreviewPin(null);
           return;
         }
-        // 创建涟漪效果
+        // 创建取景定位涟漪效果
         const ripple = document.createElement('div');
         ripple.className = 'click-ripple';
         ripple.style.left = `${e.point.x}px`;
         ripple.style.top = `${e.point.y}px`;
         document.body.appendChild(ripple);
-        setTimeout(() => ripple.remove(), 700);
+        setTimeout(() => ripple.remove(), 820);
 
         if (measureModeRef.current) {
           // 测量模式
@@ -546,57 +552,12 @@ export function useMap({
     return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
   };
 
-  // ---- 创建标记元素（带照片预览）----
-  const createMarkerEl = useCallback((color, photos = []) => {
+  // ---- 创建添加照片临时定位锚点 ----
+  const createPreviewAnchorEl = useCallback(() => {
     const el = document.createElement('div');
-    el.className = 'marker-pin';
-
-    if (photos.length > 0) {
-      el.style.display = 'flex';
-      el.style.flexDirection = 'column';
-      el.style.alignItems = 'center';
-      el.innerHTML = `
-        <div class="marker-photo-preview">
-          <img src="" alt="预览" loading="lazy" style="background:#f0f0f0" />
-          ${photos.length > 1 ? `<span class="photo-badge">+${photos.length - 1}</span>` : ''}
-        </div>
-        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="32" viewBox="0 0 24 32"><path d="M12 0C5.4 0 0 5.4 0 12c0 9 12 20 12 20s12-11 12-20C24 5.4 18.6 0 12 0z" fill="${color}"/><circle cx="12" cy="12" r="5" fill="white"/></svg>
-      `;
-      getPhotoUrl(photos[0]).then(url => {
-        const img = el.querySelector('img');
-        if (img && url) img.src = url;
-      });
-    } else {
-      el.style.width = '24px';
-      el.style.height = '32px';
-      el.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="32" viewBox="0 0 24 32"><path d="M12 0C5.4 0 0 5.4 0 12c0 9 12 20 12 20s12-11 12-20C24 5.4 18.6 0 12 0z" fill="${color}"/><circle cx="12" cy="12" r="5" fill="white"/></svg>`;
-    }
-    el.style.cursor = 'pointer';
-    return el;
-  }, [getPhotoUrl]);
-
-  // ---- 创建带预览图的标记元素 ----
-  const thumbCache = useRef({});
-
-  const createMarkerWithPhoto = useCallback((photoId, photoCount) => {
-    const el = document.createElement('div');
-    el.className = 'marker-pin';
-    el.style.cssText = 'cursor:pointer;display:flex;flex-direction:column;align-items:center;';
-
-    if (photoId) {
-      el.innerHTML = `
-        <div class="marker-photo-preview" style="width:48px;height:48px;border-radius:6px;overflow:hidden;border:2px solid white;box-shadow:0 2px 6px rgba(0,0,0,0.3);background:#f0f0f0;margin-bottom:2px;position:relative;">
-          <img src="" style="width:100%;height:100%;object-fit:cover;display:block;" />
-          ${photoCount > 1 ? `<span style="position:absolute;top:2px;right:2px;background:rgba(0,0,0,0.6);color:white;font-size:10px;padding:1px 4px;border-radius:8px;">+${photoCount - 1}</span>` : ''}
-        </div>
-        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="26" viewBox="0 0 24 32"><path d="M12 0C5.4 0 0 5.4 0 12c0 9 12 20 12 20s12-11 12-20C24 5.4 18.6 0 12 0z" fill="#2563eb"/><circle cx="12" cy="12" r="4" fill="white"/></svg>
-      `;
-
-      const img = el.querySelector('img');
-      getPhotoDisplayUrl(photoId, true).then(url => { if (url) img.src = url; });
-    } else {
-      el.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="32" viewBox="0 0 24 32"><path d="M12 0C5.4 0 0 5.4 0 12c0 9 12 20 12 20s12-11 12-20C24 5.4 18.6 0 12 0z" fill="#2563eb"/><circle cx="12" cy="12" r="5" fill="white"/></svg>';
-    }
+    el.className = 'temp-anchor-pin';
+    el.setAttribute('aria-hidden', 'true');
+    el.innerHTML = '<span class="temp-anchor-ring"></span><span class="temp-anchor-core"></span>';
     return el;
   }, []);
 
@@ -604,7 +565,6 @@ export function useMap({
   const createMarkerElement = useCallback((m, isNew) => {
     const el = document.createElement('div');
     el.className = 'marker-pin';
-    el.style.cssText = 'cursor:pointer;display:flex;flex-direction:column;align-items:center;';
 
     const preview = getMarkerPreview(m);
     const { photoId, photoData, photoCount } = preview;
@@ -613,11 +573,14 @@ export function useMap({
 
     if (hasPhoto) {
       el.innerHTML = `
-        <div class="marker-photo-preview" style="width:48px;height:48px;border-radius:6px;overflow:hidden;border:2px solid white;box-shadow:0 2px 6px rgba(0,0,0,0.3);background:#e2e8f0;margin-bottom:2px;position:relative;">
-          <img src="" style="width:100%;height:100%;object-fit:cover;display:block;opacity:0;transition:opacity 0.2s;" />
-          ${photoCount > 1 ? `<span style="position:absolute;top:2px;right:2px;background:rgba(0,0,0,0.6);color:white;font-size:10px;padding:1px 4px;border-radius:8px;">+${photoCount - 1}</span>` : ''}
+        <div class="marker-photo-stack">
+          ${photoCount > 1 ? '<span class="marker-stack-card back-1"></span><span class="marker-stack-card back-2"></span>' : ''}
+          <div class="marker-photo-preview">
+            <img src="" alt="" style="opacity:0;transition:opacity 0.2s;" />
+          </div>
+          ${photoCount > 1 ? `<span class="photo-badge">+${photoCount - 1}</span>` : ''}
         </div>
-        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="26" viewBox="0 0 24 32"><path d="M12 0C5.4 0 0 5.4 0 12c0 9 12 20 12 20s12-11 12-20C24 5.4 18.6 0 12 0z" fill="#2563eb"/><circle cx="12" cy="12" r="4" fill="white"/></svg>
+        ${createTeardropSvg(true)}
       `;
 
       const img = el.querySelector('img');
@@ -644,7 +607,7 @@ export function useMap({
         }
       }
     } else {
-      el.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="32" viewBox="0 0 24 32"><path d="M12 0C5.4 0 0 5.4 0 12c0 9 12 20 12 20s12-11 12-20C24 5.4 18.6 0 12 0z" fill="#2563eb"/><circle cx="12" cy="12" r="5" fill="white"/></svg>';
+      el.innerHTML = createTeardropSvg(false);
     }
 
     // Mapbox owns the root transform; animate only its visual child.
@@ -799,7 +762,16 @@ export function useMap({
     }
   }, [heatmapMode, mapLoaded]);
 
-  // ---- 预览图钉 ----
+  // ---- 当前选中标记高亮态 ----
+  useEffect(() => {
+    const selectedId = markerMenu?.marker?.id ?? null;
+    Object.entries(mapMarkersRef.current).forEach(([id, markerObj]) => {
+      const el = markerObj?.getElement?.();
+      if (el) el.classList.toggle('is-selected', Boolean(selectedId && id === selectedId));
+    });
+  }, [markerMenu, markers, mapLoaded]);
+
+  // ---- 预览定位锚点 ----
   useEffect(() => {
     if (!mapRef.current) return;
 
@@ -809,14 +781,14 @@ export function useMap({
     }
 
     if (previewPin) {
-      const el = createMarkerEl('#00b894');
+      const el = createPreviewAnchorEl();
       const Marker = mapLibraryRef.current?.Marker || window.mapboxgl?.Marker;
       if (!Marker) return;
-      previewMarkerRef.current = new Marker({ element: el, anchor: 'bottom' })
+      previewMarkerRef.current = new Marker({ element: el, anchor: 'center' })
         .setLngLat([previewPin.lng, previewPin.lat])
         .addTo(mapRef.current);
     }
-  }, [previewPin, createMarkerEl]);
+  }, [previewPin, createPreviewAnchorEl]);
 
   // ---- 地图工具函数 ----
   const goToMyLocation = useCallback(() => {

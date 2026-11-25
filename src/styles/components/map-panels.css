@@ -47,7 +47,7 @@
 .app .settings-panel {
   width: min(760px, 100%);
   max-width: none;
-  height: min(600px, calc(100dvh - 48px));
+  height: min(648px, calc(100dvh - 48px));
   display: flex;
   animation: panel-in 280ms var(--ease-spring-ui, cubic-bezier(0.22, 1, 0.36, 1)) both;
 }
@@ -125,41 +125,24 @@
 }
 
 .app .settings-nav-items button::before {
-  content: "";
-  position: absolute;
-  left: 5px;
-  top: 50%;
-  width: 3px;
-  height: 18px;
-  border-radius: 9999px;
-  background: var(--accent);
-  transform: translateY(-50%) scaleY(0);
-  opacity: 0;
-  transition:
-    transform 180ms var(--motion-ease-out, ease),
-    opacity 150ms ease;
+  display: none;
 }
 
 .app .settings-nav-items button:hover {
   background: var(--surface-subtle);
   color: var(--text-primary);
-  transform: translateX(2px);
 }
 
 .app .settings-nav-items button.active {
   border-color: var(--border);
   background: var(--surface);
-  color: var(--accent);
+  color: var(--text-primary);
+  font-weight: var(--weight-semibold);
   box-shadow: var(--shadow-sm);
 }
 
-.app .settings-nav-items button.active::before {
-  transform: translateY(-50%) scaleY(1);
-  opacity: 1;
-}
-
 .app .settings-nav-items button.active .map-icon {
-  color: var(--accent);
+  color: var(--text-primary);
 }
 
 .app .settings-nav-items button.active + button {
@@ -215,9 +198,9 @@
 }
 
 .app .settings-close:hover {
-  border-color: var(--accent);
-  background: var(--accent-light);
-  color: var(--accent);
+  border-color: var(--text-muted);
+  background: var(--surface-subtle);
+  color: var(--text-primary);
   transform: rotate(90deg);
 }
 
@@ -262,9 +245,16 @@
 }
 
 .app .settings-page .page-desc {
-  margin: 0 0 18px;
+  margin: 0 0 14px;
   color: var(--text-secondary);
   font-size: 13px;
+}
+
+.app .setting-group-caption {
+  margin: 0 0 6px 2px;
+  color: var(--text-muted);
+  font-size: 12px;
+  font-weight: var(--weight-semibold);
 }
 
 .app .setting-group {
@@ -277,6 +267,48 @@
   transition:
     border-color var(--transition-fast),
     box-shadow var(--transition-fast);
+}
+
+.app .hairline-group {
+  padding: 0;
+  overflow: hidden;
+}
+
+.app .hairline-group .setting-row {
+  min-height: 44px;
+  margin: 0;
+  padding: 11px 16px;
+  border-bottom: 0;
+}
+
+.app .hairline-group .setting-row + .setting-row {
+  border-top: 1px solid var(--border-light);
+}
+
+.app .theme-seg-group {
+  display: inline-flex;
+  padding: 3px;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  background: var(--surface-subtle);
+}
+
+.app .theme-seg-btn {
+  border: 0;
+  border-radius: 7px;
+  padding: 5px 11px;
+  background: transparent;
+  color: var(--text-muted);
+  font-size: 12.5px;
+  font-weight: 500;
+  transition: background 140ms ease, color 140ms ease, box-shadow 140ms ease;
+}
+
+.app .theme-seg-btn[aria-pressed="true"] {
+  background: var(--surface);
+  color: var(--text-primary);
+  font-weight: 600;
+  box-shadow: var(--shadow-xs);
 }
 
 .app .setting-text-input {
@@ -319,7 +351,7 @@
 }
 
 .app .setting-group:hover {
-  border-color: var(--border-focus);
+  border-color: var(--text-muted);
   box-shadow: var(--shadow-sm);
   transform: none;
 }
@@ -339,12 +371,37 @@
   color: var(--text-secondary);
 }
 
+.app .switch input {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  margin: 0;
+  opacity: 0;
+  cursor: pointer;
+  z-index: 1;
+}
+
 .app .switch:hover .slider {
   background: var(--border);
 }
 
 .app .switch input:checked + .slider {
-  background: var(--accent);
+  background: var(--text-primary);
+}
+
+.app .switch input:checked + .slider::before {
+  background: var(--surface);
+}
+
+.app .settings-page .range-control input[type="range"] {
+  background: var(--border);
+  accent-color: var(--text-primary);
+}
+
+.app .settings-page .range-control input[type="range"]::-webkit-slider-thumb {
+  background: var(--text-primary);
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.25);
 }
 
 .app .setting-group h3 {
@@ -426,11 +483,20 @@
   left: 0;
   right: 0;
   bottom: 0;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
   margin: 0;
   padding: 10px 20px;
   border-top: 1px solid var(--border);
   background: color-mix(in srgb, var(--surface) 92%, transparent);
   backdrop-filter: blur(12px);
+}
+
+.app .settings-dirty-hint {
+  font-size: 12px;
+  color: var(--text-muted);
 }
 
 .app .settings-footer .save-btn {
@@ -448,12 +514,30 @@
 }
 
 .app .settings-footer .save-btn:not(:disabled) {
-  border-color: var(--accent);
-  background: var(--accent);
-  color: var(--on-accent);
+  border-color: var(--text-primary);
+  background: var(--text-primary);
+  color: var(--surface);
 }
 
 .app .settings-footer .save-btn:not(:disabled):hover {
-  background: var(--accent-hover);
+  opacity: 0.9;
   transform: translateY(-1px);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .app .theme-seg-btn,
+  .app .setting-text-input,
+  .app .switch .slider,
+  .app .switch .slider::before,
+  .app .action-btn,
+  .app .login-prompt-btn,
+  .app .settings-footer .save-btn {
+    transition: none !important;
+  }
+
+  .app .action-btn:hover,
+  .app .login-prompt-btn:hover,
+  .app .settings-footer .save-btn:not(:disabled):hover {
+    transform: none !important;
+  }
 }

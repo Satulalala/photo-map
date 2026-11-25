@@ -283,12 +283,23 @@
 
 @keyframes toastPopIn {
   0% {
-    transform: translate(-50%, -10px) scale(0.94);
+    transform: translate(-50%, -10px) scale(0.96);
     opacity: 0;
   }
   100% {
     transform: translate(-50%, 0) scale(1);
     opacity: 1;
+  }
+}
+
+@keyframes toastPopOut {
+  0% {
+    transform: translate(-50%, 0) scale(1);
+    opacity: 1;
+  }
+  100% {
+    transform: translate(-50%, -8px) scale(0.97);
+    opacity: 0;
   }
 }
 
@@ -300,44 +311,70 @@
 
 .feedback-toast {
   position: fixed;
-  top: max(20px, env(safe-area-inset-top));
+  top: calc(max(16px, env(safe-area-inset-top)) + 58px);
   left: 50%;
   transform: translateX(-50%);
-  padding: 10px 20px;
+  max-width: min(460px, calc(100vw - 24px));
+  padding: 8px 16px;
   border-radius: var(--radius-pill, 9999px);
+  border: 1px solid var(--surface-elevated-border, var(--border));
+  background: var(--surface-elevated, rgba(255, 255, 255, 0.94));
+  color: var(--text-primary);
   font-size: 13px;
-  font-weight: 600;
+  font-weight: 500;
   z-index: 9999;
   display: flex;
   align-items: center;
-  gap: 8px;
-  animation: toastPopIn 280ms var(--ease-spring-ui, cubic-bezier(0.22, 1, 0.36, 1)) both;
-  box-shadow: 0 12px 32px rgba(15, 23, 42, 0.2), inset 0 1px 0 rgba(255, 255, 255, 0.25);
-  backdrop-filter: blur(12px);
+  gap: 7px;
+  animation: toastPopIn 240ms var(--ease-spring-ui, cubic-bezier(0.22, 1, 0.36, 1)) both;
+  box-shadow: var(--control-shadow-hover, 0 12px 30px rgba(15, 23, 42, 0.14)), inset 0 1px 0 var(--surface-glass-highlight, rgba(255, 255, 255, 0.72));
+  backdrop-filter: blur(14px);
 }
 
-.feedback-toast.success {
-  background: var(--success);
-  color: white;
+.feedback-toast.closing {
+  pointer-events: none;
+  animation: toastPopOut 180ms var(--motion-ease-in, ease) forwards;
 }
 
 .feedback-toast.error {
-  background: var(--danger);
-  color: white;
   animation:
-    toastPopIn 280ms var(--ease-spring-ui, cubic-bezier(0.22, 1, 0.36, 1)) both,
-    toastShake 360ms 280ms ease;
+    toastPopIn 240ms var(--ease-spring-ui, cubic-bezier(0.22, 1, 0.36, 1)) both,
+    toastShake 340ms 220ms ease;
 }
 
-.feedback-toast.info {
-  background: var(--accent);
-  color: white;
+.feedback-toast.error.closing {
+  animation: toastPopOut 180ms var(--motion-ease-in, ease) forwards;
 }
 
 .feedback-toast .toast-icon {
   display: inline-flex;
   align-items: center;
-  font-size: 16px;
+  font-size: 14px;
+}
+
+.feedback-toast.success .toast-icon {
+  color: var(--success);
+}
+
+.feedback-toast.error .toast-icon {
+  color: var(--danger);
+}
+
+.feedback-toast.info .toast-icon {
+  color: var(--info, #5b7a9a);
+}
+
+.feedback-toast .toast-icon .map-icon {
+  width: 14px;
+  height: 14px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .feedback-toast,
+  .feedback-toast.error,
+  .feedback-toast.closing {
+    animation: none;
+  }
 }
 
 /* ========== 按钮点击效果增强 ========== */

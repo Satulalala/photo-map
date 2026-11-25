@@ -3,6 +3,47 @@
 .app .life-panel-overlay .life-panel-content {
   gap: 0;
 }
+.app .life-metrics-strip {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 8px;
+  margin-bottom: 12px;
+  padding: 10px 12px;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  background: var(--surface-muted);
+}
+.app .life-metric-cell {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+.app .life-metric-cell strong {
+  color: var(--text-primary);
+  font-size: 17px;
+  font-weight: 600;
+  line-height: 1.2;
+  font-variant-numeric: tabular-nums;
+}
+.app .life-metric-cell span {
+  color: var(--text-muted);
+  font-size: 11px;
+  white-space: nowrap;
+}
+.app .lgc-progress {
+  margin-top: 6px;
+  height: 2px;
+  border-radius: 9999px;
+  background: var(--border);
+  overflow: hidden;
+}
+.app .lgc-progress i {
+  display: block;
+  height: 100%;
+  border-radius: 9999px;
+  background: var(--text-primary);
+}
 .app .life-header-spacer {
   width: 40px;
   flex: 0 0 40px;
@@ -59,11 +100,22 @@
   display: flex;
   align-items: center;
   gap: 12px;
+  width: 100%;
   min-height: 88px;
   padding: 10px;
   border: 1px solid var(--border);
   border-radius: 12px;
   background: var(--surface-muted);
+  text-align: left;
+  transition:
+    border-color 160ms ease,
+    background-color 160ms ease,
+    box-shadow 180ms ease;
+}
+.app .life-recent-card.is-interactive:hover {
+  border-color: var(--text-muted);
+  background: var(--surface-subtle);
+  box-shadow: var(--shadow-sm);
 }
 .app .life-recent-copy,
 .app .life-recent-empty > div {
@@ -72,6 +124,54 @@
   flex-direction: column;
   gap: 5px;
   min-width: 0;
+}
+.app .life-recent-card.is-hero {
+  flex-direction: column;
+  align-items: stretch;
+  gap: 0;
+  padding: 0;
+  overflow: hidden;
+}
+.app .life-recent-hero-cover {
+  position: relative;
+  width: 100%;
+  height: 164px;
+  background: var(--surface-subtle);
+  overflow: hidden;
+}
+.app .life-recent-hero-cover .life-recent-photo {
+  width: 100%;
+  height: 100%;
+  flex: none;
+  border-radius: 0;
+  transition: transform 260ms var(--motion-ease-out, ease);
+}
+.app .life-recent-card.is-hero.is-interactive:hover .life-recent-photo {
+  transform: scale(1.03);
+}
+.app .life-recent-hero-tag {
+  position: absolute;
+  top: 10px;
+  left: 10px;
+  padding: 3px 9px;
+  border-radius: 9999px;
+  background: rgba(15, 23, 42, 0.74);
+  color: #ffffff;
+  font-size: 11px;
+  font-weight: 500;
+  backdrop-filter: blur(8px);
+}
+.app .life-recent-hero-foot {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 11px 13px;
+}
+.app .life-recent-cta {
+  flex-shrink: 0;
+  font-size: 12px;
+  color: var(--text-muted);
 }
 .app .life-recent-copy strong,
 .app .life-recent-empty strong {
@@ -135,9 +235,16 @@
   grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 8px;
 }
+.app .life-photo-strip-list.cols-2 {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
 .app .life-photo-strip-item {
   min-width: 0;
   margin: 0;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  text-align: left;
   overflow: hidden;
   border-radius: 8px;
 }
@@ -153,7 +260,9 @@
 .app .life-photo-strip-item:hover img {
   transform: scale(1.05);
 }
-.app .life-photo-strip-item figcaption {
+.app .life-photo-strip-item figcaption,
+.app .life-photo-strip-item .life-strip-caption {
+  display: block;
   overflow: hidden;
   margin-top: 4px;
   color: var(--text-secondary);
@@ -312,6 +421,13 @@
   opacity: 0.65;
 }
 
+@media (max-width: 768px) {
+  .app .life-panel-overlay .life-panel {
+    height: auto;
+    max-height: calc(100dvh - 24px);
+  }
+}
+
 @media (max-width: 374px) {
   .app .life-panel-overlay .social-overview-cards {
     grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -319,10 +435,16 @@
 }
 
 @media (max-width: 420px) {
+  .app .life-metrics-strip {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
   .app .overseas-list {
     grid-template-columns: minmax(0, 1fr);
   }
-  .app .life-recent-photo,
+  .app .life-recent-hero-cover {
+    height: 148px;
+  }
+  .app .life-recent-card:not(.is-hero) .life-recent-photo,
   .app .life-recent-photo-empty {
     width: 80px;
     flex-basis: 80px;
@@ -342,6 +464,9 @@
   .app .life-globe-card,
   .app .lgc-icon,
   .app .lgc-arrow,
+  .app .lgc-progress i,
+  .app .life-recent-card,
+  .app .life-recent-hero-cover .life-recent-photo,
   .app .life-photo-strip-item img,
   .app .overseas-item,
   .app .overseas-more-button {

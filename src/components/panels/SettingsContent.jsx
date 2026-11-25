@@ -231,26 +231,22 @@ export default function SettingsContent({
 
       {settingsTab === 'appearance' && (
         <div key="appearance" className="settings-page">
-          <h2><MapIcon name="palette" />个性化与显示效果</h2>
-          <p className="page-desc">统一调整视觉风格与地图显示体验</p>
+          <h2><MapIcon name="palette" />显示设置</h2>
+          <p className="page-desc">调整外观主题与地图渲染细节</p>
           <ThemeControl />
 
-          <div className="setting-group">
-            <h3>画质设置</h3>
+          <p className="setting-group-caption">地图画质与交互</p>
+          <div className="setting-group hairline-group">
             <div className="setting-row">
               <div className="setting-label">
                 <strong>抗锯齿</strong>
-                <span>平滑地图边缘，提升画质但会增加GPU负担</span>
+                <span>平滑地图边缘，略微增加 GPU 负载</span>
               </div>
               <label className="switch" aria-label="抗锯齿">
                 <input type="checkbox" checked={tempSettings.antialias} onChange={e => onTempSettingsChange(s => ({ ...s, antialias: e.target.checked }))} />
                 <span className="slider" />
               </label>
             </div>
-          </div>
-
-          <div className="setting-group">
-            <h3>交互设置</h3>
             <div className="setting-row">
               <div className="setting-label">
                 <strong>允许旋转</strong>
@@ -273,8 +269,8 @@ export default function SettingsContent({
             </div>
           </div>
 
-          <div className="setting-group">
-            <h3>缩放范围</h3>
+          <p className="setting-group-caption">缩放视野范围</p>
+          <div className="setting-group hairline-group">
             <div className="setting-row">
               <div className="setting-label">
                 <strong>最小缩放级别</strong>
@@ -377,24 +373,30 @@ export default function SettingsContent({
 
       {/* 底部保存按钮 - 仅在地图和性能设置页显示 */}
       </div>
-      {(settingsTab === 'performance' || settingsTab === 'appearance') && (
-        <div className="settings-footer">
-          <button
-            className="save-btn"
-            disabled={JSON.stringify(tempSettings) === JSON.stringify(mapSettings)}
-            onClick={() => {
-              onSaveSettings(tempSettings);
+      {(settingsTab === 'performance' || settingsTab === 'appearance') && (() => {
+        const hasChanges = JSON.stringify(tempSettings) !== JSON.stringify(mapSettings);
+        return (
+          <div className="settings-footer">
+            <span className="settings-dirty-hint">
+              {hasChanges ? '有未保存的设置更改' : '当前设置已生效'}
+            </span>
+            <button
+              className="save-btn"
+              disabled={!hasChanges}
+              onClick={() => {
+                onSaveSettings(tempSettings);
 
-              // 提示用户设置已保存，需要刷新页面
-              if (window.confirm('设置已保存！需要刷新页面以应用新设置，是否立即刷新？')) {
-                window.location.reload();
-              }
-            }}
-          >
-            保存设置
-          </button>
-        </div>
-      )}
+                // 提示用户设置已保存，需要刷新页面
+                if (window.confirm('设置已保存！需要刷新页面以应用新设置，是否立即刷新？')) {
+                  window.location.reload();
+                }
+              }}
+            >
+              保存设置
+            </button>
+          </div>
+        );
+      })()}
     </div>
   );
 }
