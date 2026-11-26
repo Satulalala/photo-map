@@ -2,6 +2,7 @@ const { contextBridge, ipcRenderer } = require('electron');
 
 contextBridge.exposeInMainWorld('electronAPI', {
   switchAccountStorage: (accountId) => ipcRenderer.invoke('switch-account-storage', accountId),
+  openGitHubAuth: (authUrl) => ipcRenderer.invoke('open-github-auth', authUrl),
   // 照片文件管理
   selectPhotos: () => ipcRenderer.invoke('select-photos'),
   getPhotoUrl: (photoId) => ipcRenderer.invoke('get-photo-url', photoId),

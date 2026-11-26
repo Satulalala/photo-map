@@ -2,10 +2,11 @@
 require('v8-compile-cache');
 
 // ========== 核心模块（立即加载）==========
-const { app, BrowserWindow, ipcMain, Menu, protocol } = require('electron');
+const { app, BrowserWindow, ipcMain, Menu, protocol, shell } = require('electron');
 const path = require('path');
 const fs = require('fs');
 const log = require('electron-log');
+const { APP_CSP_HEADER, applyAppCspHeaders } = require('./security.cjs');
 
 protocol.registerSchemesAsPrivileged([
   {
@@ -54,7 +55,11 @@ async function serveAppBuild(request) {
     if (!filePath) return new Response('Not found', { status: 404 });
     const contents = await fs.promises.readFile(filePath);
     const contentType = APP_BUILD_MIME_TYPES[path.extname(filePath).toLowerCase()] || 'application/octet-stream';
-    return new Response(contents, { headers: { 'Content-Type': contentType } });
+    const headers = { 'Content-Type': contentType };
+    if (contentType.startsWith('text/html')) {
+      headers['Content-Security-Policy'] = APP_CSP_HEADER;
+    }
+    return new Response(contents, { headers });
   } catch {
     return new Response('Not found', { status: 404 });
   }
@@ -288,25 +293,15 @@ function createWindow() {
 
   mainWindow.webContents.session.webRequest.onHeadersReceived((details, callback) => {
     callback({
-      responseHeaders: {
-        ...details.responseHeaders,
-        'Content-Security-Policy': [
-          [
-            "default-src 'self'",
-            "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://api.mapbox.com blob:",
-            "style-src 'self' 'unsafe-inline' https://api.mapbox.com",
-            "img-src 'self' data: blob: file: https://*.mapbox.com https://*.tiles.mapbox.com",
-            "font-src 'self' data:",
-            "connect-src 'self' https://photomap.satula.top https://api.mapbox.com https://*.mapbox.com https://*.tiles.mapbox.com https://restapi.amap.com ws://localhost:* http://localhost:*",
-            "worker-src 'self' blob:",
-            "frame-src 'none'",
-            "object-src 'none'",
-            "base-uri 'self'",
-            "form-action 'self'"
-          ].join('; ')
-        ]
-      }
+      responseHeaders: applyAppCspHeaders(details, app.isPackaged),
     });
+  });
+
+  mainWindow.webContents.setWindowOpenHandler(({ url }) => {
+    if (/^https?:\/\//i.test(url)) {
+      shell.openExternal(url);
+    }
+    return { action: 'deny' };
   });
 
   mainWindow.once('ready-to-show', () => mainWindow.show());
@@ -366,6 +361,7 @@ ipcMain.handle('switch-account-storage', (_, accountId) => switchAccountStorage(
 require('./ipc-handlers/search-handlers.cjs')(ctx);
 require('./ipc-handlers/cache-handlers.cjs')(ctx);
 require('./ipc-handlers/system-handlers.cjs')(ctx);
+require('./ipc-handlers/auth-handlers.cjs')(ctx);
 
 // ========== 应用生命周期 ==========
 app.whenReady().then(async () => {

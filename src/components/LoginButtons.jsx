@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect } from 'react';
+import { useState, useRef, useEffect, useCallback } from 'react';
 import {
   login,
   register,
@@ -65,6 +65,35 @@ export default function LoginButtons({
     const url = new URL(window.location.href);
     window.history.replaceState(null, '', `${url.pathname}${url.search}`);
   }, [initialResetToken]);
+  const handleGitHubAuthResult = useCallback(
+    async (authStatus, reason = '') => {
+      if (authStatus === 'github-success') {
+        setLoading(true);
+        try {
+          const account = await getSessionUser();
+          onLogin({ ...account, type: 'github' });
+          setOpen(false);
+        } catch {
+          setOpen(true);
+          setError('GitHub 登录状态未能确认，请重新登录。');
+        } finally {
+          setLoading(false);
+        }
+        return;
+      }
+
+      const messages = {
+        unavailable: 'GitHub 登录暂未配置，请联系管理员。',
+        throttled: '操作过于频繁，请稍后重试。',
+        cancelled: '你已取消 GitHub 授权。',
+        account_conflict: '此 GitHub 账号无法关联，请使用原账号登录。',
+      };
+      setOpen(true);
+      setError(messages[reason] || 'GitHub 登录未完成，请重试。');
+    },
+    [onLogin]
+  );
+
   useEffect(() => {
     const url = new URL(window.location.href);
     const authStatus = url.searchParams.get('auth');
@@ -73,31 +102,8 @@ export default function LoginButtons({
     url.searchParams.delete('auth');
     url.searchParams.delete('auth_reason');
     window.history.replaceState(null, '', `${url.pathname}${url.search}${url.hash}`);
-
-    if (authStatus === 'github-success') {
-      setLoading(true);
-      getSessionUser()
-        .then(account => {
-          onLogin({ ...account, type: 'github' });
-          setOpen(false);
-        })
-        .catch(() => {
-          setOpen(true);
-          setError('GitHub 登录状态未能确认，请重新登录。');
-        })
-        .finally(() => setLoading(false));
-      return;
-    }
-
-    const messages = {
-      unavailable: 'GitHub 登录暂未配置，请联系管理员。',
-      throttled: '操作过于频繁，请稍后重试。',
-      cancelled: '你已取消 GitHub 授权。',
-      account_conflict: '此 GitHub 账号无法关联，请使用原账号登录。',
-    };
-    setOpen(true);
-    setError(messages[reason] || 'GitHub 登录未完成，请重试。');
-  }, [onLogin]);
+    void handleGitHubAuthResult(authStatus, reason);
+  }, [handleGitHubAuthResult]);
 
   const changeMode = value => {
     setMode(value);
@@ -162,7 +168,27 @@ export default function LoginButtons({
       setLoading(false);
     }
   };
-  const startGitHubLogin = () => {
+  const startGitHubLogin = async () => {
+    const openDesktopAuth = typeof window !== 'undefined' ? window.electronAPI?.openGitHubAuth : null;
+    if (typeof openDesktopAuth === 'function') {
+      if (pending.current) return;
+      pending.current = true;
+      setLoading(true);
+      setError('');
+      try {
+        const result = await openDesktopAuth(githubLoginUrl('photomap://app/index.html'));
+        if (!result || result.status === 'closed') return;
+        await handleGitHubAuthResult(result.status, result.reason);
+      } catch {
+        setOpen(true);
+        setError('无法打开 GitHub 登录窗口，请重试。');
+      } finally {
+        pending.current = false;
+        setLoading(false);
+      }
+      return;
+    }
+
     const returnTo = window.location.protocol === 'photomap:'
       ? 'photomap://app/index.html'
       : window.location.origin;
