@@ -20,7 +20,7 @@ function isSafeId(value) {
     value !== '.' && value !== '..' && /^[A-Za-z0-9._:-]+$/.test(value);
 }
 
-function quotaBytes(env) {
+export function quotaBytes(env) {
   const configured = Number(env.PHOTO_USER_QUOTA_BYTES);
   return Number.isSafeInteger(configured) && configured > 0 ? configured : DEFAULT_USER_QUOTA_BYTES;
 }

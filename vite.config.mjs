@@ -1,10 +1,12 @@
 import { defineConfig } from 'vite';
 import react from '@vitejs/plugin-react';
+import fs from 'node:fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
 import { visualizer } from 'rollup-plugin-visualizer';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
+const pkg = JSON.parse(fs.readFileSync(path.resolve(__dirname, './package.json'), 'utf8'));
 
 export default defineConfig(({ mode, command }) => {
   const isWeb = process.env.BUILD_TARGET === 'web';
@@ -89,6 +91,7 @@ export default defineConfig(({ mode, command }) => {
     define: {
       __IS_WEB__: isWeb,
       __IS_ELECTRON__: !isWeb,
+      'import.meta.env.VITE_APP_VERSION': JSON.stringify(pkg.version),
     },
 
     // 依赖预构建优化

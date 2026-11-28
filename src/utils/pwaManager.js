@@ -5,6 +5,10 @@ const isDev = typeof window !== 'undefined' &&
    window.location.hostname === '127.0.0.1' ||
    window.location.port === '3001');
 
+const isElectronApp = typeof window !== 'undefined' &&
+  (Boolean(window.electronAPI) ||
+   (window.location.protocol !== 'http:' && window.location.protocol !== 'https:'));
+
 class PWAManager {
   constructor() {
     this.registration = null;
@@ -15,6 +19,17 @@ class PWAManager {
   }
 
   async init() {
+    if (isElectronApp) {
+      if (typeof navigator !== 'undefined' && navigator.serviceWorker?.getRegistrations) {
+        try {
+          const registrations = await navigator.serviceWorker.getRegistrations();
+          await Promise.all(registrations.map(reg => reg.unregister().catch(() => false)));
+        } catch {}
+      }
+      this.setupEventListeners();
+      return;
+    }
+
     if (isDev) {
       console.log('⚠️ PWA Manager: Development mode - Service Worker disabled');
       this.setupEventListeners();
@@ -49,7 +64,10 @@ class PWAManager {
         window.location.reload();
       });
 
-      this.registration = await navigator.serviceWorker.register('/sw.js', { scope: '/' });
+      this.registration = await navigator.serviceWorker.register('/sw.js', {
+        scope: '/',
+        updateViaCache: 'none',
+      });
 
       this.registration.addEventListener('updatefound', () => {
         const newWorker = this.registration.installing;
@@ -80,7 +98,7 @@ class PWAManager {
       this.onNetworkChange(false);
     });
 
-    navigator.serviceWorker.addEventListener('message', event => {
+    navigator.serviceWorker?.addEventListener?.('message', event => {
       this.handleServiceWorkerMessage(event.data);
     });
   }

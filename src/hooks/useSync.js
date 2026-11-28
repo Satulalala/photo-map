@@ -1,4 +1,4 @@
-import { useState, useCallback, useEffect } from 'react';
+import { useState, useCallback, useEffect, useRef } from 'react';
 import syncService from '../api/syncService.js';
 import api from '../api/index.js';
 import { loadLocalMarkerSnapshots } from '../api/localMarkerSnapshots.js';
@@ -8,6 +8,7 @@ export function useSync({ showToast, setMarkers, cloudSyncEnabled, storageReady 
   const syncEnabled = cloudSyncEnabled && storageReady && !isMapLibreTestRoute();
   const [isOnline, setIsOnline] = useState(typeof navigator !== 'undefined' ? navigator.onLine : true);
   const [syncingNow, setSyncingNow] = useState(false);
+  const syncingNowRef = useRef(false);
   const [syncConflictCount, setSyncConflictCount] = useState(() => syncService.getConflictCount());
   const [syncApiBase, setSyncApiBase] = useState(() => syncService.getApiBase());
 
@@ -28,7 +29,8 @@ export function useSync({ showToast, setMarkers, cloudSyncEnabled, storageReady 
   }, [setMarkers]);
 
   const runCloudSync = useCallback(async () => {
-    if (!syncEnabled || syncingNow) return;
+    if (!syncEnabled || syncingNowRef.current) return;
+    syncingNowRef.current = true;
     try {
       setSyncingNow(true);
       const result = await syncService.syncNow({
@@ -51,9 +53,10 @@ export function useSync({ showToast, setMarkers, cloudSyncEnabled, storageReady 
     } catch (error) {
       showToast('error', `云同步失败：${error.message || '网络异常'}`);
     } finally {
+      syncingNowRef.current = false;
       setSyncingNow(false);
     }
-  }, [syncEnabled, syncingNow, showToast, refreshLocalMarkers]);
+  }, [syncEnabled, showToast, refreshLocalMarkers]);
 
   useEffect(() => {
     if (!isOnline || !syncEnabled) return;

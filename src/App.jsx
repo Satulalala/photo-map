@@ -33,7 +33,9 @@ import MarkerContextMenu from './components/MarkerContextMenu.jsx';
 import MergeDialog from './components/panels/MergeDialog.jsx';
 import VillageModal from './components/panels/VillageModal.jsx';
 import Toast from './components/Toast.jsx';
+import DesktopUpdateBanner from './components/DesktopUpdateBanner.jsx';
 import SettingsContent from './components/panels/SettingsContent.jsx';
+import { useDesktopUpdater } from './hooks/useDesktopUpdater.js';
 import { usePhotoOperations } from './hooks/usePhotoOperations.js';
 import { useKeyboard } from './hooks/useKeyboard.js';
 import { useDialogFocus } from './hooks/useDialogFocus.js';
@@ -251,6 +253,7 @@ function App() {
     setIsLoggedIn, setUserChose, setUser, setShowLoginModal, setOfflinePrompted,
     handleLogin: handleLoginBase, handleSkipLogin, handleLogout: handleLogoutBase, handleEnterMapFromLoader,
   } = useAuth(showToast);
+  const desktopUpdater = useDesktopUpdater();
 
   const handleLogin = useCallback(async userData => {
     try {
@@ -995,6 +998,7 @@ function App() {
               onRunCloudSync={runCloudSync}
               onImportGuestData={handleImportGuestData}
               onClearTileCache={handleClearTileCache}
+              updater={desktopUpdater}
             />
           </div>
         </div>
@@ -1148,8 +1152,9 @@ function App() {
         />
       )}
 
-      {/* Toast 提示 */}
+      {/* Toast 提示与桌面更新横幅 */}
       <Toast toast={toast} />
+      <DesktopUpdateBanner updater={desktopUpdater} />
 
     </div>
   );

@@ -9,7 +9,7 @@ import { createAuthFlows } from './auth-flows.js';
 test('Worker authentication in the actual Workers runtime', async t => {
   const runtime = new Miniflare(convertV4MiniflareOptions({
     workers: [{
-      modules: ['worker.js', 'auth-flows.js', 'photo-storage.js', 'sync-v2.js'].map(file => ({
+      modules: ['worker.js', 'admin.js', 'auth-flows.js', 'photo-storage.js', 'sync-v2.js'].map(file => ({
       type: 'ESModule',
       path: fileURLToPath(new URL(`./${file}`, import.meta.url)),
     })),
@@ -30,7 +30,11 @@ test('Worker authentication in the actual Workers runtime', async t => {
   }));
   t.after(() => runtime.dispose());
   const database = await runtime.getD1Database('DB');
-  for (const file of ['0001_create_users_and_sync_markers.sql', '0002_add_auth_providers_and_password_reset.sql']) {
+  for (const file of [
+    '0001_create_users_and_sync_markers.sql',
+    '0002_add_auth_providers_and_password_reset.sql',
+    '0004_admin_console.sql',
+  ]) {
     const sql = await readFile(new URL(`./migrations/${file}`, import.meta.url), 'utf8');
     for (const statement of sql.split(';').map(value => value.trim()).filter(Boolean)) {
       await database.prepare(statement).run();

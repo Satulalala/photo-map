@@ -362,6 +362,7 @@ require('./ipc-handlers/search-handlers.cjs')(ctx);
 require('./ipc-handlers/cache-handlers.cjs')(ctx);
 require('./ipc-handlers/system-handlers.cjs')(ctx);
 require('./ipc-handlers/auth-handlers.cjs')(ctx);
+const updaterController = require('./ipc-handlers/updater-handlers.cjs')(ctx);
 
 // ========== 应用生命周期 ==========
 app.whenReady().then(async () => {
@@ -386,6 +387,12 @@ app.whenReady().then(async () => {
   protocol.handle('photomap', serveAppBuild);
   Menu.setApplicationMenu(null);
   createWindow();
+
+  if (app.isPackaged) {
+    setTimeout(() => {
+      updaterController.checkForUpdates({ silent: true });
+    }, 8000);
+  }
 
   setImmediate(preheatDatabase);
 });

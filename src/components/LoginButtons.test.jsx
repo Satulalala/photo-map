@@ -108,7 +108,7 @@ describe('LoginButtons GitHub OAuth flow', () => {
       fireEvent.click(screen.getByRole('button', { name: /GitHub 登录/ }));
 
       expect(assignMock).toHaveBeenCalledWith(
-        'https://photomap.satula.top/api/v1/auth/github?return_to=https%3A%2F%2Fphotomap.satula.top'
+        'https://photomap.satula.top/api/v1/auth/github?return_to=https%3A%2F%2Fphotomap.satula.top%2F'
       );
     } finally {
       Object.defineProperty(window, 'location', {

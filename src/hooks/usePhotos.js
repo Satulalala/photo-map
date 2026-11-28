@@ -16,10 +16,12 @@ export function usePhotos() {
     // 旧格式：直接是base64字符串
     if (typeof photo === 'string') return photo;
     // 旧格式：photo.data 是 base64
-    if (photo.data && photo.data.startsWith('data:')) return photo.data;
+    if (typeof photo.data === 'string' && photo.data.startsWith('data:')) return photo.data;
     // 新格式：photo.id 是文件名
     const photoId = photo.id;
-    if (!photoId) return null;
+    if (!photoId) {
+      return photo.data instanceof Blob ? URL.createObjectURL(photo.data) : null;
+    }
     return getPhotoDisplayUrl(photoId, false);
   }, []);
 
@@ -27,7 +29,7 @@ export function usePhotos() {
   const getPhotoUrlSync = useCallback(photo => {
     if (!photo) return '';
     if (typeof photo === 'string') return photo;
-    if (photo.data && photo.data.startsWith('data:')) return photo.data;
+    if (typeof photo.data === 'string' && photo.data.startsWith('data:')) return photo.data;
     const photoId = photo.id;
     return photoUrlCache.get(getPhotoDisplayCacheKey(photoId)) || '';
   }, []);

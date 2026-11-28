@@ -54,3 +54,18 @@ it('keeps the newest photo when earlier loading completes out of order', async (
   unmount();
   delete window.electronAPI;
 });
+
+it('handles Blob photo data in getPhotoUrl and getPhotoUrlSync without throwing', async () => {
+  const createObjectURL = vi.spyOn(URL, 'createObjectURL').mockReturnValue('blob:mock-hook-photo');
+  try {
+    const { result, unmount } = renderHook(() => usePhotos());
+    const blobPhoto = { data: new Blob(['bytes'], { type: 'image/png' }) };
+
+    expect(result.current.getPhotoUrlSync(blobPhoto)).toBe('');
+    await expect(result.current.getPhotoUrl(blobPhoto)).resolves.toBe('blob:mock-hook-photo');
+    expect(createObjectURL).toHaveBeenCalledTimes(1);
+    unmount();
+  } finally {
+    createObjectURL.mockRestore();
+  }
+});

@@ -87,6 +87,7 @@ export default function LoginButtons({
         throttled: '操作过于频繁，请稍后重试。',
         cancelled: '你已取消 GitHub 授权。',
         account_conflict: '此 GitHub 账号无法关联，请使用原账号登录。',
+        account_suspended: '此账号已停用，请联系管理员。',
       };
       setOpen(true);
       setError(messages[reason] || 'GitHub 登录未完成，请重试。');
@@ -189,9 +190,10 @@ export default function LoginButtons({
       return;
     }
 
+    const returnPath = /^\/admin\/?$/.test(window.location.pathname) ? '/admin' : '/';
     const returnTo = window.location.protocol === 'photomap:'
       ? 'photomap://app/index.html'
-      : window.location.origin;
+      : `${window.location.origin}${returnPath}`;
     window.location.assign(githubLoginUrl(returnTo));
   };
   const openEmailLogin = () => {
@@ -254,10 +256,12 @@ export default function LoginButtons({
               <span>GitHub 登录</span>
               {authProviders && !authProviders.github && <small>未配置</small>}
             </button>
-            <button type="button" className="login-drop-btn tertiary" onClick={onSkip}>
-              <MapIcon name="arrow" />
-              <span>暂不登录</span>
-            </button>
+            {onSkip && (
+              <button type="button" className="login-drop-btn tertiary" onClick={onSkip}>
+                <MapIcon name="arrow" />
+                <span>暂不登录</span>
+              </button>
+            )}
           </div>
         )
       )}

@@ -50,8 +50,8 @@ jobs:
         with:
           name: windows-build
           path: |
-            dist/*.exe
-            dist/*.zip
+            dist/*-setup.exe
+            dist/*-setup.exe.blockmap
             dist/latest.yml
           retention-days: 5
 
@@ -123,6 +123,7 @@ jobs:
           path: |
             dist/*.dmg
             dist/*.zip
+            dist/*.blockmap
             dist/latest-mac.yml
           retention-days: 5
 
@@ -184,7 +185,7 @@ jobs:
       - name: 整理构建产物
         run: |
           mkdir -p release
-          find dist -type f \( -name "*.exe" -o -name "*.dmg" -o -name "*.zip" -o -name "*.AppImage" -o -name "*.deb" -o -name "*.rpm" -o -name "*.yml" \) -exec cp {} release/ \;
+          find dist -type f \( -name "*.exe" -o -name "*.dmg" -o -name "*.zip" -o -name "*.AppImage" -o -name "*.deb" -o -name "*.rpm" -o -name "*.blockmap" -o -name "*.yml" \) -exec cp {} release/ \;
           ls -la release/
           
       - name: 获取版本号
@@ -201,7 +202,7 @@ jobs:
           echo "" >> CHANGELOG.md
           echo "| 平台 | 下载链接 |" >> CHANGELOG.md
           echo "|------|----------|" >> CHANGELOG.md
-          echo "| Windows x64 | [安装版](https://github.com/${{ github.repository }}/releases/download/v${{ steps.get_version.outputs.version }}/PhotoMap-${{ steps.get_version.outputs.version }}-win-x64-setup.exe) · [免安装版](https://github.com/${{ github.repository }}/releases/download/v${{ steps.get_version.outputs.version }}/PhotoMap-${{ steps.get_version.outputs.version }}-win-x64-portable.exe) |" >> CHANGELOG.md
+          echo "| Windows x64 | [安装版](https://github.com/${{ github.repository }}/releases/download/v${{ steps.get_version.outputs.version }}/PhotoMap-${{ steps.get_version.outputs.version }}-win-x64-setup.exe) |" >> CHANGELOG.md
           echo "| macOS Intel | [DMG](https://github.com/${{ github.repository }}/releases/download/v${{ steps.get_version.outputs.version }}/PhotoMap-${{ steps.get_version.outputs.version }}-mac-x64.dmg) · [ZIP](https://github.com/${{ github.repository }}/releases/download/v${{ steps.get_version.outputs.version }}/PhotoMap-${{ steps.get_version.outputs.version }}-mac-x64.zip) |" >> CHANGELOG.md
           echo "| macOS Apple 芯片 | [DMG](https://github.com/${{ github.repository }}/releases/download/v${{ steps.get_version.outputs.version }}/PhotoMap-${{ steps.get_version.outputs.version }}-mac-arm64.dmg) · [ZIP](https://github.com/${{ github.repository }}/releases/download/v${{ steps.get_version.outputs.version }}/PhotoMap-${{ steps.get_version.outputs.version }}-mac-arm64.zip) |" >> CHANGELOG.md
           echo "| Linux x64 | [AppImage](https://github.com/${{ github.repository }}/releases/download/v${{ steps.get_version.outputs.version }}/PhotoMap-${{ steps.get_version.outputs.version }}-x86_64.AppImage) · [deb](https://github.com/${{ github.repository }}/releases/download/v${{ steps.get_version.outputs.version }}/PhotoMap-${{ steps.get_version.outputs.version }}-linux-amd64.deb) · [rpm](https://github.com/${{ github.repository }}/releases/download/v${{ steps.get_version.outputs.version }}/PhotoMap-${{ steps.get_version.outputs.version }}-linux-x86_64.rpm) |" >> CHANGELOG.md

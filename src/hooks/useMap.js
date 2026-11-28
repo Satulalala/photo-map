@@ -10,7 +10,7 @@ function getMarkerPreview(marker) {
   const photo = marker.firstPhoto || marker.photos?.[0];
   return {
     photoId: photo?.id || '',
-    photoData: typeof photo === 'string' ? photo : photo?.data || '',
+    photoData: typeof photo === 'string' ? photo : (typeof photo?.data === 'string' ? photo.data : ''),
     photoCount: marker.photoCount ?? marker.photos?.length ?? (photo ? 1 : 0),
   };
 }
@@ -585,7 +585,7 @@ export function useMap({
 
       const img = el.querySelector('img');
       if (img) {
-        if (photoData.startsWith('data:')) {
+        if (typeof photoData === 'string' && photoData.startsWith('data:')) {
           img.onload = () => { img.style.opacity = '1'; };
           img.src = photoData;
         }

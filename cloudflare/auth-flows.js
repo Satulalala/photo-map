@@ -140,7 +140,8 @@ function normalizeReturnTo(request, value) {
 
     const allowedOrigins = new Set([new URL(request.url).origin, ...LOCAL_APP_ORIGINS]);
     if ((target.protocol === 'https:' || target.protocol === 'http:') && allowedOrigins.has(target.origin)) {
-      return `${target.origin}/`;
+      const path = target.pathname === '/admin' || target.pathname === '/admin/' ? '/admin' : '/';
+      return `${target.origin}${path}`;
     }
   } catch {}
   return null;
@@ -219,18 +220,20 @@ async function githubPrimaryEmail(accessToken) {
 async function findOrCreateGitHubUser(env, githubUser, email, linkingUser) {
   const githubId = String(githubUser.id);
   const existingProviderUser = await env.DB.prepare(
-    'SELECT id, email, username, github_id, auth_version FROM users WHERE github_id = ?'
+    'SELECT id, email, username, github_id, auth_version, role, account_status FROM users WHERE github_id = ?'
   )
     .bind(githubId)
     .first();
+  if (existingProviderUser?.account_status === 'suspended') throw new Error('account_suspended');
   if (existingProviderUser) return existingProviderUser;
 
   const existingEmailUser = await env.DB.prepare(
-    'SELECT id, email, username, github_id, auth_version FROM users WHERE email = ?'
+    'SELECT id, email, username, github_id, auth_version, role, account_status FROM users WHERE email = ?'
   )
     .bind(email)
     .first();
   if (existingEmailUser) {
+    if (existingEmailUser.account_status === 'suspended') throw new Error('account_suspended');
     // An unverified email registration must not inherit a verified GitHub account.
     // Linking an existing account requires its already authenticated session.
     if (existingEmailUser.github_id !== githubId && linkingUser?.id !== existingEmailUser.id) {
@@ -243,10 +246,11 @@ async function findOrCreateGitHubUser(env, githubUser, email, linkingUser) {
       .bind(githubId, existingEmailUser.id)
       .run();
     const linkedUser = await env.DB.prepare(
-      'SELECT id, email, username, github_id, auth_version FROM users WHERE id = ?'
+      'SELECT id, email, username, github_id, auth_version, role, account_status FROM users WHERE id = ?'
     )
       .bind(existingEmailUser.id)
       .first();
+    if (linkedUser?.account_status === 'suspended') throw new Error('account_suspended');
     if (linkedUser?.github_id !== githubId) throw new Error('github_account_conflict');
     return linkedUser;
   }
@@ -260,17 +264,19 @@ async function findOrCreateGitHubUser(env, githubUser, email, linkingUser) {
     .run();
 
   const createdUser = await env.DB.prepare(
-    'SELECT id, email, username, github_id, auth_version FROM users WHERE github_id = ?'
+    'SELECT id, email, username, github_id, auth_version, role, account_status FROM users WHERE github_id = ?'
   )
     .bind(githubId)
     .first();
+  if (createdUser?.account_status === 'suspended') throw new Error('account_suspended');
   if (createdUser) return createdUser;
 
   const racedUser = await env.DB.prepare(
-    'SELECT id, email, username, github_id, auth_version FROM users WHERE email = ?'
+    'SELECT id, email, username, github_id, auth_version, role, account_status FROM users WHERE email = ?'
   )
     .bind(email)
     .first();
+  if (racedUser?.account_status === 'suspended') throw new Error('account_suspended');
   if (racedUser?.github_id === githubId) return racedUser;
   throw new Error('github_account_conflict');
 }
@@ -388,8 +394,12 @@ export function createAuthFlows(dependencies) {
           sessionCookie(request, token, false, isDesktopReturn),
         ]);
       } catch (error) {
-        console.error('PhotoMap GitHub sign-in failed:', error?.message === 'github_account_conflict' ? 'account_conflict' : 'provider_error');
-        const reason = error?.message === 'github_account_conflict' ? 'account_conflict' : 'failed';
+        const reason = error?.message === 'github_account_conflict'
+          ? 'account_conflict'
+          : error?.message === 'account_suspended'
+            ? 'account_suspended'
+            : 'failed';
+        console.error('PhotoMap GitHub sign-in failed:', reason === 'account_conflict' ? reason : 'provider_error');
         return authResult(request, returnTo, 'error', reason, dependencies);
       }
     },

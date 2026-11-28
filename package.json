@@ -1,6 +1,6 @@
 {
   "name": "photo-map",
-  "version": "1.3.0",
+  "version": "1.3.3",
   "description": "智能照片地图与 AI 知识检索平台",
   "author": "Satula <1920393579@qq.com>",
   "license": "MIT",
@@ -109,12 +109,6 @@
           "arch": [
             "x64"
           ]
-        },
-        {
-          "target": "portable",
-          "arch": [
-            "x64"
-          ]
         }
       ],
       "icon": "build-resources/photomap.ico",
@@ -136,9 +130,6 @@
       "installerIcon": "build-resources/photomap.ico",
       "uninstallerIcon": "build-resources/photomap.ico",
       "installerHeaderIcon": "build-resources/photomap.ico"
-    },
-    "portable": {
-      "artifactName": "PhotoMap-${version}-win-${arch}-portable.${ext}"
     },
     "mac": {
       "target": [
@@ -211,12 +202,13 @@
     "appImage": {
       "artifactName": "PhotoMap-${version}-${arch}.${ext}"
     },
-    "publish": {
-      "provider": "github",
-      "owner": "Satulalala",
-      "repo": "photo-map",
-      "releaseType": "release"
-    }
+    "publish": [
+      {
+        "provider": "generic",
+        "url": "https://video.satula.top/downloads/photomap/win/",
+        "useMultipleRangeRequest": false
+      }
+    ]
   },
   "dependencies": {
     "@huggingface/transformers": "^4.3.0",

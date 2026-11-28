@@ -1,4 +1,5 @@
 import { createAuthFlows } from './auth-flows.js';
+import { handleAdminRequest } from './admin.js';
 import * as photoStorage from './photo-storage.js';
 import * as syncV2 from './sync-v2.js';
 
@@ -266,8 +267,15 @@ function userInfo(row) {
 }
 
 function authenticatedResponse(request, token, row) {
+  const response = { ok: true, user: userInfo(row) };
+  if (
+    DESKTOP_APP_ORIGINS.has(request.headers.get('Origin')) &&
+    request.headers.get('X-PhotoMap-Desktop-Auth') === '1'
+  ) {
+    response.token = token;
+  }
   return json(
-    { ok: true, user: userInfo(row) },
+    response,
     200,
     { 'Set-Cookie': sessionCookie(request, token) }
   );
@@ -325,7 +333,7 @@ async function login(request, env) {
   }
 
   const row = await env.DB.prepare(
-    'SELECT id, email, username, password_hash, github_id, auth_version FROM users WHERE email = ?'
+    'SELECT id, email, username, password_hash, github_id, auth_version, account_status FROM users WHERE email = ?'
   )
     .bind(email)
     .first();
@@ -334,6 +342,7 @@ async function login(request, env) {
     ? await verifyPassword(password, row.password_hash, env.PASSWORD_PEPPER)
     : await hashPassword(password, new Uint8Array(16), env.PASSWORD_PEPPER).then(() => false);
   if (!row || !passwordMatches) return json({ ok: false, error: '邮箱或密码错误' }, 401);
+  if (row.account_status !== 'active') return json({ ok: false, error: '账号已停用，请联系管理员' }, 403);
 
   const token = await createJwt(row, env.JWT_SECRET);
   return authenticatedResponse(request, token, row);
@@ -347,11 +356,17 @@ async function authenticatedUser(request, env) {
   const claims = await readJwt(token, env.JWT_SECRET);
   if (!claims) return null;
   const user = await env.DB.prepare(
-    'SELECT id, email, username, github_id, auth_version FROM users WHERE id = ?'
+    'SELECT id, email, username, github_id, auth_version, role, account_status FROM users WHERE id = ?'
   )
     .bind(claims.id)
     .first();
-  if (!user || Number(user.auth_version || 0) !== claims.authVersion) return null;
+  if (
+    !user ||
+    user.account_status !== 'active' ||
+    Number(user.auth_version || 0) !== claims.authVersion
+  ) {
+    return null;
+  }
   return user;
 }
 
@@ -477,7 +492,10 @@ function withCors(response, request) {
   const headers = new Headers(response.headers);
   headers.set('Access-Control-Allow-Origin', origin);
   headers.set('Access-Control-Allow-Methods', 'GET, POST, PUT, OPTIONS');
-  headers.set('Access-Control-Allow-Headers', 'Authorization, Content-Type, Range, If-None-Match, If-Range');
+  headers.set(
+    'Access-Control-Allow-Headers',
+    'Authorization, Content-Type, Range, If-None-Match, If-Range, X-PhotoMap-Desktop-Auth'
+  );
   headers.set('Access-Control-Expose-Headers', 'Accept-Ranges, Content-Length, Content-Range, ETag');
   headers.set('Access-Control-Allow-Credentials', 'true');
   headers.set('Access-Control-Max-Age', '600');
@@ -519,6 +537,18 @@ async function routeApi(request, env, context) {
   }
   if (url.pathname === '/api/v1/auth/password-reset/confirm' && request.method === 'POST') {
     return authFlows.confirmPasswordReset(request, env);
+  }
+
+  if (url.pathname.startsWith('/api/v1/admin/')) {
+    const user = await authenticatedUser(request, env);
+    if (!user) return json({ ok: false, error: '未登录或账号已停用' }, 401);
+    if (user.role !== 'admin') return json({ ok: false, error: '无权访问管理后台' }, 403);
+    return handleAdminRequest(request, env, user, {
+      json,
+      readJson,
+      hasTrustedOrigin,
+      photoQuotaBytes: photoStorage.quotaBytes,
+    });
   }
 
   if (url.pathname.startsWith('/api/v2/')) {

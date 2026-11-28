@@ -5,7 +5,7 @@ import { useDialogFocus } from '../hooks/useDialogFocus.js';
 import { usePresenceTransition } from '../hooks/usePresenceTransition.js';
 
 const DESKTOP_INSTALLER_URL =
-  'https://video.satula.top/downloads/photomap/v1.3.0/PhotoMap-1.3.0-win-x64-setup.exe?release=1.3.0-r1';
+  'https://video.satula.top/downloads/photomap/win/PhotoMap-1.3.2-win-x64-setup.exe';
 
 export default function WebDownloadButton({ label = '桌面版' }) {
   const [open, setOpen] = useState(false);

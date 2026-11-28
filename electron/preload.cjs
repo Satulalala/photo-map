@@ -3,6 +3,8 @@ const { contextBridge, ipcRenderer } = require('electron');
 contextBridge.exposeInMainWorld('electronAPI', {
   switchAccountStorage: (accountId) => ipcRenderer.invoke('switch-account-storage', accountId),
   openGitHubAuth: (authUrl) => ipcRenderer.invoke('open-github-auth', authUrl),
+  storeAuthToken: (token) => ipcRenderer.invoke('store-auth-token', token),
+  clearAuthToken: () => ipcRenderer.invoke('clear-auth-token'),
   // 照片文件管理
   selectPhotos: () => ipcRenderer.invoke('select-photos'),
   getPhotoUrl: (photoId) => ipcRenderer.invoke('get-photo-url', photoId),
@@ -61,5 +63,18 @@ contextBridge.exposeInMainWorld('electronAPI', {
   // 开发者工具
   openDevTools: () => ipcRenderer.invoke('open-devtools'),
   getRecentLogs: () => ipcRenderer.invoke('get-recent-logs'),
+
+  // 自动更新
+  getAppVersion: () => ipcRenderer.invoke('get-app-version'),
+  getUpdaterState: () => ipcRenderer.invoke('get-updater-state'),
+  checkForUpdates: (options) => ipcRenderer.invoke('check-for-updates', options),
+  downloadUpdate: () => ipcRenderer.invoke('download-update'),
+  quitAndInstall: () => ipcRenderer.invoke('quit-and-install'),
+  onUpdateStatus: (callback) => {
+    if (typeof callback !== 'function') return () => {};
+    const handler = (_, payload) => callback(payload);
+    ipcRenderer.on('updater-status', handler);
+    return () => ipcRenderer.removeListener('updater-status', handler);
+  },
 
 });

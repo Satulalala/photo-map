@@ -75,6 +75,7 @@ async function requestJson(path, options = {}) {
   const response = await authFetch(`${getApiBase()}${path}`, { ...options, headers });
   let data = null;
   try { data = await response.json(); } catch {}
+  if (response.status === 401) throw new Error('登录状态已过期，请重新登录后再同步');
   if (!response.ok || !data?.ok) throw new Error(data?.error || `HTTP ${response.status}`);
   return data;
 }

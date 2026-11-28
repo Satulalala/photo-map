@@ -1,17 +1,49 @@
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useEffect } from 'react';
 import {
   getCurrentUser,
+  getSessionUser,
   hasMapSession,
   rememberMapSession,
+  removeCurrentUser,
+  removeToken,
+  setCurrentUser,
   logout as authLogout,
 } from '../api/auth.js';
 
 export function useAuth(showToast) {
-  const [isLoggedIn, setIsLoggedIn] = useState(() => hasMapSession() || !!getCurrentUser());
+  const [isLoggedIn, setIsLoggedIn] = useState(() => !!getCurrentUser());
   const [userChose, setUserChose] = useState(() => hasMapSession() || !!getCurrentUser());
   const [user, setUser] = useState(() => getCurrentUser());
   const [showLoginModal, setShowLoginModal] = useState(false);
   const [offlinePrompted, setOfflinePrompted] = useState(false);
+
+  useEffect(() => {
+    const cachedUser = getCurrentUser();
+    let verificationActive = true;
+    const handleExpiredSession = () => {
+      verificationActive = false;
+      removeToken();
+      removeCurrentUser();
+      setUser(null);
+      setIsLoggedIn(false);
+    };
+    window.addEventListener('photomap:auth-expired', handleExpiredSession);
+    if (cachedUser) {
+      void getSessionUser({ cache: false })
+        .then(verifiedUser => {
+          if (verificationActive && getCurrentUser()?.id === cachedUser.id) {
+            setCurrentUser(verifiedUser);
+            setUser(verifiedUser);
+            setIsLoggedIn(true);
+          }
+        })
+        .catch(() => {});
+    }
+    return () => {
+      verificationActive = false;
+      window.removeEventListener('photomap:auth-expired', handleExpiredSession);
+    };
+  }, []);
 
   const handleLogin = useCallback(
     userData => {
@@ -25,7 +57,7 @@ export function useAuth(showToast) {
   );
 
   const handleSkipLogin = useCallback(() => {
-    setIsLoggedIn(true);
+    setIsLoggedIn(false);
     setUserChose(true);
     setShowLoginModal(false);
     showToast('info', '以游客模式继续');

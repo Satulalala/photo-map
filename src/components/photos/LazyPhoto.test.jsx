@@ -60,3 +60,26 @@ it('ignores a late thumbnail response after switching to another photo', async (
   expect(screen.getByAltText('照片')).toHaveAttribute('src', placeholder);
   expect(screen.getByAltText('照片')).toHaveStyle({ opacity: '1' });
 });
+
+it('renders Blob photo data without throwing and revokes created object URL on unmount', () => {
+  observeVisiblePhotos();
+  const createObjectURL = vi.spyOn(URL, 'createObjectURL').mockReturnValue('blob:mock-photo-1');
+  const revokeObjectURL = vi.spyOn(URL, 'revokeObjectURL').mockImplementation(() => {});
+
+  try {
+    const view = render(
+      <LazyPhoto
+        photo={{ id: 'blob-1', data: new Blob(['img'], { type: 'image/png' }) }}
+        alt="Blob照片"
+      />
+    );
+    expect(createObjectURL).toHaveBeenCalledTimes(1);
+    expect(screen.getByAltText('Blob照片')).toHaveAttribute('src', 'blob:mock-photo-1');
+
+    view.unmount();
+    expect(revokeObjectURL).toHaveBeenCalledWith('blob:mock-photo-1');
+  } finally {
+    createObjectURL.mockRestore();
+    revokeObjectURL.mockRestore();
+  }
+});

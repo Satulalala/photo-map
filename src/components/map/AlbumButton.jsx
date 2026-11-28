@@ -43,7 +43,7 @@ export default function AlbumButton({
             <span className="album-cover-back" />
             <span className="album-cover-front">
               <LazyPhoto
-                key={coverPhoto.id || coverPhoto.data?.slice(0, 32) || 'cover'}
+                key={coverPhoto.id || (typeof coverPhoto.data === 'string' ? coverPhoto.data.slice(0, 32) : '') || 'cover'}
                 photo={coverPhoto}
                 className="album-cover-thumb"
                 alt=""

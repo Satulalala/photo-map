@@ -72,8 +72,28 @@ const LazyPhoto = memo(function LazyPhoto({ photo, className, alt = '', useThumb
       setPlaceholder('');
       return;
     }
-    if (photo.data?.startsWith('data:')) {
+    if (useThumbnail && photo.thumbnailData instanceof Blob) {
+      setSrc(URL.createObjectURL(photo.thumbnailData));
+      setPlaceholder('');
+      return;
+    }
+    if (useThumbnail && typeof photo.thumbnail === 'string' && photo.thumbnail.startsWith('data:')) {
+      setSrc(photo.thumbnail);
+      setPlaceholder('');
+      return;
+    }
+    if (useThumbnail && photo.thumbnail instanceof Blob) {
+      setSrc(URL.createObjectURL(photo.thumbnail));
+      setPlaceholder('');
+      return;
+    }
+    if (typeof photo.data === 'string' && photo.data.startsWith('data:')) {
       setSrc(photo.data);
+      setPlaceholder('');
+      return;
+    }
+    if (photo.data instanceof Blob) {
+      setSrc(URL.createObjectURL(photo.data));
       setPlaceholder('');
       return;
     }

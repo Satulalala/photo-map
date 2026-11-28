@@ -26,6 +26,7 @@ export default function SettingsContent({
   onRunCloudSync,
   onImportGuestData,
   onClearTileCache,
+  updater = null,
 }) {
   const scrollRef = useRef(null);
   useLayoutEffect(() => { if (scrollRef.current) scrollRef.current.scrollTop = 0; }, [settingsTab]);
@@ -348,8 +349,66 @@ export default function SettingsContent({
             </div>
             <div className="setting-row">
               <div className="setting-label"><strong>当前版本</strong></div>
-              <span className="setting-value-text">v1.0.0</span>
+              <span className="setting-value-text">
+                v{updater?.state?.currentVersion || import.meta.env.VITE_APP_VERSION || '1.3.0'}
+              </span>
             </div>
+            {updater?.isDesktop && (() => {
+              const u = updater.state;
+              const percent = Math.max(0, Math.min(100, Math.round(u.percent || 0)));
+              let statusText = '检查是否有可用的桌面版更新';
+              if (u.status === 'checking') statusText = '正在检查更新…';
+              else if (u.status === 'not-available') statusText = '当前已是最新版本';
+              else if (u.status === 'available') statusText = `发现新版本 v${u.version}`;
+              else if (u.status === 'downloading') statusText = `正在下载 v${u.version}（${percent}%）`;
+              else if (u.status === 'downloaded') statusText = `v${u.version} 已下载完成，重启后安装`;
+              else if (u.status === 'unsupported') statusText = u.message || '当前环境不支持自动检查更新';
+              else if (u.status === 'error') statusText = u.message || '检查更新失败，请稍后重试';
+
+              return (
+                <div className="setting-row">
+                  <div className="setting-label">
+                    <strong>软件更新</strong>
+                    <span>{statusText}</span>
+                    {u.status === 'downloading' && (
+                      <div className="settings-update-progress" role="progressbar" aria-valuenow={percent} aria-valuemin={0} aria-valuemax={100}>
+                        <div className="desktop-update-progress-fill" style={{ width: `${percent}%` }} />
+                      </div>
+                    )}
+                  </div>
+                  <div className="settings-update-controls">
+                    {u.status === 'available' && (
+                      <button
+                        type="button"
+                        className="settings-update-btn primary"
+                        onClick={updater.downloadUpdate}
+                      >
+                        下载更新
+                      </button>
+                    )}
+                    {u.status === 'downloaded' && (
+                      <button
+                        type="button"
+                        className="settings-update-btn primary"
+                        onClick={updater.quitAndInstall}
+                      >
+                        立即重启安装
+                      </button>
+                    )}
+                    {(u.status === 'idle' || u.status === 'not-available' || u.status === 'error' || u.status === 'unsupported' || u.status === 'checking') && (
+                      <button
+                        type="button"
+                        className="settings-update-btn secondary"
+                        disabled={u.status === 'checking'}
+                        onClick={() => updater.checkForUpdates({ silent: false })}
+                      >
+                        {u.status === 'checking' ? '检查中…' : '检查更新'}
+                      </button>
+                    )}
+                  </div>
+                </div>
+              );
+            })()}
           </div>
 
           <div className="setting-group">

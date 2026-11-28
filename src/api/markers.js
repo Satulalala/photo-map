@@ -206,7 +206,7 @@ export const photosApi = {
   },
 
   async getUrl(photo) {
-    if (photo.data && photo.data.startsWith('data:')) {
+    if (typeof photo.data === 'string' && photo.data.startsWith('data:')) {
       return photo.data;
     }
 
@@ -214,14 +214,17 @@ export const photosApi = {
     if (isElectron() && photo.originalPath) {
       return window.electronAPI.getPhotoUrl(photo.originalPath);
     }
-    if (photo.data) {
+    if (typeof photo.data === 'string' && photo.data) {
       return `data:image/jpeg;base64,${photo.data}`;
     }
     return photo.id ? getPhotoDisplayUrl(photo.id, false) : '';
   },
 
   async getThumbnailUrl(photo) {
-    if (photo.thumbnail) {
+    if (photo.thumbnail instanceof Blob) {
+      return URL.createObjectURL(photo.thumbnail);
+    }
+    if (typeof photo.thumbnail === 'string' && photo.thumbnail) {
       if (photo.thumbnail.startsWith('data:')) {
         return photo.thumbnail;
       }

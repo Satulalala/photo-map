@@ -4,6 +4,12 @@ const TOKEN_KEY = 'auth_token';
 const USER_KEY = 'auth_user';
 const MAP_SESSION_KEY = 'photo_map_entered';
 
+if (typeof window !== 'undefined' && window.electronAPI?.storeAuthToken) {
+  try {
+    localStorage.removeItem(TOKEN_KEY);
+  } catch {}
+}
+
 // Navigation preference only; account access still depends on the server session.
 export function hasMapSession() {
   try {
@@ -21,21 +27,32 @@ export function rememberMapSession() {
 
 export function getToken() {
   try {
-    return localStorage.getItem(TOKEN_KEY);
-  } catch {
-    return null;
-  }
+    localStorage.removeItem(TOKEN_KEY);
+  } catch {}
+  return null;
 }
 
 export function setToken(token) {
+  if (typeof window !== 'undefined' && window.electronAPI?.storeAuthToken) {
+    try {
+      localStorage.removeItem(TOKEN_KEY);
+    } catch {}
+    return Promise.resolve(window.electronAPI.storeAuthToken(token)).then(result => {
+      if (!result?.ok) throw new Error(result?.error || '无法安全保存登录状态');
+    });
+  }
   try {
-    localStorage.setItem(TOKEN_KEY, token);
+    localStorage.removeItem(TOKEN_KEY);
   } catch {}
 }
 
 export function removeToken() {
   try {
     localStorage.removeItem(TOKEN_KEY);
+  } catch {}
+  try {
+    const clearRequest = window.electronAPI?.clearAuthToken?.();
+    void clearRequest?.catch?.(() => {});
   } catch {}
 }
 
@@ -62,11 +79,18 @@ export function removeCurrentUser() {
 
 async function postAuth(path, payload, fallback) {
   let response;
+  const isDesktop = typeof window !== 'undefined' && !!window.electronAPI?.storeAuthToken;
+  const isDesktopLogin = isDesktop && (
+    path === '/api/v1/auth/login' || path === '/api/v1/auth/register'
+  );
   try {
     response = await fetch(apiUrl(path), {
       method: 'POST',
       credentials: IS_WEB_BUILD ? 'same-origin' : 'include',
-      headers: { 'Content-Type': 'application/json' },
+      headers: {
+        'Content-Type': 'application/json',
+        ...(isDesktopLogin ? { 'X-PhotoMap-Desktop-Auth': '1' } : {}),
+      },
       body: JSON.stringify(payload),
     });
   } catch {
@@ -76,13 +100,30 @@ async function postAuth(path, payload, fallback) {
   try {
     data = await response.json();
   } catch {}
+  if (!response.ok && data?.error === 'Network unavailable') {
+    try {
+      void navigator.serviceWorker
+        ?.getRegistrations?.()
+        .then(registrations =>
+          registrations.forEach(reg => {
+            void reg.update?.().catch(() => {});
+          })
+        )
+        .catch(() => {});
+    } catch {}
+    throw new Error('检测到旧版离线缓存拦截了请求，请刷新页面后重试；若刚刚提交过注册，可直接尝试登录。');
+  }
   if (!response.ok || !data?.ok) throw new Error(data?.error || fallback);
   return data;
 }
 
 async function saveAuthenticatedResponse(data) {
-  if (data.token) setToken(data.token);
-  else removeToken();
+  const isDesktop = typeof window !== 'undefined' && !!window.electronAPI?.storeAuthToken;
+  if (data.token) await setToken(data.token);
+  else if (isDesktop) {
+    removeToken();
+    throw new Error('认证服务版本过旧，请稍后重试或更新服务');
+  } else removeToken();
   setCurrentUser(data.user);
   return data.user;
 }
@@ -130,8 +171,8 @@ export async function getAuthProviders() {
   return data.providers;
 }
 
-export async function getSessionUser() {
-  const response = await fetch(apiUrl('/api/v1/auth/me'), {
+export async function getSessionUser({ cache = true } = {}) {
+  const response = await authFetch(apiUrl('/api/v1/auth/me'), {
     credentials: IS_WEB_BUILD ? 'same-origin' : 'include',
   });
   let data = null;
@@ -141,7 +182,7 @@ export async function getSessionUser() {
   if (!response.ok || !data?.ok || !data.user) {
     throw new Error(data?.error || '无法读取登录状态');
   }
-  setCurrentUser(data.user);
+  if (cache) setCurrentUser(data.user);
   return data.user;
 }
 
@@ -169,5 +210,15 @@ export function authFetch(url, options = {}) {
   if (token) {
     headers['Authorization'] = `Bearer ${token}`;
   }
-  return fetch(url, { credentials: IS_WEB_BUILD ? 'same-origin' : 'include', ...options, headers });
+  return fetch(url, { credentials: IS_WEB_BUILD ? 'same-origin' : 'include', ...options, headers })
+    .then(response => {
+      let isApiRequest = false;
+      try {
+        isApiRequest = new URL(url, window.location.href).pathname.startsWith('/api/');
+      } catch {}
+      if (response.status === 401 && isApiRequest && typeof window !== 'undefined') {
+        window.dispatchEvent(new Event('photomap:auth-expired'));
+      }
+      return response;
+    });
 }

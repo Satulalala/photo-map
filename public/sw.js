@@ -1,8 +1,8 @@
 // Service Worker for Photo Map PWA
-const CACHE_NAME = 'photo-map-v1.0.1';
-const STATIC_CACHE = 'photo-map-static-v1.0.1';
-const DYNAMIC_CACHE = 'photo-map-dynamic-v1.0.1';
-const IMAGE_CACHE = 'photo-map-images-v1.0.1';
+const CACHE_NAME = 'photo-map-v1.0.3';
+const STATIC_CACHE = 'photo-map-static-v1.0.3';
+const DYNAMIC_CACHE = 'photo-map-dynamic-v1.0.3';
+const IMAGE_CACHE = 'photo-map-images-v1.0.3';
 
 // 检测是否为开发环境
 const isDev = location.hostname === 'localhost' || location.hostname === '127.0.0.1';
@@ -87,9 +87,9 @@ self.addEventListener('activate', (event) => {
 self.addEventListener('fetch', (event) => {
   const { request } = event;
   const url = new URL(request.url);
-  
-  // 只处理同源请求
-  if (url.origin !== location.origin) {
+
+  // 非 GET、跨域或接口请求直接走网络，绝不经过缓存拦截。
+  if (url.origin !== location.origin || request.method !== 'GET' || isAPIRequest(request)) {
     return;
   }
 
@@ -100,8 +100,6 @@ self.addEventListener('fetch', (event) => {
     event.respondWith(cacheFirst(request, STATIC_CACHE));
   } else if (isImageRequest(request)) {
     event.respondWith(cacheFirst(request, IMAGE_CACHE));
-  } else if (isAPIRequest(request)) {
-    event.respondWith(networkFirst(request, DYNAMIC_CACHE));
   } else {
     event.respondWith(staleWhileRevalidate(request, DYNAMIC_CACHE));
   }
@@ -164,39 +162,6 @@ async function cacheFirst(request, cacheName) {
     }
     
     throw error;
-  }
-}
-
-// 网络优先策略 (Network First)
-async function networkFirst(request, cacheName) {
-  try {
-    console.log('Service Worker: Network first for', request.url);
-    const networkResponse = await fetch(request);
-    
-    if (networkResponse.ok) {
-      const cache = await caches.open(cacheName);
-      const responseClone = networkResponse.clone();
-      await cache.put(request, responseClone);
-    }
-    
-    return networkResponse;
-  } catch (error) {
-    console.log('Service Worker: Network failed, trying cache', request.url);
-    const cache = await caches.open(cacheName);
-    const cachedResponse = await cache.match(request);
-    
-    if (cachedResponse) {
-      return cachedResponse;
-    }
-    
-    // API 请求失败时返回错误响应
-    return new Response(JSON.stringify({
-      error: 'Network unavailable',
-      message: '网络不可用，请检查连接'
-    }), {
-      status: 503,
-      headers: { 'Content-Type': 'application/json' }
-    });
   }
 }
 
