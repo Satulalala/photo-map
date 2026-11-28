@@ -2,7 +2,7 @@
 
 把照片留在地图上，让每一段旅程都有迹可循。
 
-[English](./README.md) · [最新版本](https://github.com/Satulalala/photo-map/releases/latest)
+[English](./README.md) · [打开网页相册](https://photomap.satula.top) · [最新版本](https://github.com/Satulalala/photo-map/releases/latest)
 
 PhotoMap 是一个基于 React、Electron 和 Mapbox 的照片地图项目。你可以在地图上添加地点、上传照片、记录备注，再通过相册、搜索和生活足迹回看自己的记录。项目同时提供桌面版和 Web 版。
 
@@ -16,6 +16,8 @@ PhotoMap 是一个基于 React、Electron 和 Mapbox 的照片地图项目。你
 截图使用公开界面，不包含个人照片或私人地点。
 
 ## 获取桌面版
+
+[下载 Windows x64 v1.3.4 安装包](https://github.com/Satulalala/photo-map/releases/download/v1.3.4/PhotoMap-1.3.4-win-x64-setup.exe)。这一版修复了关闭照片预览后，地点弹窗和相册封面的缩略图变灰的问题。
 
 在 [GitHub Releases](https://github.com/Satulalala/photo-map/releases/latest) 下载最新版本。Windows 提供 x64 安装包；macOS 提供 Intel 与 Apple 芯片安装包；Linux 提供 AppImage、deb 和 rpm。GitHub Actions 通过仓库 Secret `MAPBOX_TOKEN` 为各平台桌面包注入地图访问令牌；未配置时地图无法加载。macOS 版本目前未签名，首次打开时需在系统安全设置中手动允许。
 

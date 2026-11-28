@@ -36,10 +36,6 @@ const LazyPhoto = memo(function LazyPhoto({ photo, className, alt = '', useThumb
   const [isVisible, setIsVisible] = useState(false);
   const containerRef = useRef(null);
 
-  useEffect(() => () => {
-    if (src.startsWith('blob:')) URL.revokeObjectURL(src);
-  }, [src]);
-  
   // IntersectionObserver 检测可见性
   useEffect(() => {
     const el = containerRef.current;
@@ -64,6 +60,12 @@ const LazyPhoto = memo(function LazyPhoto({ photo, className, alt = '', useThumb
     if (!isVisible || !photo) return;
     
     let active = true;
+    const loadInlineBlob = blob => {
+      const url = URL.createObjectURL(blob);
+      setSrc(url);
+      setPlaceholder('');
+      return () => URL.revokeObjectURL(url);
+    };
     // 备注刷新可能返回相同图片 URL，保留该 URL 的已加载状态。
     
     // 旧格式：直接是 base64
@@ -73,9 +75,7 @@ const LazyPhoto = memo(function LazyPhoto({ photo, className, alt = '', useThumb
       return;
     }
     if (useThumbnail && photo.thumbnailData instanceof Blob) {
-      setSrc(URL.createObjectURL(photo.thumbnailData));
-      setPlaceholder('');
-      return;
+      return loadInlineBlob(photo.thumbnailData);
     }
     if (useThumbnail && typeof photo.thumbnail === 'string' && photo.thumbnail.startsWith('data:')) {
       setSrc(photo.thumbnail);
@@ -83,9 +83,7 @@ const LazyPhoto = memo(function LazyPhoto({ photo, className, alt = '', useThumb
       return;
     }
     if (useThumbnail && photo.thumbnail instanceof Blob) {
-      setSrc(URL.createObjectURL(photo.thumbnail));
-      setPlaceholder('');
-      return;
+      return loadInlineBlob(photo.thumbnail);
     }
     if (typeof photo.data === 'string' && photo.data.startsWith('data:')) {
       setSrc(photo.data);
@@ -93,9 +91,7 @@ const LazyPhoto = memo(function LazyPhoto({ photo, className, alt = '', useThumb
       return;
     }
     if (photo.data instanceof Blob) {
-      setSrc(URL.createObjectURL(photo.data));
-      setPlaceholder('');
-      return;
+      return loadInlineBlob(photo.data);
     }
     
     // 新格式：从文件加载
@@ -107,7 +103,7 @@ const LazyPhoto = memo(function LazyPhoto({ photo, className, alt = '', useThumb
         });
       }
       
-      // 加载缩略图或原图
+      // 地图与预览组件共用此地址，由图片缓存负责回收。
       getPhotoDisplayUrl(photo.id, useThumbnail).then(url => {
         if (active && url) {
           setSrc(url);

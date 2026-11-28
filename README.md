@@ -2,7 +2,7 @@
 
 Keep your photos on the map, so every journey leaves a trace.
 
-[简体中文](./README.zh-CN.md) · [Latest Release](https://github.com/Satulalala/photo-map/releases/latest)
+[简体中文](./README.zh-CN.md) · [Open PhotoMap on the web](https://photomap.satula.top) · [Latest Release](https://github.com/Satulalala/photo-map/releases/latest)
 
 PhotoMap is a photo-mapping app built with React, Electron, and Mapbox. Add places to a map, upload photos, write notes, and revisit your records through albums, search, and travel history. The project provides both desktop and web versions.
 
@@ -16,6 +16,8 @@ PhotoMap is a photo-mapping app built with React, Electron, and Mapbox. Add plac
 The screenshots show public-facing screens and contain no personal photos or private locations.
 
 ## Download the Desktop App
+
+[Download the Windows x64 installer for v1.3.4](https://github.com/Satulalala/photo-map/releases/download/v1.3.4/PhotoMap-1.3.4-win-x64-setup.exe). This release fixes thumbnails that turned gray in location popups and on album covers after a preview was closed.
 
 Download the latest release from [GitHub Releases](https://github.com/Satulalala/photo-map/releases/latest). Windows provides an x64 installer; macOS provides packages for Intel and Apple silicon; Linux provides AppImage, deb, and rpm packages. GitHub Actions injects the map access token into desktop packages for each platform through the repository Secret `MAPBOX_TOKEN`. The map cannot load without it. The macOS version is currently unsigned, so you may need to allow it manually in System Settings the first time you open it.
 

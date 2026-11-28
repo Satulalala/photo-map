@@ -4,8 +4,10 @@ import MapIcon from './map/MapIcon.jsx';
 import { useDialogFocus } from '../hooks/useDialogFocus.js';
 import { usePresenceTransition } from '../hooks/usePresenceTransition.js';
 
+const DESKTOP_RELEASE_VERSION = '1.3.4';
+const DESKTOP_INSTALLER_NAME = `PhotoMap-${DESKTOP_RELEASE_VERSION}-win-x64-setup.exe`;
 const DESKTOP_INSTALLER_URL =
-  'https://video.satula.top/downloads/photomap/win/PhotoMap-1.3.2-win-x64-setup.exe';
+  `https://github.com/Satulalala/photo-map/releases/download/v${DESKTOP_RELEASE_VERSION}/${DESKTOP_INSTALLER_NAME}`;
 
 export default function WebDownloadButton({ label = '桌面版' }) {
   const [open, setOpen] = useState(false);
@@ -71,11 +73,11 @@ export default function WebDownloadButton({ label = '桌面版' }) {
                   </span>
                 </div>
               </div>
-              <p className="download-note">Windows 10+ · 64 位 · 安装包约 261 MB</p>
+              <p className="download-note">Windows 10+ · 64 位 · v{DESKTOP_RELEASE_VERSION}</p>
               <a
                 className="desktop-download-link"
                 href={DESKTOP_INSTALLER_URL}
-                download="PhotoMap-Setup-win-x64.exe"
+                download={DESKTOP_INSTALLER_NAME}
               >
                 <MapIcon name="download" />
                 下载 Windows 安装包

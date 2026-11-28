@@ -83,3 +83,28 @@ it('renders Blob photo data without throwing and revokes created object URL on u
     revokeObjectURL.mockRestore();
   }
 });
+
+it('keeps a cached thumbnail URL available when a preview closes and reopens', async () => {
+  observeVisiblePhotos();
+  const photo = { id: 'shared-thumbnail' };
+  const url = 'blob:shared-thumbnail';
+  const createObjectURL = vi.spyOn(URL, 'createObjectURL').mockReturnValue(url);
+  const revokeObjectURL = vi.spyOn(URL, 'revokeObjectURL').mockImplementation(() => {});
+  const readThumbnailFile = vi.fn().mockResolvedValue({ bytes: new Uint8Array([1]) });
+  window.electronAPI = { readThumbnailFile, readPhotoFile: vi.fn() };
+
+  try {
+    const preview = render(<LazyPhoto photo={photo} alt="地点预览" />);
+    await waitFor(() => expect(screen.getByAltText('地点预览')).toHaveAttribute('src', url));
+    preview.unmount();
+    expect(revokeObjectURL).not.toHaveBeenCalledWith(url);
+
+    const reopened = render(<LazyPhoto photo={photo} alt="地点预览" />);
+    await waitFor(() => expect(screen.getByAltText('地点预览')).toHaveAttribute('src', url));
+    expect(readThumbnailFile).toHaveBeenCalledTimes(1);
+    reopened.unmount();
+  } finally {
+    createObjectURL.mockRestore();
+    revokeObjectURL.mockRestore();
+  }
+});
